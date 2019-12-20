@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/dialogadd_fullname"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_list_item_height"
+        android:layout_marginTop="10dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:gravity="start|top"
+        android:hint="@string/enter_full_name"
+        android:inputType="textMultiLine"
+        android:textSize="@dimen/default_text_size"
+        tools:targetApi="o" />
+
+    <EditText
+        android:id="@+id/dialogadd_phone"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_list_item_height"
+        android:layout_marginTop="10dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/_phone_number_hint"
+        android:inputType="phone"
+        android:textSize="@dimen/default_text_size"
+        tools:targetApi="o" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/abonement_type"
+        android:textSize="@dimen/default_text_size" />
+
+    <Spinner
+        android:id="@+id/dialogadd_spinner_abonement"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_list_item_height"
+        android:layout_margin="5dp"
+        android:background="@color/color_StateOne" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/group_time"
+        android:textSize="@dimen/default_text_size" />
+
+    <Spinner
+        android:id="@+id/dialogadd_spinner_time"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_list_item_height"
+        android:layout_margin="5dp"
+        android:background="@color/color_StateOne" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/group_day"
+        android:textSize="@dimen/default_text_size" />
+
+    <Spinner
+        android:id="@+id/dialogadd_spinner_day"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_list_item_height"
+        android:layout_margin="5dp"
+        android:background="@color/color_StateOne" />
+
+</LinearLayout>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GroupListFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/small_list_item_height"
+            android:layout_gravity="fill_horizontal|top"
+            android:background="@android:color/background_light"
+            android:gravity="center"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/groups"
+            android:textSize="@dimen/default_text_size" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/groups_list"
+            android:layout_width="match_parent"
+            android:layout_height="585dp"
+            android:layout_marginBottom="60dp"
+            android:background="@android:color/background_light"
+            tools:listitem="@layout/item_group_list">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_vertical"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_help"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="10dp"
+            android:backgroundTintMode="src_in"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_help_black_24dp"
+            app:backgroundTint="@color/colorPrimary" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_new_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_add_black_24dp"
+            app:backgroundTint="@android:color/holo_blue_dark" />
+
+    </LinearLayout>
+
+</FrameLayout>
