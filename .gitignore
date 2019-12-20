@@ -50,3 +50,14 @@ local.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+.idea/
+app/.gitignore
+app/build.gradle
+app/proguard-rules.pro
+build.gradle
+gradle.properties
+gradle/
+gradlew
+gradlew.bat
+settings.gradle
