@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 
 import android.os.Build;
@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
-import android.util.Pair;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,20 +18,29 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.app.artclass.LocalAdapter;
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.Lesson;
+import com.app.artclass.database.Student;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentCard extends Fragment {
 
     private DatabaseManager databaseManager;
     private Student student;
     private LocalAdapter outerAdapter;
-    private List<Lesson> allLessonsList;
+    private List<Lesson> studLessonsList;
 
     public StudentCard() {
         // Required empty public constructor
@@ -41,14 +49,14 @@ public class StudentCard extends Fragment {
     public StudentCard(Student student) {
         this.student = student;
         databaseManager = DatabaseManager.getInstance(getContext());
-        allLessonsList = databaseManager.getLessonsForStudent(student);
+        studLessonsList = databaseManager.getLessonList(student);
     }
 
     public StudentCard(Student student, LocalAdapter adapter) {
         this.student = student;
         outerAdapter = adapter;
         databaseManager = DatabaseManager.getInstance(getContext());
-        allLessonsList = databaseManager.getLessonsForStudent(student);
+        studLessonsList = databaseManager.getLessonList(student);
     }
 
     @Override
@@ -68,7 +76,7 @@ public class StudentCard extends Fragment {
             @Override
             public void onClick(View v) {
                 EditText moneyText = (EditText) v.getTag();
-                student.balance += Integer.valueOf(moneyText.getText().toString());
+                student.incrementBalance(Integer.valueOf(moneyText.getText().toString()));
                 updateBalance();
                 moneyText.setText("");
             }
@@ -78,7 +86,7 @@ public class StudentCard extends Fragment {
         makeZeroMoney.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                student.balance = 0;
+                student.setBalance(0);
                 updateBalance();
             }
         });
@@ -89,7 +97,7 @@ public class StudentCard extends Fragment {
         Button add2_btn = view.findViewById(R.id.add2_btn);
         Button add3_btn = view.findViewById(R.id.add3_btn);
 
-        SparseArray<String> buttonIncrements = UserSettings.getInst(getContext()).getButtonIncrements();
+        SparseArray<String> buttonIncrements = UserSettings.getInstance(getContext()).getBalanceIncrements();
 
         add1_btn.setText(buttonIncrements.valueAt(0));
         add2_btn.setText(buttonIncrements.valueAt(1));
@@ -101,7 +109,7 @@ public class StudentCard extends Fragment {
         View.OnClickListener incrBtnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                student.balance += (Integer) v.getTag();
+                student.incrementBalance((Integer) v.getTag());
                 updateBalance();
             }
         };
@@ -115,22 +123,30 @@ public class StudentCard extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onSelectedDayChange(CalendarView calendarView, int y, int m, int d) {
-                String groupsTime;
-                final int fullDate = Converters.getDateInt(y,m+1,d);
+                String groupsTimeWorked;
+                final LocalDate curDate = LocalDate.of(y,m,d);
 
                 StringBuilder groupsTimeBuilder = new StringBuilder();
-                for(Lesson curLesson:allLessonsList){
-                    if(curLesson.getFullDate()==fullDate){
-                        groupsTimeBuilder.append(curLesson.getTime()).append(" - ").append(curLesson.getHoursWorked()).append("\n");
+                for(Lesson curLesson: studLessonsList){
+                    if(curLesson.getDateTime().toLocalDate()==curDate){
+                        groupsTimeBuilder
+                                .append(
+                                curLesson.getDateTime().format(DatabaseConverters.getDateTimeFormatter()))
+                                .append(" - ")
+                                .append(curLesson.getHoursWorked())
+                                .append("\n");
                     }
                 }
-                groupsTime = groupsTimeBuilder.toString();
+                groupsTimeWorked = groupsTimeBuilder.toString();
 
-                if(groupsTime == "") groupsTime = getString(R.string.message_student_not_worked);
+                if(groupsTimeWorked == "") groupsTimeWorked = getString(R.string.message_student_not_worked);
 
-                groupsTime = Converters.getDateString(y,m+1,d, UserSettings.dateSeparator)+"\n"+groupsTime;
+                String workString = String.format(
+                        "%s\n%s",
+                        curDate.format(DatabaseConverters.getDateFormatter()),
+                        groupsTimeWorked);
 
-                Toast.makeText(getContext(), groupsTime, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), workString, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -138,24 +154,16 @@ public class StudentCard extends Fragment {
     }
 
     private void updateBalance(){
-        ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.balance));
-        databaseManager.updateStudent(student);
+        ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.getBalance()));
+        databaseManager.update(student);
     }
 
     private void updateStudentFields(View view) {
-        ((TextView)view.findViewById(R.id.student_name_view)).setText(student.fullName);
-        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(student.balance));
-        ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(student.getAbonementType());
-        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", student.getHoursToWork()));
-
-        List<Pair<String,String>> phoneNumbers = databaseManager.getAllSettingsFieldString(DatabaseManager.SETTING_PHONE_NUMBER);
-        if(phoneNumbers.size()>0){
-            StringBuilder numbers = new StringBuilder();
-            for(Pair<String,String> number : phoneNumbers){
-                numbers.append(number.second).append("\n");
-            }
-            ((TextView)view.findViewById(R.id.phone_view)).setText(numbers.toString());
-        }
+        ((TextView)view.findViewById(R.id.student_name_view)).setText(student.getName());
+        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(student.getBalance()));
+        ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(student.getAbonementType().getName());
+        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", student.getHoursBalance()));
+        ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", student.getPhoneList()));
     }
 
 }

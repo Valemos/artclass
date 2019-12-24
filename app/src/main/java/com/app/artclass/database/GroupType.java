@@ -3,6 +3,7 @@ package com.app.artclass.database;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import java.time.LocalTime;
 
@@ -12,16 +13,19 @@ public class GroupType {
     @PrimaryKey(autoGenerate = true)
     int id;
 
-    LocalTime time;
+    @TypeConverters({DatabaseConverters.class})
+    private LocalTime time;
+
+    String groupName;
+
+    public GroupType(LocalTime time, String groupName) {
+        this.time = time;
+        this.groupName = groupName;
+    }
 
     public String getGroupName() {
-        return group_name;
+        return groupName;
     }
 
-    String group_name;
-
-    public GroupType(LocalTime time, String group_name) {
-        this.time = time;
-        this.group_name = group_name;
-    }
+    public LocalTime getTime() { return time; }
 }

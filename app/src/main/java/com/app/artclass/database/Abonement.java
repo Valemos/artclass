@@ -4,26 +4,37 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(indices = @Index(value = "abonement_name",unique = true))
+@Entity(indices = @Index(value = "abonementName",unique = true))
 public class Abonement {
 
     @PrimaryKey(autoGenerate = true)
-    int id;
+    int idAbonement;
 
-    String abonement_name;
+    String abonementName;
 
-    public int getAbonementAmount() {
-        return abonement_amount;
+    int abonementPrice;
+
+    int hoursToWork;
+
+    public Abonement(String abonementName, int abonementPrice, int hoursToWork) {
+        this.abonementName = abonementName;
+        this.abonementPrice = abonementPrice;
+        this.hoursToWork = hoursToWork;
     }
 
-    int abonement_amount;
-
-    public Abonement(String abonement_name, int abonement_amount) {
-        this.abonement_name = abonement_name;
-        this.abonement_amount = abonement_amount;
+    public int getIdAbonement() {
+        return idAbonement;
     }
 
-    public String getAbonementName() {
-        return abonement_name;
+    public int getPrice() {
+        return abonementPrice;
+    }
+
+    public int getHours() {
+        return hoursToWork;
+    }
+
+    public String getName() {
+        return abonementName;
     }
 }

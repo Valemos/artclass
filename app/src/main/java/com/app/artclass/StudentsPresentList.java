@@ -1,10 +1,12 @@
 package com.app.artclass;
 
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import android.util.Pair;
@@ -15,27 +17,35 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.GroupType;
+import com.app.artclass.database.Lesson;
 
-import java.text.DateFormat;
-import java.util.Calendar;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentsPresentList extends Fragment {
 
     DatabaseManager dataManager;
     ListView listOfTodayStudents;
     TextView groupTimeTextView;
 
+    LocalDate groupsDate;
+
     public StudentsPresentList() {
-        // Required empty public constructor
+        this.dataManager = DatabaseManager.getInstance();
+        this.groupsDate = LocalDate.now();
     }
 
-    public StudentsPresentList(DatabaseManager manager) {
-        this.dataManager = manager;
+    public StudentsPresentList(LocalDate date) {
+        this.dataManager = DatabaseManager.getInstance();
+        this.groupsDate = date;
     }
 
     @Override
@@ -56,9 +66,8 @@ public class StudentsPresentList extends Fragment {
 
         // output start date
 
-        Calendar cal = Calendar.getInstance();
         TextView dateView = view.findViewById(R.id.dateWeekday_view);
-        dateView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(cal.getTime()));
+        dateView.setText(groupsDate.format(DatabaseConverters.getDateFormatter()));
 
         //setup of buttons
 
@@ -67,54 +76,44 @@ public class StudentsPresentList extends Fragment {
                 view.findViewById(R.id.select_group2_btn),
                 view.findViewById(R.id.select_group3_btn)};
 
-        int dateOfGroups = Converters.getDateInt(
-                cal.get(Calendar.YEAR),
-                cal.get(Calendar.MONTH) + 1,
-                cal.get(Calendar.DAY_OF_MONTH));
+        List<GroupType> groupTypes = UserSettings.getInstance().getGroupTypes();
 
-        List<String> timeLabels = UserSettings.getInst(getContext()).getGroupLabels();
 
-        if(timeLabels.size()!=0){
-            for (int i = 0; i < btn_groups.length; i++) {
+        for (int i = 0; i < btn_groups.length; i++) {
+            List<Lesson> lessonsForToday = dataManager.getLessonList(groupsDate, groupTypes.get(i).getTime());
+            if (lessonsForToday.size() != 0) {
+                btn_groups[i].setText(groupTypes.get(i).getGroupName());
+                btn_groups[i].setTag(R.id.group_type, groupTypes.get(i));
+                btn_groups[i].setTag(R.id.lessons_list, lessonsForToday);
+                btn_groups[i].setOnClickListener(innerView -> {
 
-                List<Lesson> lessonsForToday = dataManager.getLessonStudentsList(dateOfGroups, timeLabels.get(i));
-                if (lessonsForToday.size() != 0) {
-                    btn_groups[i].setText(timeLabels.get(i));
-                    btn_groups[i].setTag(new Pair(timeLabels.get(i), lessonsForToday));
-                    btn_groups[i].setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+                    groupTimeTextView.setText(((GroupType)innerView.getTag(R.id.group_type)).getGroupName());
 
-                            groupTimeTextView.setText((String) ((Pair) view.getTag()).first);
-
-                            List<Lesson> lessons = (List<Lesson>) ((Pair) view.getTag()).second;// use tag for list of students
-                            LessonsAdapter adapter = new LessonsAdapter(getContext(),R.layout.item_students_presentlist, lessons);
-                            listOfTodayStudents.setAdapter(adapter);
-                        }
-                    });
-                    btn_groups[i].setVisibility(View.VISIBLE);
-                }
+                    List<Lesson> lessons = (List<Lesson>) innerView.getTag(R.id.lessons_list);
+                    LessonsAdapter adapter = new LessonsAdapter(getContext(),R.layout.item_students_presentlist, lessons);
+                    listOfTodayStudents.setAdapter(adapter);
+                });
+                btn_groups[i].setVisibility(View.VISIBLE);
             }
         }
 
-        //set group time
-        String timeText = "";
+        //set group type
+        GroupType curGroupType = null;
+
         //find first visible button
         for(int i = 0; i < btn_groups.length;i++){
             if(btn_groups[i].getVisibility()==View.VISIBLE){
-                timeText = (String) btn_groups[i].getText();
+                curGroupType = (GroupType) btn_groups[i].getTag(R.id.group_type);
                 break;
             }
         }
 
+        groupTimeTextView.setText(curGroupType.getGroupName());
 
-        groupTimeTextView.setText(timeText);
-
-        // list contents
-        ListView list = view.findViewById(R.id.studentsPresentList);
-        List<Lesson> lessons = dataManager.getLessonStudentsList(dateOfGroups, timeText);
+        //setup list contents
+        List<Lesson> lessons = dataManager.getLessonList(groupsDate, curGroupType.getTime());
         LessonsAdapter adapter = new LessonsAdapter(getContext(),R.layout.item_students_presentlist, lessons);
-        list.setAdapter(adapter);
+        listOfTodayStudents.setAdapter(adapter);
 
         return view;
     }

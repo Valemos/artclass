@@ -2,6 +2,7 @@ package com.app.artclass;
 
 import android.content.Context;
 import android.os.Build;
+import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
 
@@ -27,15 +28,17 @@ public class UserSettings {
                     "Пятница",
                     "Суббота"));
 
+    private SparseArray<String> balanceButtonIncrements;
+
     private static UserSettings classInstance;
     private Context context;
-    public static UserSettings getInst(Context context){
+    public static UserSettings getInstance(Context context){
         if(classInstance==null){
             classInstance = new UserSettings(context);
         }
         return classInstance;
     }
-    public static UserSettings getInst(){return classInstance;}
+    public static UserSettings getInstance(){return classInstance;}
     public static UserSettings refreshInst(Context context){
         classInstance = new UserSettings(context);
         return classInstance;
@@ -44,6 +47,17 @@ public class UserSettings {
     private UserSettings(Context context) {
         allGroupTypes = new ArrayList<>();
         allAbonements = new ArrayList<>();
+        balanceButtonIncrements = initDefaultBtnIncrements();
+    }
+
+    private SparseArray<String> initDefaultBtnIncrements() {
+        SparseArray<String> out = new SparseArray<>();
+
+        out.put(-100,"-100");
+        out.put(100,"+100");
+        out.put(500,"+500");
+
+        return out;
     }
 
     public static int getDefaultLessonHours() {
@@ -71,7 +85,7 @@ public class UserSettings {
     public List<String> getAbonementLabels() {
         final List<String> allAbonementsStr = new ArrayList<>();
         allAbonements.forEach((e)->{
-            allAbonementsStr.add(e.getAbonementName());
+            allAbonementsStr.add(e.getName());
         });
         return allAbonementsStr;
     }
@@ -81,7 +95,7 @@ public class UserSettings {
     }
 
     public Abonement getAbonement(String name) {
-        return new Abonement(name,1000);
+        return new Abonement(name,1000, 12);
     }
 
     public List<GroupType> getGroupTypes() {
@@ -92,5 +106,18 @@ public class UserSettings {
 
     public int getWeekdayIndex(String weekday) {
         return allWeekdaysStr.indexOf(weekday);
+    }
+
+    public SparseArray<String> getBalanceIncrements() {
+        return balanceButtonIncrements;
+    }
+
+    public GroupType getGroupType(String name) {
+        for (GroupType groupType : allGroupTypes) {
+            if (groupType.getGroupName() == name) {
+                return groupType;
+            }
+        }
+        return null;
     }
 }

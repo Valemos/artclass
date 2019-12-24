@@ -20,11 +20,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.GroupType;
 import com.app.artclass.database.Lesson;
 import com.app.artclass.database.Student;
+import com.app.artclass.recycler_adapters.GroupsRecyclerAdapter;
+import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -99,77 +105,76 @@ public class DialogHandler {
         SpinnerAdapter abonAdapter = new ArrayAdapter<>(mContext,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getInst().getAbonementLabels());
+                UserSettings.getInstance().getAbonementLabels());
         spinnerAbonement.setAdapter(abonAdapter);
 
         // group time spinner
         SpinnerAdapter timeAdapter = new ArrayAdapter<>(mContext,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getInst().getGroupLabels());
+                UserSettings.getInstance().getGroupLabels());
         spinnerTime.setAdapter(timeAdapter);
 
         // weekdays spinner
         final SpinnerAdapter dayAdapter = new ArrayAdapter<>(mContext,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getInst().getWeekdayLabels());
+                UserSettings.getInstance().getWeekdayLabels());
         spinnerDay.setAdapter(dayAdapter);
 
         dialogView.setTag(outerAdapter);
         final View dialogViewFinalized = dialogView;
-        DialogInterface.OnClickListener addStudentListener = new DialogInterface.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                EditText studNameField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_fullname);
-                EditText phoneNumberField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_phone);
-                Spinner spinnerAbonement= ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_abonement);
-                Spinner spinnerDay= ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_day);
-                Spinner spinnerTime= ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_time);
+        DialogInterface.OnClickListener addStudentListener = (dialog, which) -> {
+            EditText studNameField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_fullname);
+            EditText phoneNumberField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_phone);
+            Spinner spinnerAbonement1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_abonement);
+            Spinner spinnerDay1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_day);
+            Spinner spinnerTime1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_time);
 
-                if(studNameField.getText().length()>0) {
-                    String abonementStr = spinnerAbonement.getSelectedItem().toString();
+            if(studNameField.getText().length()>0) {
+                String abonementStr = spinnerAbonement1.getSelectedItem().toString();
 
-                    Student studentNew = new Student(studNameField.getText().toString(), 0, abonementStr,
-                            UserSettings.getInst(mContext).getAbonement(abonementStr).getAbonementAmount()); // get the value of list with abonements
+                Student studentNew = new Student(studNameField.getText().toString(), 0,
+                        UserSettings.getInstance().getAbonement(abonementStr)); // get the value of list with abonements
 
-                    if(phoneNumberField.getText().length()>0){
-                        studentNew.phone_numbers.add(phoneNumberField.getText().toString());
-                    }
-
-                    databaseManager.addStudent(studentNew);
-
-                    // get first day to start adding lessons
-                    // Calendar calendar = Calendar.getInstance();
-                    LocalDate currentDate = LocalDate.now();
-
-                    // we need to start with a first weekday that matches
-                    int weekdayCurrent = currentDate.getDayOfWeek().getValue();
-                    int weekdayChosen = UserSettings.getInst().getWeekdayIndex(spinnerDay.getSelectedItem().toString());
-
-                    int shift = weekdayChosen - weekdayCurrent;
-                    if(shift < 0) shift += 7;
-
-                    currentDate = currentDate.plusDays(shift);
-
-
-                    // setup lessons
-                    int lessonDuration=UserSettings.getDefaultLessonHours();
-                    int hoursToWorkIterator = studentNew.hours_balance;
-                    String timeString = spinnerTime.getSelectedItem().toString();
-
-                    for(int i = hoursToWorkIterator; i > 0; i-=lessonDuration){
-                        databaseManager.addLesson(new Lesson(currentDate, UserSettings.getInst().getGroupTime(timeString), studentNew.getName()));
-                        currentDate = currentDate.plusDays(7);
-                    }
-
-                    StudentsRecyclerAdapter studAdapter = (StudentsRecyclerAdapter) dialogViewFinalized.getTag();
-                    studAdapter.addStudent(studentNew);
-                    studAdapter.notifyDataSetChanged();
-
-                    // init lessons in database
+                if(phoneNumberField.getText().length()>0){
+                    studentNew.getPhoneList().add(phoneNumberField.getText().toString());
                 }
+
+                databaseManager.addStudent(studentNew);
+
+                // get first day to start adding lessons
+                // Calendar calendar = Calendar.getInstance();
+                LocalDate currentDate = LocalDate.now();
+
+                // we need to start with a first weekday that matches
+                int weekdayCurrent = currentDate.getDayOfWeek().getValue();
+                int weekdayChosen = UserSettings.getInstance().getWeekdayIndex(spinnerDay1.getSelectedItem().toString());
+
+                int shift = weekdayChosen - weekdayCurrent;
+                if(shift < 0) shift += 7;
+
+                currentDate = currentDate.plusDays(shift);
+
+
+                // setup lessons
+                int lessonDuration=UserSettings.getDefaultLessonHours();
+                int hoursToWorkIterator = studentNew.getHoursBalance();
+                LocalTime lessonTime = UserSettings.getInstance()
+                                .getGroupTime(
+                                        spinnerTime1.getSelectedItem().toString()
+                                );
+
+                for(int i = hoursToWorkIterator; i > 0; i-=lessonDuration){
+                    databaseManager.addLesson(new Lesson(currentDate, lessonTime, studentNew));
+                    currentDate = currentDate.plusDays(7);
+                }
+
+                StudentsRecyclerAdapter studAdapter = (StudentsRecyclerAdapter) dialogViewFinalized.getTag();
+                studAdapter.addStudent(studentNew);
+                studAdapter.notifyDataSetChanged();
+
+                // init lessons in database
             }
         };
 
@@ -193,7 +198,11 @@ public class DialogHandler {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void CreateNewGroup(final RecyclerView.Adapter outerAdapter, @Nullable Integer date, @Nullable String time, @Nullable List<Student> excludedStudents, @Nullable FragmentManager fragmentManager){
+    public void CreateNewGroup(final RecyclerView.Adapter outerAdapter,
+                               @Nullable LocalDate date,
+                               @Nullable GroupType groupType,
+                               @Nullable List<Student> excludedStudents,
+                               @Nullable FragmentManager fragmentManager){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 
@@ -207,11 +216,11 @@ public class DialogHandler {
         final SpinnerAdapter timeAdapter = new ArrayAdapter<>(mContext,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getGroupLabels());
+                UserSettings.getInstance().getGroupLabels());
         spinnerTime.setAdapter(timeAdapter);
 
-        if(time != null) {
-            spinnerTime.setSelection(UserSettings.getGroupLabels().indexOf(time));
+        if(groupType.getGroupName() != null) {
+            spinnerTime.setSelection(UserSettings.getInstance().getGroupLabels().indexOf(groupType.getGroupName()));
             spinnerTime.setClickable(false);
             spinnerTime.setFocusable(View.NOT_FOCUSABLE);
             spinnerTime.setBackgroundColor(mContext.getColor(R.color.colorNonAccent));
@@ -220,8 +229,8 @@ public class DialogHandler {
 
         TextView datePickerView = dialogView.findViewById(R.id.dialogcreate_datepicker_text);
         String datePickerDateText;
-        if(date==null) {
-            datePickerDateText = Converters.getDateString(LocalDate.now(), UserSettings.dateSeparator);
+        if(date == null) {
+            datePickerDateText = LocalDate.now().format(DatabaseConverters.getDateFormatter());
             datePickerView.setOnClickListener(new View.OnClickListener() {
 
                 private long mLastClickTime = 0;
@@ -235,13 +244,15 @@ public class DialogHandler {
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
 
-                    int date = Converters.parceDate(((TextView)textView).getText().toString(), mContext.getString(R.string.date_separator));
+                    LocalDate date = LocalDate.parse(
+                            ((TextView)textView).getText().toString(),
+                            DatabaseConverters.getDateFormatter());
                     DialogHandler dialogHandler = new DialogHandler(mContext);
                     dialogHandler.DatePicker((TextView) textView, date);
                 }
             });
         }else {
-            datePickerDateText = Converters.getDateString(date, UserSettings.dateSeparator);
+            datePickerDateText = date.format(DatabaseConverters.getDateFormatter());
             datePickerView.setClickable(false);
             datePickerView.setFocusable(false);
             datePickerView.setBackgroundColor(mContext.getColor(R.color.colorNonAccent));
@@ -256,7 +267,7 @@ public class DialogHandler {
 
         List<Student> studentList = databaseManager.getAllStudents();
 
-        if(date != null && time != null && excludedStudents != null && excludedStudents.size()>0){
+        if(date != null && excludedStudents != null && excludedStudents.size()>0){
             studentList.removeAll(excludedStudents);
         }
 
@@ -281,15 +292,16 @@ public class DialogHandler {
                 Spinner timeSpinner = ((AlertDialog)dialog).findViewById(R.id.dialogcreate_spinner_time);
                 StudentsRecyclerAdapter studentsAdapter = (StudentsRecyclerAdapter)((RecyclerView)((AlertDialog)dialog).findViewById(R.id.dialogcreate_select_students_list)).getAdapter();
 
-                int groupDate = Converters.parceDate(dateText.getText().toString(),UserSettings.dateSeparator);
-                String timeStr = (String) timeSpinner.getSelectedItem();
+                LocalDate groupDate = LocalDate.parse(dateText.getText().toString(), DatabaseConverters.getDateFormatter());
+                GroupType groupType = UserSettings.getInstance().getGroupType((String) timeSpinner.getSelectedItem());
 
-                databaseManager.addGroup(groupDate, timeStr, studentsAdapter.getSelectedStudentNames());
+                List<Student> selectedStudsList = databaseManager.getStudentsForNames(studentsAdapter.getSelectedStudentNames());
+                databaseManager.addGroup(LocalDateTime.of(groupDate,groupType.getTime()), selectedStudsList);
 
                 try {
-                    ((GroupsRecyclerAdapter) outerAdapter).addGroup(groupDate, timeStr);
+                    ((GroupsRecyclerAdapter) outerAdapter).addGroup(groupDate,groupType);
                 }catch (ClassCastException e){
-                    ((StudentsRecyclerAdapter)outerAdapter).addStudents(databaseManager.getStudentsForNames(studentsAdapter.getSelectedStudentNames(),databaseManager.getReadableDatabase()));
+                    ((StudentsRecyclerAdapter)outerAdapter).addStudents(selectedStudsList);
                 }
             }
         };
@@ -300,26 +312,25 @@ public class DialogHandler {
                 .create().show();
     }
 
-    private void DatePicker(final TextView textView, int date) {
+    private void DatePicker(final TextView textView, LocalDate date) {
 
-        final DatePickerDialog datePickerDialog = getDatePickerDialog(textView.getContext(),date,null);
+        final DatePickerDialog datePickerDialog = getDatePickerDialog(textView.getContext(), date,null);
         datePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.label_OK), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                textView.setText(
-                        Converters.getDateString(
-                                datePickerDialog.getDatePicker().getYear(),
-                                datePickerDialog.getDatePicker().getMonth(),
-                                datePickerDialog.getDatePicker().getDayOfMonth(),
-                                UserSettings.dateSeparator));
+                textView.setText(LocalDate.of(
+                        datePickerDialog.getDatePicker().getYear(),
+                        datePickerDialog.getDatePicker().getMonth(),
+                        datePickerDialog.getDatePicker().getDayOfMonth())
+                        .format(DatabaseConverters.getDateFormatter()));
             }
         });
         datePickerDialog.show();
     }
 
-    public DatePickerDialog getDatePickerDialog(Context context,int curDate, DatePickerDialog.OnDateSetListener listenerOnDate){
+    public DatePickerDialog getDatePickerDialog(Context context, LocalDate curDate, DatePickerDialog.OnDateSetListener listenerOnDate){
         if(context == null)
             context = mContext;
-        return new DatePickerDialog(context, listenerOnDate, Converters.extrYear(curDate), Converters.extrMonth(curDate), Converters.extrDay(curDate));
+        return new DatePickerDialog(context, listenerOnDate, curDate.getYear(), curDate.getMonthValue(), curDate.getDayOfMonth());
     }
 }

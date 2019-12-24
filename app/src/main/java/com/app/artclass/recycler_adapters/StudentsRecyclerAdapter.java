@@ -1,5 +1,6 @@
-package com.app.artclass;
+package com.app.artclass.recycler_adapters;
 
+import android.os.Build;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,18 +9,24 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.R;
+import com.app.artclass.database.Lesson;
+import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.database.DatabaseManager;
 import com.app.artclass.database.Student;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 // code for opening student card
 //
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder> {
 
     private Integer nameViewId;
@@ -147,7 +154,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         }
     }
 
-    public void deleteCheckedFromLesson(int date, String time){
+    public void deleteCheckedFromLesson(LocalDateTime dateTime){
         DatabaseManager databaseManager = DatabaseManager.getInstance();
         List<Student> toDelete = new ArrayList<>();
         for (int i = 0; i < studentList.size(); i++){
@@ -156,10 +163,9 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
         }
 
-        for (Student st : toDelete) {
-            databaseManager.deleteStudentFromLesson(date , time, st);
-            studentList.remove(st);
-        }
+
+        databaseManager.deleteLessonsForStudentsList(dateTime, toDelete);
+        studentList.removeAll(toDelete);
 
         itemCheckedStates = new SparseBooleanArray();
         notifyDataSetChanged();
@@ -174,10 +180,8 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
         }
 
-        for (Student st : toDelete) {
-            databaseManager.deleteStudent(st);
-            studentList.remove(st);
-        }
+        databaseManager.deleteStudents(toDelete);
+        studentList.remove(toDelete);
 
         itemCheckedStates = new SparseBooleanArray();
         notifyDataSetChanged();
@@ -187,7 +191,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         List<String> selected = new ArrayList<>();
         for(int i = 0; i < studentList.size(); i++){
             if(itemCheckedStates.get(i,false)){
-                selected.add(studentList.get(i).getFullName());
+                selected.add(studentList.get(i).getName());
             }
         }
 

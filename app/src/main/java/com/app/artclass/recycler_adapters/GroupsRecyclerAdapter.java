@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.recycler_adapters;
 
 import android.content.Context;
 import android.os.Build;
@@ -13,10 +13,18 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.DialogHandler;
+import com.app.artclass.UserSettings;
+import com.app.artclass.database.GroupType;
+import com.app.artclass.fragments.GroupRedactorFragment;
+import com.app.artclass.R;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.DatabaseManager;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -43,17 +51,17 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
     }
 
-    public void addGroup(int date, String timeLabel){
-        GroupData groupDataNew = new GroupData(, date, timeLabel);
+    public void addGroup(LocalDate dateTime, GroupType groupType){
+        GroupData groupDataNew = new GroupData(dateTime, groupType);
 
-        boolean isExists = false;
+        boolean exists = false;
         for (GroupData data:groupDataList) {
             if (data.equals(groupDataNew)){
-                isExists=true;
+                exists=true;
             }
         }
 
-        if(!isExists)groupDataList.add(groupDataNew);
+        if(!exists)groupDataList.add(groupDataNew);
 
         groupDataList.sort(GroupsRecyclerAdapter.GroupData.getGroupsListComparator());
         this.notifyDataSetChanged();
@@ -84,8 +92,9 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     public class GroupViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         TextView dateTextField;
-        int dateInteger;
         TextView timeTextField;
+        LocalDate groupDate;
+        GroupType groupType;
 
         public GroupViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -106,7 +115,15 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                             " for " + groupDataList.get(deletePos).dateLabel +" "+ timeTextField.getText(),
                     () -> {
                         try {
-                            databaseManager.deleteLessons(dateInteger, timeTextField.getText().toString());
+                            databaseManager.deleteLessons(
+                                    LocalDateTime.of(
+                                    groupDate,
+                                    groupDataList
+                                            .get(deletePos)
+                                            .groupType
+                                            .getTime()
+                                    )
+                            );
                         }catch (Exception e){
                             e.printStackTrace();
                         }finally {
@@ -122,9 +139,10 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
         @Override
         public void onClick(View v) {
 
-            String timeText = timeTextField.getText().toString();
+            GroupType curGroupType = UserSettings.getInstance().getGroupType(timeTextField.getText().toString());
             GroupRedactorFragment groupRedactorFragment =
-                    new GroupRedactorFragment(dateInteger, timeText, fragmentManager);
+                    new GroupRedactorFragment(groupDate, curGroupType, fragmentManager);
+
             fragmentManager.beginTransaction().replace(R.id.contentmain, groupRedactorFragment).addToBackStack(null).commit();
         }
 
@@ -133,8 +151,8 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                 dateTextField.setText(groupDataList.get(position).dateLabel);
                 dateTextField.setVisibility(View.VISIBLE);
             }else {
-                if (groupDataList.get(position - 1).dateTime !=
-                    groupDataList.get(position).dateTime)
+                if (groupDataList.get(position - 1).dateLabel !=
+                    groupDataList.get(position).dateLabel)
                 {
                     dateTextField.setText(groupDataList.get(position).dateLabel);
                     dateTextField.setVisibility(View.VISIBLE);
@@ -144,7 +162,7 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
             }
 
             timeTextField.setText(groupDataList.get(position).timeLabel);
-            dateInteger = groupDataList.get(position).dateTime;
+            groupDate = groupDataList.get(position).date;
         }
 
     }
@@ -153,23 +171,24 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
         private String dateLabel;
         private String timeLabel;
-        private LocalDateTime dateTime;
+        private LocalDate date;
+        private GroupType groupType;
 
         public boolean equals(@Nullable GroupData obj) {
             assert obj != null;
-            return (dateTime ==obj.dateTime && timeLabel.equals(obj.timeLabel));
+            return (date ==obj.date && groupType==obj.groupType);
         }
 
-        public GroupData(LocalDateTime dateTime) {
-            this.dateTime = dateTime;
-            this.dateLabel = dateTime.format(DatabaseConverters.getDateFormatter());
-            this.timeLabel = dateTime.format(DatabaseConverters.getTimeFormatter());
+        public GroupData(LocalDate date, GroupType groupType) {
+            this.date = date;
+            this.dateLabel = date.format(DatabaseConverters.getDateFormatter());
+            this.timeLabel = groupType.getGroupName();
         }
 
         private static final Comparator<GroupData> groupsListComparator = new Comparator<GroupData>() {
             @Override
             public int compare(GroupData o1, GroupData o2) {
-                return o1.dateTime.compareTo(o2.dateTime);
+                return o1.date.compareTo(o2.date);
             }
         };
 
@@ -182,8 +201,8 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
             return dateLabel;
         }
 
-        public LocalDateTime getDate() {
-            return dateTime;
+        public LocalDate getDate() {
+            return date;
         }
 
         public void setDateLabel(String dateLabel) {

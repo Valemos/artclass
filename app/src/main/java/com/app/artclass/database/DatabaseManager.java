@@ -2,7 +2,6 @@ package com.app.artclass.database;
 
 import android.content.Context;
 import android.os.Build;
-import android.util.LruCache;
 
 import androidx.annotation.RequiresApi;
 import androidx.room.Room;
@@ -10,6 +9,7 @@ import androidx.room.Room;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -58,12 +58,94 @@ public class DatabaseManager{
 
     public boolean isGroupExists(LocalDate date, LocalTime time) {
         List<Lesson> lsn = databaseStudents.lessonDao().getForDateTime(LocalDateTime.of(date,time));
-
-        return (lsn != null || lsn.size()>0);
+        return (lsn != null && lsn.size()>0);
     }
 
     public void deleteLessons(LocalDateTime dateTime) {
         databaseStudents.lessonDao().delete(dateTime);
+    }
+
+    public List<Lesson> getLessonList(LocalDate date, LocalTime time){
+        return getLessonList(LocalDateTime.of(date,time));
+    }
+
+    public List<Lesson> getLessonList(LocalDateTime dateTime) {
+        return databaseStudents.lessonDao().getForDateTime(dateTime);
+    }
+
+    public List<Student> getStudentsList(LocalDate date, LocalTime time){return getStudentsList(LocalDateTime.of(date,time));}
+
+    public List<Student> getStudentsList(LocalDateTime dateTime) {
+        List<Lesson> lessons = databaseStudents.lessonDao().getForDateTime(dateTime);
+
+        List<Student> studs = new ArrayList<>();
+        lessons.forEach((e)->{
+            studs.add(databaseStudents.studentDao().get(e.getStudentId()));
+        });
+
+        return studs;
+    }
+
+    public List<Student> getAllStudents() {
+        return databaseStudents.studentDao().getAll();
+    }
+
+    public void addGroup(LocalDateTime groupDate, List<Student> students) {
+
+        students.forEach((st)->{
+            databaseStudents.lessonDao().insert(new Lesson(groupDate, st));
+        });
+
+    }
+
+    public List<Student> getStudentsForNames(List<String> names) {
+        List<Student> studs = new ArrayList<>();
+
+        names.forEach((name)->{
+            studs.add(databaseStudents.studentDao().get(name));
+        });
+
+        return studs;
+    }
+
+    public void update(Student student) {
+        databaseStudents.studentDao().update(student);
+    }
+
+    public void update(Lesson lesson) {
+        databaseStudents.lessonDao().update(lesson);
+    }
+
+    public void delete(Student student) {
+        databaseStudents.studentDao().delete(student);
+    }
+
+    public List<Lesson> getLessonList(Student student) {
+        return databaseStudents.lessonDao().getForStudentId(student.getIdStudent());
+    }
+
+    public Student getStudent(int student_id) {
+        return databaseStudents.studentDao().get(student_id);
+    }
+
+    public void resetDatabase() {
+        databaseStudents.clearAllTables();
+    }
+
+    public void deleteLessonsForStudentsList(LocalDateTime dateTime, List<Student> studentList) {
+        studentList.forEach(student -> {
+            databaseStudents.lessonDao().delete(dateTime,student.getIdStudent());
+        });
+    }
+
+    public void initDefaultSettings() {
+        System.out.println("init");
+    }
+
+    public void deleteStudents(List<Student> studentList) {
+        studentList.forEach(student -> {
+            databaseStudents.studentDao().delete(student);
+        });
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)

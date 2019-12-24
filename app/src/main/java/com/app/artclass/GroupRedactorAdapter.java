@@ -16,10 +16,14 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.Lesson;
+import com.app.artclass.database.Student;
+import com.app.artclass.fragments.StudentCard;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.OnClickListener, View.OnLongClickListener, CompoundButton.OnCheckedChangeListener {
 
     private FragmentManager fragmentManager;
@@ -50,7 +54,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     private void refreshElementView(View view, Lesson lesson){
         TextView nameView = view.findViewById(R.id.name_view);
         TextView hoursTextView = view.findViewById(R.id.hours_left_view);
-        nameView.setText(lesson.getStudentName());
+        nameView.setText(lesson.getName());
         hoursTextView.setText(String.valueOf(lesson.getHoursWorked()));
     }
 
@@ -65,7 +69,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
         TextView hoursTextView = convertView.findViewById(R.id.hours_left_view);
         CheckBox checkBox = convertView.findViewById(R.id.checkBox);
 
-        nameView.setText(String.valueOf(lessonsList.get(position).getStudentName()));
+        nameView.setText(lessonsList.get(position).getName());
         hoursTextView.setText(String.valueOf(lessonsList.get(position).getHoursWorked()));
 
         convertView.setOnLongClickListener(this);

@@ -2,29 +2,41 @@ package com.app.artclass.database;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Entity(indices = {@Index(value = {"name"}, unique = true)})
+@Entity(indices = {@Index(value = {"name","idStudent"}, unique = true)})
 public class Student {
 
     @PrimaryKey(autoGenerate = true)
-    public int id;
+    private int idStudent;
 
     @NonNull
-    public String name;
+    private String name;
 
-    public List<String> phone_numbers;
+    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int balance, int hoursBalance) {
+        this.name = name;
+        this.phoneList = phoneList;
+        this.abonementType = abonementType;
+        this.balance = balance;
+        this.hoursBalance = hoursBalance;
+    }
 
-    public int balance;
+    @TypeConverters({DatabaseConverters.class})
+    private List<String> phoneList;
 
-    public String abonement_type;
+    @Embedded
+    private Abonement abonementType;
 
-    public int hours_balance;
+    private int balance;
+
+    private int hoursBalance;
 
     @Override
     public boolean equals(@Nullable Object obj) {
@@ -47,16 +59,20 @@ public class Student {
         }
     };
 
-    public Student(String fullName, int balance, String abonementType, int hoursToWork) {
+    public Student(String fullName, int balance, Abonement abonementType) {
         this.name = fullName;
-        this.balance = balance;
+        this.setBalance(balance);
 
-        this.abonement_type = abonementType;
-        this.hours_balance = hoursToWork;
+        this.setAbonementType(abonementType);
+        this.hoursBalance = abonementType.getHours();
+    }
+
+    public void setHoursBalance(int hoursBalance) {
+        this.hoursBalance = hoursBalance;
     }
 
     public int getHoursBalance() {
-        return hours_balance;
+        return hoursBalance;
     }
 
     @NonNull
@@ -64,7 +80,43 @@ public class Student {
         return name;
     }
 
+    public void setName(@NonNull String name) {
+        this.name = name;
+    }
+
+    public int getIdStudent() {
+        return idStudent;
+    }
+
+    public void setIdStudent(int idStudent) {
+        this.idStudent = idStudent;
+    }
+
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+
     public int getBalance() {
         return balance;
+    }
+
+    public void incrementBalance(int incr){
+        balance += incr;
+    }
+
+    public List<String> getPhoneList() {
+        return phoneList;
+    }
+
+    public Abonement getAbonementType() {
+        return abonementType;
+    }
+
+    public void setAbonementType(Abonement abonementType) {
+        this.abonementType = abonementType;
+    }
+
+    public void setPhoneList(List<String> phoneList) {
+        this.phoneList = phoneList;
     }
 }

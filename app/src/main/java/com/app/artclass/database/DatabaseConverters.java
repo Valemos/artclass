@@ -5,13 +5,21 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 import androidx.room.TypeConverter;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class DatabaseConverters {
+
+    static Gson gson = new Gson();
 
     public static DateTimeFormatter getTimeFormatter() {
         return timeFormatter;
@@ -58,4 +66,23 @@ public class DatabaseConverters {
     public LocalDateTime toLocalDateTime(String dateTime){
         return LocalDateTime.parse(dateTime,dateTimeFormatter);
     }
+
+    // list converter
+    @TypeConverter
+    public List<String> stringToStrList(String data) {
+        if (data == null) {
+            return Collections.emptyList();
+        }
+
+        Type listType = new TypeToken<List<String>>() {}.getType();
+
+        return gson.fromJson(data, listType);
+    }
+
+    @TypeConverter
+    public String strListToString(List<String> list) {
+        return gson.toJson(list);
+    }
+
+    // Abonement converter
 }

@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 
 import android.os.Build;
@@ -15,19 +15,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.app.artclass.DialogHandler;
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.GroupType;
+import com.app.artclass.database.Lesson;
+import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupRedactorFragment extends Fragment {
 
-    private int dateValue;
-    private String timeValue;
+    private LocalDate dateValue;
+    private GroupType groupType;
     private List<Lesson> lessonList;
     private FragmentManager fragmentManager;
     private DatabaseManager databaseManager;
@@ -36,11 +47,11 @@ public class GroupRedactorFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public GroupRedactorFragment(int date, String time, FragmentManager fragmentManager) {
+    public GroupRedactorFragment(LocalDate date, GroupType groupType, FragmentManager fragmentManager) {
         this.dateValue = date;
-        this.timeValue = time;
+        this.groupType = groupType;
         this.databaseManager = DatabaseManager.getInstance();
-        this.lessonList = databaseManager.getLessonStudentsList(date, time);
+        this.lessonList = databaseManager.getLessonList(LocalDateTime.of(date,groupType.getTime()));
         this.fragmentManager = fragmentManager;
     }
 
@@ -55,13 +66,17 @@ public class GroupRedactorFragment extends Fragment {
         TextView dateText = view.findViewById(R.id.date_redactor_view);
         TextView timeText = view.findViewById(R.id.time_redactor_view);
 
-        dateText.setText(
-                String.valueOf(Converters.extrDay(dateValue))+getString(R.string.date_separator) +
-                        String.valueOf(Converters.extrMonth(dateValue))+getString(R.string.date_separator) +
-                        String.valueOf(Converters.extrYear(dateValue)));
-        timeText.setText(timeValue);
+        dateText.setText(dateValue.format(DatabaseConverters.getDateFormatter()));
+        timeText.setText(groupType.getGroupName());
 
-        StudentsRecyclerAdapter adapter = new StudentsRecyclerAdapter(R.layout.item_group_redactor, R.id.name_view, R.id.hours_left_view, databaseManager.getStudentsForLesson(dateValue,timeValue), fragmentManager);
+        StudentsRecyclerAdapter adapter =
+                new StudentsRecyclerAdapter(
+                        R.layout.item_group_redactor,
+                        R.id.name_view,
+                        R.id.hours_left_view,
+                        databaseManager.getStudentsList(dateValue, groupType.getTime()),
+                        fragmentManager);
+
         RecyclerView list = view.findViewById(R.id.group_redactor_list);
         list.setLayoutManager(new LinearLayoutManager(this.getContext()));
         list.setAdapter(adapter);
@@ -72,7 +87,7 @@ public class GroupRedactorFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 DialogHandler dialogHandler = new DialogHandler(getContext());
-                dialogHandler.CreateNewGroup((RecyclerView.Adapter) v.getTag(), dateValue, timeValue, ((StudentsRecyclerAdapter) v.getTag()).getItems(), null);
+                dialogHandler.CreateNewGroup((RecyclerView.Adapter) v.getTag(), dateValue, groupType, ((StudentsRecyclerAdapter) v.getTag()).getItems(), null);
             }
         });
         btn_add_dialog.setTag(adapter);
@@ -82,7 +97,7 @@ public class GroupRedactorFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 StudentsRecyclerAdapter adapter = (StudentsRecyclerAdapter) v.getTag();
-                adapter.deleteCheckedFromLesson(dateValue, timeValue);
+                adapter.deleteCheckedFromLesson(LocalDateTime.of(dateValue,groupType.getTime()));
             }
         });
         btn_delete_selected.setTag(adapter);

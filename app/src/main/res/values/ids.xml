@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<item name="tag_spinner_time" type="id"/>
+<item name="tag_spinner_time" type="id" />
 <item name="tag_date_picker" type="id"/>
 <item name="tag_adapter_objects" type="id"/>
     <item name="number" type="id" />
+    <item name="group_type" type="id" />
+    <item name="lessons_list" type="id" />
 </resources>

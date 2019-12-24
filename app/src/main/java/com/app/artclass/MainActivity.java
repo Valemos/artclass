@@ -1,9 +1,11 @@
 package com.app.artclass;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -12,8 +14,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.fragments.AllStudentsListFragment;
+import com.app.artclass.fragments.GroupListFragment;
 import com.google.android.material.navigation.NavigationView;
 
+import java.time.LocalDate;
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -35,8 +42,8 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         studentDataManager = DatabaseManager.getInstance(this.getBaseContext());
 
-        //the start page
-        StudentsPresentList list = new StudentsPresentList(studentDataManager);
+        //start page
+        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.contentmain, list).commit();
 
@@ -97,7 +104,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if(id == R.id.nav_home){
 
-            StudentsPresentList listFragment = new StudentsPresentList(studentDataManager);
+            StudentsPresentList listFragment = new StudentsPresentList();
             fragmentManager.beginTransaction().replace(R.id.contentmain, listFragment).commit();
 
         }else if (id == R.id.nav_groups) {

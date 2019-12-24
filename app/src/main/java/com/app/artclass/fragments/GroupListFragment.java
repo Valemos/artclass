@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -12,9 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.app.artclass.DialogHandler;
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.GroupType;
+import com.app.artclass.recycler_adapters.GroupsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +55,7 @@ public class GroupListFragment extends Fragment {
 
 
         //form list of lists for tagging the groups
-        List<String> groupTimeLabels = UserSettings.getInst(getContext()).getGroupLabels();
+        List<GroupType> groupTypes = UserSettings.getInstance().getGroupTypes();
 
         //how much days to get
         //get groups for that days
@@ -62,9 +66,9 @@ public class GroupListFragment extends Fragment {
         for (int i = 0; currentDate.isBefore(endDate); i++) {
 
             //check if group exists for current day
-            for (String groupTimeLabel : groupTimeLabels) {
-                if (databaseManager.isGroupExists(currentDate, groupTimeLabel)) {
-                    groupsData.add(new GroupsRecyclerAdapter.GroupData(currentDate, groupTimeLabel));
+            for (GroupType curGroupType: groupTypes) {
+                if (databaseManager.isGroupExists(currentDate,curGroupType.getTime())) {
+                    groupsData.add(new GroupsRecyclerAdapter.GroupData(currentDate, curGroupType));
                 }
             }
             currentDate = currentDate.plusDays(1);

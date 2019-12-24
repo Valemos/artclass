@@ -1,6 +1,7 @@
 package com.app.artclass;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,16 +11,19 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.Lesson;
+import com.app.artclass.database.Student;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class
-LessonsAdapter extends LocalAdapter<Lesson> {
+@RequiresApi(api = Build.VERSION_CODES.O)
+public class LessonsAdapter extends LocalAdapter<Lesson> {
 
     private final Context mContext;
     private final int mResource; // layout/item_students_presentlist.xml
@@ -39,7 +43,7 @@ LessonsAdapter extends LocalAdapter<Lesson> {
         lessonStudentPairList = new ArrayList<>();
         for (Lesson lessonIter : objects) {
             lessonStudentPairList.add(
-                    new Pair<>(lessonIter, databaseManager.getStudent(lessonIter.getStudentName())));
+                    new Pair<>(lessonIter, databaseManager.getStudent(lessonIter.getName())));
         }
     }
 
@@ -68,11 +72,9 @@ LessonsAdapter extends LocalAdapter<Lesson> {
         btn_increment.setOnClickListener(incrementListener);
 
         nameView.setText(lessonStudentPairList.get(position).second
-                .getFullName().split(" ", 2)[0]);
-        hoursTextView.setText(String.valueOf(lessonStudentPairList.get(position).second
-                .getHoursToWork()) + " h");
-        hoursWorkedTextView.setText(String.valueOf(lessonStudentPairList.get(position).first
-                .getHoursWorked()) + " h");
+                .getName().split(" ", 2)[0]);
+        hoursTextView.setText(String.format("%d h", lessonStudentPairList.get(position).second.getHoursBalance()));
+        hoursWorkedTextView.setText(String.format("%d h", lessonStudentPairList.get(position).first.getHoursWorked()));
 
         return convertView;
     }
@@ -108,7 +110,7 @@ LessonsAdapter extends LocalAdapter<Lesson> {
         TextView hoursLeftText = ((View) view.getParent().getParent()).findViewById(R.id.hours_left_view);
         TextView hoursWorkedText = ((View) view.getParent().getParent()).findViewById(R.id.hours_worked_view);
 
-        hoursLeftText.setText(String.format(Locale.getDefault(), "%d h", lessonStudent.second.getHoursToWork()));
+        hoursLeftText.setText(String.format(Locale.getDefault(), "%d h", lessonStudent.second.getHoursBalance()));
         hoursWorkedText.setText(String.format(Locale.getDefault(), "%d h", lessonStudent.first.getHoursWorked()));
     }
 
@@ -116,7 +118,7 @@ LessonsAdapter extends LocalAdapter<Lesson> {
         Lesson lesson = lessonStudentPair.first;
         Student student = lessonStudentPair.second;
 
-        int finHoursToWork = student.getHoursToWork() - howMuchWorked;
+        int finHoursToWork = student.getHoursBalance() - howMuchWorked;
         int finHoursWorkedToday = lesson.getHoursWorked() + howMuchWorked;
 
         if(finHoursToWork <= 0){
@@ -130,13 +132,13 @@ LessonsAdapter extends LocalAdapter<Lesson> {
         }
 
         if (finHoursWorkedToday < 0){
-            finHoursToWork = student.getHoursToWork();
+            finHoursToWork = student.getHoursBalance();
             finHoursWorkedToday = 0;
         }
 
         lesson.setHoursWorked(finHoursWorkedToday);
-        student.setHoursToWork(finHoursToWork);
-        databaseManager.updateStudent(student);
-        databaseManager.updateLesson(lesson);
+        student.setHoursBalance(finHoursToWork);
+        databaseManager.update(student);
+        databaseManager.update(lesson);
     }
 }

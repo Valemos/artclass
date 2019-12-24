@@ -1,8 +1,10 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,7 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.app.artclass.DialogHandler;
+import com.app.artclass.R;
 import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.Student;
+import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -21,6 +27,8 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
+
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class AllStudentsListFragment extends Fragment {
 
 
