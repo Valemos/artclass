@@ -10,6 +10,8 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.TypeConverters;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,13 +23,12 @@ import static androidx.room.ForeignKey.CASCADE;
 @Entity(
         foreignKeys = @ForeignKey(
         entity = Student.class,
-        parentColumns = "idStudent",
-        childColumns = "idStudent",
+        parentColumns = "name",
+        childColumns = "studentName",
         onDelete = CASCADE),
 
-        primaryKeys = {"dateTime","idStudent"},
-
-        indices = @Index(value = {"idStudent"})
+        primaryKeys = {"dateTime"},
+        indices = @Index(value = {"dateTime","studentName"},unique = true)
 )
 public class Lesson {
 
@@ -35,47 +36,35 @@ public class Lesson {
     @TypeConverters({DatabaseConverters.class})
     private LocalDateTime dateTime;
 
-    @ColumnInfo(name = "idStudent")
-    private int studentId;
+    private String studentName;
 
     private int hoursWorked;
 
-    public Lesson(LocalDateTime dateTime, int studentId, int hoursWorked) {
+    public Lesson(@NotNull LocalDateTime dateTime, String studentName, int hoursWorked) {
         this.dateTime = dateTime;
-        this.studentId = studentId;
+        this.studentName = studentName;
         this.hoursWorked = hoursWorked;
     }
 
+    public Lesson(LocalDate date, String studentName, GroupType groupType){
+        this(LocalDateTime.of(date,groupType.getTime()), studentName, 0);
+    }
+
     public Lesson(LocalDate fullDate, LocalTime time, Student student) {
-        this(LocalDateTime.of(fullDate,time), student.getIdStudent(), 0);
+        this(LocalDateTime.of(fullDate,time), student.getName(), 0);
     }
 
     public Lesson(LocalDateTime dateTime, Student student) {
-        this(dateTime, student.getIdStudent(), 0);
+        this(dateTime, student.getName(), 0);
     }
 
     public Lesson(LocalDateTime dateTime, Student student, int hoursWorked) {
-        this(dateTime, student.getIdStudent(), hoursWorked);
+        this(dateTime, student.getName(), hoursWorked);
     }
 
+    @NotNull
     public LocalDateTime getDateTime() {
         return dateTime;
-    }
-
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
-    }
-
-    public int getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(int student_id) {
-        this.studentId = student_id;
-    }
-
-    public String getName(){
-        return DatabaseManager.getInstance().getStudent(studentId).getName();
     }
 
     public int getHoursWorked() {
@@ -84,5 +73,9 @@ public class Lesson {
 
     public void setHoursWorked(int hours_worked) {
         this.hoursWorked = hours_worked;
+    }
+
+    public String getStudentName() {
+        return studentName;
     }
 }

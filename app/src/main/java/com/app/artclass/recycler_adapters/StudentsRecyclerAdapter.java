@@ -10,13 +10,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.R;
-import com.app.artclass.database.Lesson;
+import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.StudentCard;
-import com.app.artclass.database.DatabaseManager;
 import com.app.artclass.database.Student;
 
 import java.time.LocalDateTime;
@@ -27,10 +28,9 @@ import java.util.List;
 //
 
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder> {
+public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder>{
 
     private Integer nameViewId;
-
     private Integer parameterTextId;
     private Integer elementLayout;
     private FragmentManager fragmentManager;
@@ -53,14 +53,14 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     }
     //handle null fr manager
 
-    public StudentsRecyclerAdapter(Integer elementLayout, Integer nameViewId, Integer parameterTextId, List<Student> data, FragmentManager fragmentManager) {
+    public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, List<Student> data) {
         studentList = data;
         studentList.sort(Student.getStudentComparator());
         this.elementLayout = elementLayout;
         this.nameViewId = nameViewId;
         this.parameterTextId = parameterTextId;
 
-        this.fragmentManager = fragmentManager;
+        this.fragmentManager = fragment.getFragmentManager();
     }
 
     @NonNull
@@ -106,14 +106,11 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
 
             if(fragmentManager != null) {
-                nameView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String studentName = ((TextView)v).getText().toString();
-                        Student student = DatabaseManager.getInstance(v.getContext()).getStudent(studentName);
-                        StudentCard studentCard = new StudentCard(student);
-                        fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
-                    }
+                nameView.setOnClickListener(v -> {
+                    String studentName = ((TextView)v).getText().toString();
+
+                    StudentCard studentCard = new StudentCard(studentName);
+                    fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
                 });
             }
 
@@ -155,7 +152,6 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     }
 
     public void deleteCheckedFromLesson(LocalDateTime dateTime){
-        DatabaseManager databaseManager = DatabaseManager.getInstance();
         List<Student> toDelete = new ArrayList<>();
         for (int i = 0; i < studentList.size(); i++){
             if(itemCheckedStates.get(i,false)){
@@ -164,7 +160,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         }
 
 
-        databaseManager.deleteLessonsForStudentsList(dateTime, toDelete);
+        StudentsRepository.getInstance().deleteLessonsForStudentsList(dateTime, toDelete);
         studentList.removeAll(toDelete);
 
         itemCheckedStates = new SparseBooleanArray();
@@ -172,7 +168,6 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     }
 
     public void deleteCheckedStudents(){
-        DatabaseManager databaseManager = DatabaseManager.getInstance();
         List<Student> toDelete = new ArrayList<>();
         for (int i = 0; i < studentList.size(); i++){
             if(itemCheckedStates.get(i,false)){
@@ -180,7 +175,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
         }
 
-        databaseManager.deleteStudents(toDelete);
+        StudentsRepository.getInstance().deleteStudents(toDelete);
         studentList.remove(toDelete);
 
         itemCheckedStates = new SparseBooleanArray();

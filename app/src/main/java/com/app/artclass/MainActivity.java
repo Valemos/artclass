@@ -1,5 +1,6 @@
 package com.app.artclass;
 
+import android.app.Application;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,7 +14,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 
-import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.AllStudentsListFragment;
 import com.app.artclass.fragments.GroupListFragment;
 import com.google.android.material.navigation.NavigationView;
@@ -24,7 +25,6 @@ import java.time.LocalDate;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private DatabaseManager studentDataManager;
     private FragmentManager fragmentManager;
 
     @Override
@@ -40,17 +40,19 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-        studentDataManager = DatabaseManager.getInstance(this.getBaseContext());
+
+        // must be initialised
+        // before using singleton classes
+        initSingltones(getApplication());
+
+        StudentsRepository.getInstance().resetDatabase();
+
+        StudentsRepository.getInstance().initDefaultSettings();
 
         //start page
         StudentsPresentList list = new StudentsPresentList(LocalDate.now());
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.contentmain, list).commit();
-
-
-        studentDataManager.resetDatabase();
-
-        studentDataManager.initDefaultSettings();
 
         // test place
 
@@ -64,6 +66,11 @@ public class MainActivity extends AppCompatActivity
 
 //        AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment(fragmentManager);
 //        fragmentManager.beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
+    }
+
+    private void initSingltones(Application application) {
+        StudentsRepository.getInstance(application);
+        DialogHandler.getInstance(application);
     }
 
     @Override
@@ -109,12 +116,12 @@ public class MainActivity extends AppCompatActivity
 
         }else if (id == R.id.nav_groups) {
 
-            GroupListFragment groupListFragment = new GroupListFragment(fragmentManager);
+            GroupListFragment groupListFragment = new GroupListFragment();
             fragmentManager.beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
 
         }else if (id == R.id.nav_allstudents){
 
-            AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment(fragmentManager);
+            AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
             fragmentManager.beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
 
         }

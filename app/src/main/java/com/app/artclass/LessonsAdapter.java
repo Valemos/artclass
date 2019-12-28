@@ -1,5 +1,6 @@
 package com.app.artclass;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.util.Pair;
@@ -12,41 +13,37 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.Lesson;
 import com.app.artclass.database.Student;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class LessonsAdapter extends LocalAdapter<Lesson> {
 
     private final Context mContext;
     private final int mResource; // layout/item_students_presentlist.xml
-    private final List<Pair<Lesson, Student>> lessonStudentPairList;
-    DatabaseManager databaseManager;
+    @NonNull
+    private final Fragment fragment;
+    private final List<Lesson> lessonsList;
+    private List<Student> studentList;
 
-    public LessonsAdapter(@NonNull Context context, int resource, @NonNull List<Lesson> objects) {
-        super(context, resource, objects);
-
-        // needs to be initialized before lessonStudentPairList
-        // because it is used by init cycle
-        databaseManager = DatabaseManager.getInstance();
-
-        mContext = context;
+    public LessonsAdapter(@NonNull Fragment fragment, int resource, @NonNull List<Lesson> lessons) {
+        super(Objects.requireNonNull(fragment.getContext()), resource, lessons);
+        this.fragment = fragment;
+        lessonsList = lessons;
+        mContext = fragment.getContext();
         mResource = resource;
-
-        lessonStudentPairList = new ArrayList<>();
-        for (Lesson lessonIter : objects) {
-            lessonStudentPairList.add(
-                    new Pair<>(lessonIter, databaseManager.getStudent(lessonIter.getName())));
-        }
     }
 
+    @SuppressLint({"DefaultLocale", "ViewHolder"})
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -62,68 +59,67 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
         ImageButton btn_decrement = convertView.findViewById(R.id.minus_hour_btn);
         ImageButton btn_increment = convertView.findViewById(R.id.plus_hour_btn);
 
-        btn_increment.setTag(lessonStudentPairList.get(position));
-        btn_decrement.setTag(lessonStudentPairList.get(position));
+        List<String> studentNames = new ArrayList<>();
+        lessonsList.forEach(lesson -> studentNames.add(lesson.getStudentName()));
 
-        // button listener 1
-        btn_decrement.setOnClickListener(decrementListener);
+        StudentsRepository.getInstance().getStudentsForNames(studentNames).observe(fragment,students -> {
+            this.studentList = students;
 
-        // button listener 2
-        btn_increment.setOnClickListener(incrementListener);
+            btn_increment.setTag(R.id.student,studentList.get(position));
+            btn_increment.setTag(R.id.lesson,lessonsList.get(position));
+            btn_decrement.setTag(R.id.student,studentList.get(position));
+            btn_decrement.setTag(R.id.lesson,lessonsList.get(position));
 
-        nameView.setText(lessonStudentPairList.get(position).second
-                .getName().split(" ", 2)[0]);
-        hoursTextView.setText(String.format("%d h", lessonStudentPairList.get(position).second.getHoursBalance()));
-        hoursWorkedTextView.setText(String.format("%d h", lessonStudentPairList.get(position).first.getHoursWorked()));
+            // button listener 1
+            btn_decrement.setOnClickListener(decrementListener);
+
+            // button listener 2
+            btn_increment.setOnClickListener(incrementListener);
+
+            nameView.setText(studentList.get(position).getName().split(" ", 2)[0]);
+            hoursTextView.setText(String.format("%d h", studentList.get(position).getHoursBalance()));
+            hoursWorkedTextView.setText(String.format("%d h", lessonsList.get(position).getHoursWorked()));
+        });
 
         return convertView;
     }
 
-    View.OnClickListener decrementListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Pair<Lesson,Student>lessonStudent= (Pair<Lesson,Student>) view.getTag();
-            FragmentManager fragmentManager = (FragmentManager) ((View) view.getParent().getParent()).getTag();
+    private View.OnClickListener decrementListener = view -> {
+        Lesson lesson = (Lesson) view.getTag(R.id.lesson) ;
+        Student student= (Student) view.getTag(R.id.student);
 
-            incrementHoursWorked(-1, lessonStudent, fragmentManager);
+        incrementHoursWorked(-1, lesson, student);
 
-            refreshFields(view, lessonStudent);
-        }
+        refreshFields(view, lesson, student);
     };
 
-    View.OnClickListener incrementListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Pair<Lesson,Student>lessonStudent= (Pair<Lesson,Student>) view.getTag();
-            FragmentManager fragmentManager = (FragmentManager) ((View) view.getParent().getParent()).getTag();
+    private View.OnClickListener incrementListener = view -> {
+        Lesson lesson = (Lesson) view.getTag(R.id.lesson) ;
+        Student student= (Student) view.getTag(R.id.student);
 
-            incrementHoursWorked(1, lessonStudent, fragmentManager);
+        incrementHoursWorked(1, lesson,student);
 
-            refreshFields(view, lessonStudent);
-        }
+        refreshFields(view, lesson, student);
     };
 
-    private void refreshFields(View view, Pair<Lesson, Student> lessonStudent) {
+    private void refreshFields(View view, Lesson lesson, Student student) {
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
         TextView hoursLeftText = ((View) view.getParent().getParent()).findViewById(R.id.hours_left_view);
         TextView hoursWorkedText = ((View) view.getParent().getParent()).findViewById(R.id.hours_worked_view);
 
-        hoursLeftText.setText(String.format(Locale.getDefault(), "%d h", lessonStudent.second.getHoursBalance()));
-        hoursWorkedText.setText(String.format(Locale.getDefault(), "%d h", lessonStudent.first.getHoursWorked()));
+        hoursLeftText.setText(String.format(Locale.getDefault(), "%d h", student.getHoursBalance()));
+        hoursWorkedText.setText(String.format(Locale.getDefault(), "%d h", lesson.getHoursWorked()));
     }
 
-    private void incrementHoursWorked(int howMuchWorked, Pair<Lesson,Student> lessonStudentPair, FragmentManager fManager){
-        Lesson lesson = lessonStudentPair.first;
-        Student student = lessonStudentPair.second;
+    private void incrementHoursWorked(int howMuchWorked, Lesson lesson,Student student){
 
         int finHoursToWork = student.getHoursBalance() - howMuchWorked;
         int finHoursWorkedToday = lesson.getHoursWorked() + howMuchWorked;
 
         if(finHoursToWork <= 0){
-            DialogHandler dialogHandler = new DialogHandler(mContext);
-            dialogHandler.AlertDialog(mContext.getString(R.string.title_alert_abonement),mContext.getString(R.string.message_abonement_finished));
+            DialogHandler.getInstance().AlertDialog(fragment.getContext(),mContext.getString(R.string.title_alert_abonement),mContext.getString(R.string.message_abonement_finished));
         }
 
         if (finHoursToWork < 0) {
@@ -138,7 +134,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
 
         lesson.setHoursWorked(finHoursWorkedToday);
         student.setHoursBalance(finHoursToWork);
-        databaseManager.update(student);
-        databaseManager.update(lesson);
+        StudentsRepository.getInstance().update(student);
+        StudentsRepository.getInstance().update(lesson);
     }
 }

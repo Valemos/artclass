@@ -13,9 +13,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.Lesson;
 import com.app.artclass.database.Student;
 import com.app.artclass.fragments.StudentCard;
@@ -26,17 +27,19 @@ import java.util.List;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.OnClickListener, View.OnLongClickListener, CompoundButton.OnCheckedChangeListener {
 
+    private final Fragment fragment;
     private FragmentManager fragmentManager;
     private List<Lesson> lessonsList;
     private List<View> elementViews;
     private int elemLayout;
     private Context mContext;
-    private DatabaseManager databaseManager;
+    private StudentsRepository studentsRepository;
 
-    public GroupRedactorAdapter(@NonNull Context context, int resource, @NonNull List<Lesson> objects, FragmentManager fragmentManager) {
+    public GroupRedactorAdapter(@NonNull Context context, int resource, @NonNull List<Lesson> objects, Fragment fragment) {
         super(context, resource, objects);
-        databaseManager = DatabaseManager.getInstance();
-        this.fragmentManager = fragmentManager;
+        this.fragment = fragment;
+        studentsRepository = StudentsRepository.getInstance();
+        this.fragmentManager = fragment.getFragmentManager();
 
         mContext = context;
         elemLayout = resource;
@@ -54,7 +57,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     private void refreshElementView(View view, Lesson lesson){
         TextView nameView = view.findViewById(R.id.name_view);
         TextView hoursTextView = view.findViewById(R.id.hours_left_view);
-        nameView.setText(lesson.getName());
+        nameView.setText(lesson.getStudentName());
         hoursTextView.setText(String.valueOf(lesson.getHoursWorked()));
     }
 
@@ -69,7 +72,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
         TextView hoursTextView = convertView.findViewById(R.id.hours_left_view);
         CheckBox checkBox = convertView.findViewById(R.id.checkBox);
 
-        nameView.setText(lessonsList.get(position).getName());
+        nameView.setText(lessonsList.get(position).getStudentName());
         hoursTextView.setText(String.valueOf(lessonsList.get(position).getHoursWorked()));
 
         convertView.setOnLongClickListener(this);
@@ -83,9 +86,10 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     @Override
     public boolean onLongClick(View v) {
         TextView nameView = v.findViewById(R.id.name_view);
-        Student student = databaseManager.getStudent(nameView.getText().toString());
-        StudentCard studentCard = new StudentCard(student, this);
-        fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+        studentsRepository.getStudent(nameView.getText().toString()).observe(fragment,student -> {
+            StudentCard studentCard = new StudentCard(student,null);
+            fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+        });
         return true;
     }
 

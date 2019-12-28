@@ -1,5 +1,6 @@
 package com.app.artclass.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -18,15 +19,15 @@ public interface LessonDao {
 
     @Transaction
     @Query("SELECT * FROM lesson")
-    List<Lesson> getAll();
-
-    @Transaction
-    @Query("SELECT * FROM lesson WHERE idStudent = :studentId")
-    List<Lesson> getForStudentId(int studentId);
+    LiveData<List<Lesson>> getAll();
 
     @Transaction
     @Query("SELECT * FROM lesson WHERE dateTime = :date_time")
-    List<Lesson> getForDateTime(@TypeConverters({DatabaseConverters.class}) LocalDateTime date_time);
+    LiveData<List<Lesson>> getForDateTime(@TypeConverters({DatabaseConverters.class}) LocalDateTime date_time);
+
+    @Transaction
+    @Query("SELECT * FROM lesson WHERE studentName=:name")
+    LiveData<List<Lesson>> getForStudent(String name);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Lesson lesson);
@@ -42,6 +43,6 @@ public interface LessonDao {
     void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND idStudent = :idStudent")
-    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, int idStudent);
+    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND studentName = :name")
+    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, String name);
 }

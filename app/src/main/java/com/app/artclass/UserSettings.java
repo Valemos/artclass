@@ -18,7 +18,9 @@ import java.util.List;
 public class UserSettings {
 
     private List<GroupType> allGroupTypes;
+
     private List<Abonement> allAbonements;
+
     private List<String> allWeekdaysStr = new ArrayList<>(
             Arrays.asList("Воскресенье",
                     "Понедельник",
@@ -27,27 +29,26 @@ public class UserSettings {
                     "Четверг",
                     "Пятница",
                     "Суббота"));
-
     private SparseArray<String> balanceButtonIncrements;
 
     private static UserSettings classInstance;
-    private Context context;
-    public static UserSettings getInstance(Context context){
+
+    public static UserSettings getInstance(){
         if(classInstance==null){
-            classInstance = new UserSettings(context);
+            classInstance = new UserSettings();
         }
         return classInstance;
     }
-    public static UserSettings getInstance(){return classInstance;}
-    public static UserSettings refreshInst(Context context){
-        classInstance = new UserSettings(context);
-        return classInstance;
+    private UserSettings() {
+        allGroupTypes = new ArrayList<>();
+        allAbonements = initDefaultAbonements();
+        balanceButtonIncrements = initDefaultBtnIncrements();
     }
 
-    private UserSettings(Context context) {
-        allGroupTypes = new ArrayList<>();
-        allAbonements = new ArrayList<>();
-        balanceButtonIncrements = initDefaultBtnIncrements();
+    private List<Abonement> initDefaultAbonements() {
+        return Arrays.asList(
+                new Abonement("обычный", 1200, 12),
+                new Abonement("половина", 600, 6));
     }
 
     private SparseArray<String> initDefaultBtnIncrements() {
@@ -58,6 +59,10 @@ public class UserSettings {
         out.put(500,"+500");
 
         return out;
+    }
+
+    public List<Abonement> getAllAbonements() {
+        return allAbonements;
     }
 
     public static int getDefaultLessonHours() {
@@ -82,14 +87,6 @@ public class UserSettings {
         return allGroupsStr;
     }
 
-    public List<String> getAbonementLabels() {
-        final List<String> allAbonementsStr = new ArrayList<>();
-        allAbonements.forEach((e)->{
-            allAbonementsStr.add(e.getName());
-        });
-        return allAbonementsStr;
-    }
-
     public LocalTime getGroupTime(String timeString) {
         return LocalTime.of(11,0);
     }
@@ -100,7 +97,7 @@ public class UserSettings {
 
     public List<GroupType> getGroupTypes() {
         allGroupTypes=new ArrayList<>();
-        allGroupTypes.add(new GroupType(LocalTime.of(11,0),"Loshara"));
+        allGroupTypes.add(new GroupType(LocalTime.of(11,0),"детская"));
         return allGroupTypes;
     }
 

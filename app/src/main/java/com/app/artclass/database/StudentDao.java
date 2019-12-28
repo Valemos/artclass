@@ -1,5 +1,6 @@
 package com.app.artclass.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -15,15 +16,15 @@ public interface StudentDao {
 
     @Transaction
     @Query("SELECT * FROM student")
-    List<Student> getAll();
+    LiveData<List<Student>> getAll();
 
     @Transaction
     @Query("SELECT * FROM student WHERE name=:name")
-    Student get(String name);
+    LiveData<Student> get(String name);
 
     @Transaction
-    @Query("SELECT * FROM student WHERE idStudent=:student_id")
-    Student get(int student_id);
+    @Query("SELECT * FROM student WHERE name IN (:names)")
+    LiveData<List<Student>> getAllByNames(List<String> names);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Student student);

@@ -1,15 +1,14 @@
 package com.app.artclass.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(indices = @Index(value = "abonementName",unique = true))
+@Entity
 public class Abonement {
 
-    @PrimaryKey(autoGenerate = true)
-    int idAbonement;
-
+    @NonNull
+    @PrimaryKey
     String abonementName;
 
     int abonementPrice;
@@ -22,8 +21,10 @@ public class Abonement {
         this.hoursToWork = hoursToWork;
     }
 
-    public int getIdAbonement() {
-        return idAbonement;
+    @NonNull
+    @Override
+    public String toString() {
+        return abonementName;
     }
 
     public int getPrice() {

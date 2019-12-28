@@ -4,29 +4,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Comparator;
 import java.util.List;
 
-@Entity(indices = {@Index(value = {"name","idStudent"}, unique = true)})
+@Entity(indices = {@Index(value = {"name"}, unique = true)})
 public class Student {
 
-    @PrimaryKey(autoGenerate = true)
-    private int idStudent;
-
     @NonNull
+    @PrimaryKey
     private String name;
-
-    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int balance, int hoursBalance) {
-        this.name = name;
-        this.phoneList = phoneList;
-        this.abonementType = abonementType;
-        this.balance = balance;
-        this.hoursBalance = hoursBalance;
-    }
 
     @TypeConverters({DatabaseConverters.class})
     private List<String> phoneList;
@@ -52,15 +45,19 @@ public class Student {
         return studentComparator;
     }
 
-    private static Comparator<Student> studentComparator = new Comparator<Student>() {
-        @Override
-        public int compare(Student o1, Student o2) {
-            return o1.name.compareTo(o2.name);
-        }
-    };
+    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int balance, int hoursBalance) {
+        this.name = name;
+        this.phoneList = phoneList;
+        this.abonementType = abonementType;
+        this.balance = balance;
+        this.hoursBalance = hoursBalance;
+    }
 
-    public Student(String fullName, int balance, Abonement abonementType) {
-        this.name = fullName;
+    private static Comparator<Student> studentComparator = (o1, o2) -> o1.name.compareTo(o2.name);
+
+    @Ignore
+    public Student(@NotNull String name, int balance, Abonement abonementType) {
+        this.name = name;
         this.setBalance(balance);
 
         this.setAbonementType(abonementType);
@@ -82,14 +79,6 @@ public class Student {
 
     public void setName(@NonNull String name) {
         this.name = name;
-    }
-
-    public int getIdStudent() {
-        return idStudent;
-    }
-
-    public void setIdStudent(int idStudent) {
-        this.idStudent = idStudent;
     }
 
     public void setBalance(int balance) {

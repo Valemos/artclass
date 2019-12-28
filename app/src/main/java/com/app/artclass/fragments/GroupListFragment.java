@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 import com.app.artclass.DialogHandler;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.DatabaseManager;
+import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.GroupType;
 import com.app.artclass.recycler_adapters.GroupsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,18 +26,16 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupListFragment extends Fragment {
 
     private FragmentManager fragmentManager;
+    private StudentsRepository studentsRepository;
 
     public GroupListFragment() {
         // Required empty public constructor
-    }
-
-    public GroupListFragment(FragmentManager fragmentManager) {
-        this.fragmentManager = fragmentManager;
     }
 
     @Override
@@ -49,7 +47,7 @@ public class GroupListFragment extends Fragment {
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_group_list, container, false);
 
-        DatabaseManager databaseManager = DatabaseManager.getInstance(mainView.getContext());
+        studentsRepository = StudentsRepository.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         List<GroupsRecyclerAdapter.GroupData> groupsData = new ArrayList<>(); //labels to add to adapter
 
 
@@ -67,7 +65,7 @@ public class GroupListFragment extends Fragment {
 
             //check if group exists for current day
             for (GroupType curGroupType: groupTypes) {
-                if (databaseManager.isGroupExists(currentDate,curGroupType.getTime())) {
+                if (studentsRepository.isGroupExists(currentDate,curGroupType.getTime())) {
                     groupsData.add(new GroupsRecyclerAdapter.GroupData(currentDate, curGroupType));
                 }
             }
@@ -76,7 +74,7 @@ public class GroupListFragment extends Fragment {
         // setup groups recycler view
 
         //add adapter to update if groups are deleted
-        final GroupsRecyclerAdapter adapter = new GroupsRecyclerAdapter(getContext(),fragmentManager, groupsData);
+        final GroupsRecyclerAdapter adapter = new GroupsRecyclerAdapter(this, studentsRepository, groupsData);
         mainView.setTag(adapter);
 
         RecyclerView groupsList = mainView.findViewById(R.id.groups_list);
@@ -87,24 +85,13 @@ public class GroupListFragment extends Fragment {
 
         FloatingActionButton btn_floating_addnewgroup = mainView.findViewById(R.id.fab_add_new_group);
         btn_floating_addnewgroup.setTag(adapter);
-        btn_floating_addnewgroup.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(View view) {
-                DialogHandler dialogHandler = new DialogHandler(getContext());
-                dialogHandler.CreateNewGroup((RecyclerView.Adapter) view.getTag(), null, null,null, null);
-            }
-        });
+        btn_floating_addnewgroup.setOnClickListener(view -> DialogHandler.getInstance().CreateNewGroup(this,(RecyclerView.Adapter) view.getTag(), null, null,null));
 
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_help);
-        btn_floating_helpbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GroupsRecyclerAdapter adapter = (GroupsRecyclerAdapter)((View)v.getParent().getParent()).getTag();
-                DialogHandler dialogHandler = new DialogHandler(getContext());
-                dialogHandler.AlertDialog(getString(R.string.title_help),getString(R.string.message_group_delete_help));
-            }
-        });
+        btn_floating_helpbutton.setOnClickListener(v ->
+                DialogHandler.getInstance()
+                        .AlertDialog(this.getContext(),getString(R.string.title_help),getString(R.string.message_group_delete_help))
+        );
 
         return mainView;
     }
