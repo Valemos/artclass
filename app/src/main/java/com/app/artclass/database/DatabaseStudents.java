@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class,Lesson.class,Abonement.class,GroupType.class}, version = 1, exportSchema = false)
+@Database(entities = {Student.class,Lesson.class,Abonement.class,GroupType.class}, version = 3, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
     public static final String DATABASE_NAME = "studentsData";
@@ -38,6 +38,7 @@ public abstract class DatabaseStudents extends RoomDatabase {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(),DatabaseStudents.class, "word_database")
                             .addCallback(DatabaseCallback)
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }
@@ -49,17 +50,6 @@ public abstract class DatabaseStudents extends RoomDatabase {
         @Override
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
-
-            databaseWriteExecutor.execute(() -> {
-
-                instance.clearAllTables();
-
-                instance.studentDao().insert(new Student("Antonio",1000, UserSettings.getInstance().getAbonement("полный")));
-                instance.lessonDao().insert(new Lesson(
-                        LocalDate.now(),
-                        "Antonio",
-                        UserSettings.getInstance().getGroupType("детская")));
-            });
         }
     };
 }

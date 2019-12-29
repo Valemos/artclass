@@ -45,4 +45,8 @@ public interface LessonDao {
     @Transaction
     @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND studentName = :name")
     void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, String name);
+
+    @Transaction
+    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND studentName IN (:studentNames)")
+    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, List<String> studentNames);
 }

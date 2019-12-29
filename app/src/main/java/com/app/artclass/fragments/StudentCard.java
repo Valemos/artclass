@@ -1,9 +1,11 @@
 package com.app.artclass.fragments;
 
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
@@ -41,33 +43,19 @@ public class StudentCard extends Fragment {
 
     private StudentsRepository studentsRepository;
     private Student student;
+    private String studentName;
     private LocalAdapter outerAdapter = null;
     private List<Lesson> studLessonsList;
+    private View mView;
 
     public StudentCard(String studentName) {
         this.studentsRepository = StudentsRepository.getInstance();
         this.student = null;
-        studentsRepository.getStudent(studentName).observe(this,curStudent -> {
-            this.student = curStudent;
-            studentsRepository.getLessonList(curStudent).observe(this,lessons -> {
-                studLessonsList = lessons;
-            });
-        });
     }
 
-    public StudentCard(String studentName, LocalAdapter adapter) {
-        outerAdapter = adapter;
-
-        studentsRepository.getStudent(studentName).observe(this,curStudent -> {
-            this.student = curStudent;
-            studentsRepository.getLessonList(curStudent).observe(this,lessons -> {
-                studLessonsList = lessons;
-            });
-        });
-    }
-
-    public StudentCard(Student student, @Nullable LocalAdapter adapter){
+    public StudentCard(@NonNull Student student, @Nullable LocalAdapter adapter){
         this.student = student;
+        System.out.println(student.toString());
         this.outerAdapter = adapter;
         this.studentsRepository = StudentsRepository.getInstance();
     }
@@ -77,25 +65,15 @@ public class StudentCard extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_student_card, container, false);
 
-        updateStudentFields(view);
-
-        // redact balance listeners
+        mView = view;
 
         ImageButton addMoney_btn = view.findViewById(R.id.addMoney_button);
         EditText moneyAmountEditText = view.findViewById(R.id.addCustomCash_view);
         addMoney_btn.setTag(moneyAmountEditText);
-        addMoney_btn.setOnClickListener(v -> {
-            EditText moneyText = (EditText) v.getTag();
-            student.incrementBalance(Integer.valueOf(moneyText.getText().toString()));
-            updateBalance();
-            moneyText.setText("");
-        });
 
         Button makeZeroMoney = view.findViewById(R.id.make_zero_money);
-        makeZeroMoney.setOnClickListener(v -> {
-            student.setBalance(0);
-            updateBalance();
-        });
+
+        CalendarView calendarView = view.findViewById(R.id.calendarView);
 
         // custom increments
 
@@ -112,42 +90,64 @@ public class StudentCard extends Fragment {
         add2_btn.setTag(buttonIncrements.keyAt(1));
         add3_btn.setTag(buttonIncrements.keyAt(2));
 
-        View.OnClickListener incrBtnClickListener = v -> {
-            student.incrementBalance((Integer) v.getTag());
-            updateBalance();
-        };
-        add1_btn.setOnClickListener(incrBtnClickListener);
-        add2_btn.setOnClickListener(incrBtnClickListener);
-        add3_btn.setOnClickListener(incrBtnClickListener);
+        if (student==null && StudentsRepository.getInstance() != null) {
+            StudentsRepository.getInstance().getStudent(studentName).observe(this,curStudent -> {
+                this.student = curStudent;
+                studentsRepository.getLessonList(curStudent).observe(this,lessons -> {
+                    studLessonsList = lessons;
 
+                    addMoney_btn.setOnClickListener(v -> {
+                        EditText moneyText = (EditText) v.getTag();
+                        student.incrementBalance(Integer.valueOf(moneyText.getText().toString()));
+                        updateBalance();
+                        moneyText.setText("");
+                    });
+                    makeZeroMoney.setOnClickListener(v -> {
+                        student.setBalance(0);
+                        updateBalance();
+                    });
+                    View.OnClickListener incrBtnClickListener = v -> {
+                        student.incrementBalance((Integer) v.getTag());
+                        updateBalance();
+                    };
+                    add1_btn.setOnClickListener(incrBtnClickListener);
+                    add2_btn.setOnClickListener(incrBtnClickListener);
+                    add3_btn.setOnClickListener(incrBtnClickListener);
 
-        CalendarView calendarView = view.findViewById(R.id.calendarView);
-        calendarView.setOnDateChangeListener((calendarView1, y, m, d) -> {
-            String groupsTimeWorked;
-            final LocalDate curDate = LocalDate.of(y,m,d);
+                    calendarView.setOnDateChangeListener((calendarView1, y, m, d) -> {
+                        String groupsTimeWorked;
+                        final LocalDate curDate = LocalDate.of(y,m,d);
 
-            StringBuilder groupsTimeBuilder = new StringBuilder();
-            for(Lesson curLesson: studLessonsList){
-                if(curLesson.getDateTime().toLocalDate()==curDate){
-                    groupsTimeBuilder
-                            .append(
-                            curLesson.getDateTime().format(DatabaseConverters.getDateTimeFormatter()))
-                            .append(" - ")
-                            .append(curLesson.getHoursWorked())
-                            .append("\n");
-                }
-            }
-            groupsTimeWorked = groupsTimeBuilder.toString();
+                        StringBuilder groupsTimeBuilder = new StringBuilder();
+                        for(Lesson curLesson: studLessonsList){
+                            if(curLesson.getDateTime().toLocalDate()==curDate){
+                                groupsTimeBuilder
+                                        .append(
+                                                curLesson.getDateTime().format(DatabaseConverters.getDateTimeFormatter()))
+                                        .append(" - ")
+                                        .append(curLesson.getHoursWorked())
+                                        .append("\n");
+                            }
+                        }
+                        groupsTimeWorked = groupsTimeBuilder.toString();
 
-            if(groupsTimeWorked == "") groupsTimeWorked = getString(R.string.message_student_not_worked);
+                        if(groupsTimeWorked.equals("")) groupsTimeWorked = getString(R.string.message_student_not_worked);
 
-            String workString = String.format(
-                    "%s\n%s",
-                    curDate.format(DatabaseConverters.getDateFormatter()),
-                    groupsTimeWorked);
+                        String workString = String.format(
+                                "%s\n%s",
+                                curDate.format(DatabaseConverters.getDateFormatter()),
+                                groupsTimeWorked);
 
-            Toast.makeText(getContext(), workString, Toast.LENGTH_LONG).show();
-        });
+                        Toast.makeText(getContext(), workString, Toast.LENGTH_LONG).show();
+                    });
+
+                    updateStudentFields(mView, student);
+                });
+            });
+        }else {
+            updateStudentFields(mView,new Student("",0,UserSettings.getInstance().getAllAbonements().get(0)));
+        }
+
 
         return view;
     }
@@ -157,12 +157,13 @@ public class StudentCard extends Fragment {
         studentsRepository.update(student);
     }
 
-    private void updateStudentFields(View view) {
-        ((TextView)view.findViewById(R.id.student_name_view)).setText(student.getName());
-        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(student.getBalance()));
-        ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(student.getAbonementType().getName());
-        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", student.getHoursBalance()));
-        ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", student.getPhoneList()));
+    @SuppressLint("DefaultLocale")
+    private void updateStudentFields(View view, Student curStudent) {
+        ((TextView)view.findViewById(R.id.student_name_view)).setText(curStudent.getName());
+        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(curStudent.getBalance()));
+        ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(curStudent.getAbonementType().getName());
+        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", curStudent.getHoursBalance()));
+        ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", curStudent.getPhoneList()));
     }
 
 }

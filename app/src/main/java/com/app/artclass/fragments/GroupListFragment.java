@@ -53,7 +53,7 @@ public class GroupListFragment extends Fragment {
 
 
         //form list of lists for tagging the groups
-        List<GroupType> groupTypes = UserSettings.getInstance().getGroupTypes();
+        List<GroupType> groupTypes = UserSettings.getInstance().getAllGroupTypes();
 
         //how much days to get
         //get groups for that days

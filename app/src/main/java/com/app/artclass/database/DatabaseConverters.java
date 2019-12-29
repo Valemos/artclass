@@ -34,8 +34,8 @@ public class DatabaseConverters {
     }
 
     private static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd/HH:mm");
+    private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy-HH:mm");
 
     @TypeConverter
     public String fromLocalDate(LocalDate date){

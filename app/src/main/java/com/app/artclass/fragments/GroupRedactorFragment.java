@@ -53,7 +53,7 @@ public class GroupRedactorFragment extends Fragment {
     public GroupRedactorFragment(LocalDate date, GroupType groupType, FragmentManager fragmentManager) {
         this.dateValue = date;
         this.groupType = groupType;
-        this.studentsRepository = StudentsRepository.getInstance(Objects.requireNonNull(getActivity()).getApplication());
+        this.studentsRepository = StudentsRepository.getInstance();
         this.lessonList = studentsRepository.getLessonList(LocalDateTime.of(date,groupType.getTime()));
         this.fragmentManager = fragmentManager;
     }
@@ -82,11 +82,12 @@ public class GroupRedactorFragment extends Fragment {
             studentsListData.observe(this, studentList -> {
                 StudentsRecyclerAdapter adapter =
                         new StudentsRecyclerAdapter(
+                                this,
                                 R.layout.item_group_redactor,
                                 R.id.name_view,
                                 R.id.hours_left_view,
-                                studentsRepository, studentList,
-                                fragmentManager);
+                                studentList
+                        );
                 RecyclerView list = view.findViewById(R.id.group_redactor_list);
                 list.setLayoutManager(new LinearLayoutManager(this.getContext()));
                 list.setAdapter(adapter);

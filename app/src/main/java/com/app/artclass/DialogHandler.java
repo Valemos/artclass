@@ -272,11 +272,11 @@ public class DialogHandler {
             }
 
             StudentsRecyclerAdapter adapter = new StudentsRecyclerAdapter(
+                    fragment,
                     R.layout.item_dialog_student_selector,
                     R.id.name_view,
                     null,
-                    studentsRepository, studentList,
-                    fragment.getFragmentManager());
+                    studentList);
             listSelectStudents.setAdapter(adapter);
             listSelectStudents.setLayoutManager(new LinearLayoutManager(fragment.getContext()));
             dialogView.setTag(R.id.tag_adapter_objects,adapter);

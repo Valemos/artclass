@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         // before using singleton classes
         initSingltones(getApplication());
 
-        StudentsRepository.getInstance().resetDatabase();
+        StudentsRepository.getInstance().resetDatabase(getBaseContext());
 
         StudentsRepository.getInstance().initDefaultSettings();
 
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity
     private void initSingltones(Application application) {
         StudentsRepository.getInstance(application);
         DialogHandler.getInstance(application);
+        UserSettings.getInstance().writeSettingsToRepository(StudentsRepository.getInstance());
     }
 
     @Override

@@ -19,7 +19,7 @@ public class Student {
 
     @NonNull
     @PrimaryKey
-    private String name;
+    private final String name;
 
     @TypeConverters({DatabaseConverters.class})
     private List<String> phoneList;
@@ -75,10 +75,6 @@ public class Student {
     @NonNull
     public String getName() {
         return name;
-    }
-
-    public void setName(@NonNull String name) {
-        this.name = name;
     }
 
     public void setBalance(int balance) {

@@ -8,11 +8,13 @@ import androidx.annotation.RequiresApi;
 
 import com.app.artclass.database.Abonement;
 import com.app.artclass.database.GroupType;
+import com.app.artclass.database.StudentsRepository;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class UserSettings {
@@ -22,13 +24,16 @@ public class UserSettings {
     private List<Abonement> allAbonements;
 
     private List<String> allWeekdaysStr = new ArrayList<>(
-            Arrays.asList("Воскресенье",
+            Arrays.asList(
+                    "Суббота",
+                    "Воскресенье",
                     "Понедельник",
                     "Вторник",
                     "Среда",
                     "Четверг",
-                    "Пятница",
-                    "Суббота"));
+                    "Пятница"
+                    ));
+
     private SparseArray<String> balanceButtonIncrements;
 
     private static UserSettings classInstance;
@@ -40,9 +45,16 @@ public class UserSettings {
         return classInstance;
     }
     private UserSettings() {
-        allGroupTypes = new ArrayList<>();
+        allGroupTypes = initDefaultGroupTypes();
         allAbonements = initDefaultAbonements();
         balanceButtonIncrements = initDefaultBtnIncrements();
+    }
+
+    private List<GroupType> initDefaultGroupTypes() {
+        return Arrays.asList(
+                new GroupType(LocalTime.of(11,0),"дети 11:00"),
+                new GroupType(LocalTime.of(15,0),"взрослые 15:00"),
+                new GroupType(LocalTime.of(17,0),"взрослые 17:00"));
     }
 
     private List<Abonement> initDefaultAbonements() {
@@ -62,6 +74,8 @@ public class UserSettings {
     }
 
     public List<Abonement> getAllAbonements() {
+        if(allAbonements.size()==0)
+            allAbonements = initDefaultAbonements();
         return allAbonements;
     }
 
@@ -79,25 +93,24 @@ public class UserSettings {
 
     public List<String> getGroupLabels() {
         List<String> allGroupsStr = new ArrayList<>();
-
-        allGroupTypes.forEach((e)->{
-            allGroupsStr.add(e.getGroupName());
-        });
-
+        allGroupTypes.forEach((e)-> allGroupsStr.add(e.getGroupName()));
         return allGroupsStr;
     }
 
-    public LocalTime getGroupTime(String timeString) {
-        return LocalTime.of(11,0);
+    public LocalTime getGroupTime(String groupName) {
+        return Objects.requireNonNull(allGroupTypes.stream().filter(groupType -> groupType.getGroupName().equals(groupName))
+                .findFirst().orElse(null)).getTime();
     }
 
     public Abonement getAbonement(String name) {
-        return new Abonement(name,1000, 12);
+        return allAbonements.stream()
+                .filter(abonement -> abonement.getName().equals(name))
+                .findFirst().orElse(null);
     }
 
-    public List<GroupType> getGroupTypes() {
-        allGroupTypes=new ArrayList<>();
-        allGroupTypes.add(new GroupType(LocalTime.of(11,0),"детская"));
+    public List<GroupType> getAllGroupTypes() {
+        if(allGroupTypes.size()==0)
+            allGroupTypes=initDefaultGroupTypes();
         return allGroupTypes;
     }
 
@@ -110,11 +123,12 @@ public class UserSettings {
     }
 
     public GroupType getGroupType(String name) {
-        for (GroupType groupType : allGroupTypes) {
-            if (groupType.getGroupName() == name) {
-                return groupType;
-            }
-        }
-        return null;
+        return allGroupTypes.stream().filter(groupType -> groupType.getGroupName().equals(name))
+                .findFirst().orElse(null);
+    }
+
+    public void writeSettingsToRepository(StudentsRepository repository) {
+        repository.insertAbonements(allAbonements);
+        repository.insertGroupTypes(allGroupTypes);
     }
 }

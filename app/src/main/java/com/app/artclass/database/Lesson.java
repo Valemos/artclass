@@ -27,7 +27,7 @@ import static androidx.room.ForeignKey.CASCADE;
         childColumns = "studentName",
         onDelete = CASCADE),
 
-        primaryKeys = {"dateTime"},
+        primaryKeys = {"dateTime","studentName"},
         indices = @Index(value = {"dateTime","studentName"},unique = true)
 )
 public class Lesson {
@@ -36,11 +36,12 @@ public class Lesson {
     @TypeConverters({DatabaseConverters.class})
     private LocalDateTime dateTime;
 
-    private String studentName;
+    @NonNull
+    private final String studentName;
 
     private int hoursWorked;
 
-    public Lesson(@NotNull LocalDateTime dateTime, String studentName, int hoursWorked) {
+    public Lesson(@NotNull LocalDateTime dateTime,final String studentName, int hoursWorked) {
         this.dateTime = dateTime;
         this.studentName = studentName;
         this.hoursWorked = hoursWorked;

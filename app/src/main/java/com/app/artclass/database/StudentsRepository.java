@@ -1,15 +1,19 @@
 package com.app.artclass.database;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LiveData;
 
+import com.app.artclass.UserSettings;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -77,8 +81,8 @@ public class StudentsRepository {
         return mLessonDao.getForDateTime(dateTime);
     }
 
-    public LiveData<List<Lesson>> getLessonList(LocalDate date, LocalTime time){
-        return getLessonList(LocalDateTime.of(date,time));
+    public LiveData<List<Lesson>> getLessonList(LocalDate date, GroupType groupType){
+        return getLessonList(LocalDateTime.of(date,groupType.getTime()));
     }
 
     public LiveData<List<Lesson>> getLessonList(Student student){
@@ -108,25 +112,42 @@ public class StudentsRepository {
     }
 
     public void deleteLessonsForStudentsList(LocalDateTime dateTime, List<Student> studentList) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> studentList.forEach(student -> mLessonDao.delete(dateTime, student.getName())));
+        List<String> names = new ArrayList<>();
+        studentList.forEach(student -> names.add(student.getName()));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(dateTime, names));
     }
 
     public void deleteStudents(List<Student> studentList) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> studentList.forEach(student -> mStudentDao.delete(student)));
     }
 
-    public void resetDatabase() {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> {
-        });
+    public void resetDatabase(Context context) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> DatabaseStudents.getDatabase(context).clearAllTables());
     }
 
     public void initDefaultSettings() {
         DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            mStudentDao.insert(new Student("Borya", 500, UserSettings.getInstance().getAllAbonements().get(0)));
+            mStudentDao.insert(new Student("Gavril", 15000, UserSettings.getInstance().getAllAbonements().get(0)));
+            mStudentDao.insert(new Student("Alexey", 500, UserSettings.getInstance().getAllAbonements().get(1)));
+            mStudentDao.insert(new Student("Бомжара 007", 0, UserSettings.getInstance().getAllAbonements().get(1)));
+
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),"Gavril",UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),"Alexey",UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),"Alexey",UserSettings.getInstance().getAllGroupTypes().get(0)));
         });
     }
 
     public LiveData<List<Student>> getStudentsForNames(List<String> names) {
         return mStudentDao.getAllByNames(names);
+    }
+
+    public void insertAbonements(List<Abonement> allAbonements) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> allAbonements.forEach(abonement -> mAbonementDao.insert(abonement)));
+    }
+
+    public void insertGroupTypes(List<GroupType> allGroupTypes) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> allGroupTypes.forEach(groupType -> mGroupTypeDao.insert(groupType)));
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)

@@ -66,7 +66,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         convertView = LayoutInflater.from(mContext).inflate(elemLayout, parent, false);
 
-        convertView.setTag(lessonsList.get(position));
+        convertView.setTag(R.id.lesson,lessonsList.get(position));
 
         TextView nameView = convertView.findViewById(R.id.name_view);
         TextView hoursTextView = convertView.findViewById(R.id.hours_left_view);
@@ -85,10 +85,12 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
 
     @Override
     public boolean onLongClick(View v) {
-        TextView nameView = v.findViewById(R.id.name_view);
-        studentsRepository.getStudent(nameView.getText().toString()).observe(fragment,student -> {
-            StudentCard studentCard = new StudentCard(student,null);
-            fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+        Lesson lesson = (Lesson) v.getTag(R.id.lesson);
+        studentsRepository.getStudent(lesson.getStudentName()).observe(fragment,student -> {
+            if(student!=null) {
+                StudentCard studentCard = new StudentCard(student, null);
+                fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+            }
         });
         return true;
     }

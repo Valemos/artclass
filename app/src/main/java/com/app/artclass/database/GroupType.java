@@ -1,5 +1,6 @@
 package com.app.artclass.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -7,15 +8,13 @@ import androidx.room.TypeConverters;
 
 import java.time.LocalTime;
 
-@Entity(indices = @Index(value = "time",unique = true))
+@Entity(indices = @Index(value = "groupName",unique = true))
 public class GroupType {
-
-    @PrimaryKey(autoGenerate = true)
-    int id;
-
     @TypeConverters({DatabaseConverters.class})
     private LocalTime time;
 
+    @NonNull
+    @PrimaryKey
     String groupName;
 
     public GroupType(LocalTime time, String groupName) {
@@ -28,4 +27,9 @@ public class GroupType {
     }
 
     public LocalTime getTime() { return time; }
+
+    @Override
+    public String toString() {
+        return groupName;
+    }
 }
