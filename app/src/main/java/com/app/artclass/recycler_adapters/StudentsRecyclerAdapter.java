@@ -33,34 +33,19 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     private Integer nameViewId;
     private Integer parameterTextId;
     private Integer elementLayout;
-    private FragmentManager fragmentManager;
+    private Fragment mFragment;
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
     private List<Student> studentList;
 
 
-    public void addStudent(Student student) {
-        studentList.add(student);
-        studentList.sort(Student.getStudentComparator());
-        notifyDataSetChanged();
-    }
-
-    public void addStudents(List<Student> students) {
-        for(Student st : students){
-            studentList.add(st);
-        }
-        studentList.sort(Student.getStudentComparator());
-        notifyDataSetChanged();
-    }
-    //handle null fr manager
-
     public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, List<Student> data) {
         studentList = data;
-        studentList.sort(Student.getStudentComparator());
+        studentList.sort(null);
         this.elementLayout = elementLayout;
         this.nameViewId = nameViewId;
         this.parameterTextId = parameterTextId;
 
-        this.fragmentManager = fragment.getFragmentManager();
+        mFragment = fragment;
     }
 
     @NonNull
@@ -105,14 +90,15 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
                 parameterView = itemView.findViewById(parameterTextId);
             }
 
-            if(fragmentManager != null) {
-                nameView.setOnClickListener(v -> {
-                    String studentName = ((TextView)v).getText().toString();
+            nameView.setOnClickListener(v -> {
+                String studentName = ((TextView)v).getText().toString();
 
-                    StudentCard studentCard = new StudentCard(studentName);
-                    fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+                StudentsRepository.getInstance().getStudent(studentName).observe(mFragment.getViewLifecycleOwner(),student -> {
+                    StudentCard studentCard = new StudentCard(student);
+                    mFragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
                 });
-            }
+
+            });
 
             checkBox.setOnClickListener(this);
         }
@@ -149,6 +135,18 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
                 itemCheckedStates.put(adapterPosition, false);
             }
         }
+    }
+
+    public void addStudent(Student student) {
+        studentList.add(student);
+        studentList.sort(null);
+        notifyDataSetChanged();
+    }
+
+    public void setStudents(List<Student> students) {
+        studentList = students;
+        studentList.sort(null);
+        notifyDataSetChanged();
     }
 
     public void deleteCheckedFromLesson(LocalDateTime dateTime){

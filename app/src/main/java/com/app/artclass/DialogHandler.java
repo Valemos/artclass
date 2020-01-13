@@ -19,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,7 +33,7 @@ import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -119,7 +118,7 @@ public class DialogHandler {
         SpinnerAdapter timeAdapter = new ArrayAdapter<>(context,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getInstance().getGroupLabels());
+                UserSettings.getInstance().getAllGroupTypes());
         spinnerTime.setAdapter(timeAdapter);
 
         // weekdays spinner
@@ -166,13 +165,10 @@ public class DialogHandler {
                 // setup lessons
                 int lessonDuration=UserSettings.getDefaultLessonHours();
                 int hoursToWorkIterator = studentNew.getHoursBalance();
-                LocalTime lessonTime = UserSettings.getInstance()
-                                .getGroupTime(
-                                        spinnerTime1.getSelectedItem().toString()
-                                );
+                GroupType curGroupType = (GroupType) spinnerTime1.getSelectedItem();
 
                 for(int i = hoursToWorkIterator; i > 0; i-=lessonDuration){
-                    studentsRepository.addLesson(new Lesson(currentDate, lessonTime, studentNew));
+                    studentsRepository.addLesson(new Lesson(currentDate, studentNew, curGroupType));
                     currentDate = currentDate.plusDays(7);
                 }
 
@@ -265,21 +261,23 @@ public class DialogHandler {
         // if date and time null (we are adding students to existing group)
         // then delete students that already in the group
 
+        StudentsRecyclerAdapter studentsAdapter = new StudentsRecyclerAdapter(
+                fragment,
+                R.layout.item_dialog_student_selector,
+                R.id.name_view,
+                null,
+                new ArrayList<>());
+        listSelectStudents.setAdapter(studentsAdapter);
+        listSelectStudents.setLayoutManager(new LinearLayoutManager(fragment.getContext()));
+        dialogView.setTag(R.id.adapter,studentsAdapter);
+
         studentsRepository.getAllStudents().observe(fragment, studentList -> {
 
             if(date != null && excludedStudents != null && excludedStudents.size()>0){
                 studentList.removeAll(excludedStudents);
             }
 
-            StudentsRecyclerAdapter adapter = new StudentsRecyclerAdapter(
-                    fragment,
-                    R.layout.item_dialog_student_selector,
-                    R.id.name_view,
-                    null,
-                    studentList);
-            listSelectStudents.setAdapter(adapter);
-            listSelectStudents.setLayoutManager(new LinearLayoutManager(fragment.getContext()));
-            dialogView.setTag(R.id.tag_adapter_objects,adapter);
+            studentsAdapter.setStudents(studentList);
         });
 
         dialogView.setTag(R.id.tag_spinner_time,spinnerTime);
@@ -288,7 +286,7 @@ public class DialogHandler {
         DialogInterface.OnClickListener createGroupClickListener = (dialog, which) -> {
             TextView dateText = ((AlertDialog)dialog).findViewById(R.id.dialogcreate_datepicker_text);
             Spinner timeSpinner = ((AlertDialog)dialog).findViewById(R.id.dialogcreate_spinner_time);
-            StudentsRecyclerAdapter studentsAdapter = (StudentsRecyclerAdapter)
+            StudentsRecyclerAdapter innerStudentsAdapter = (StudentsRecyclerAdapter)
                 (
                 (RecyclerView)
                 ((AlertDialog)dialog)
@@ -308,7 +306,7 @@ public class DialogHandler {
                     if (outerAdapter.getClass().equals(GroupsRecyclerAdapter.class)) {
                         ((GroupsRecyclerAdapter) outerAdapter).addGroup(groupDate, curGroupType);
                     } else if (outerAdapter.getClass().equals(StudentsRecyclerAdapter.class)) {
-                        ((StudentsRecyclerAdapter) outerAdapter).addStudents(studentList);
+                        ((StudentsRecyclerAdapter) outerAdapter).setStudents(studentList);
                     }
                 }
             });
@@ -323,22 +321,19 @@ public class DialogHandler {
     private void DatePicker(Context context,final TextView textView, LocalDate date) {
 
         final DatePickerDialog datePickerDialog = getDatePickerDialog(textView.getContext(), date,null);
-        datePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.label_OK), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                textView.setText(LocalDate.of(
-                        datePickerDialog.getDatePicker().getYear(),
-                        datePickerDialog.getDatePicker().getMonth(),
-                        datePickerDialog.getDatePicker().getDayOfMonth())
-                        .format(DatabaseConverters.getDateFormatter()));
-            }
-        });
+        datePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.label_OK), (dialog, which) ->
+                textView.setText(
+                LocalDate.of(
+                datePickerDialog.getDatePicker().getYear(),
+                datePickerDialog.getDatePicker().getMonth()+1,
+                datePickerDialog.getDatePicker().getDayOfMonth())
+                .format(DatabaseConverters.getDateFormatter())
+                )
+        );
         datePickerDialog.show();
     }
 
     public DatePickerDialog getDatePickerDialog(Context context, LocalDate curDate, DatePickerDialog.OnDateSetListener listenerOnDate){
-        if(context == null)
-            context = context;
-        return new DatePickerDialog(context, listenerOnDate, curDate.getYear(), curDate.getMonthValue(), curDate.getDayOfMonth());
+        return new DatePickerDialog(context, listenerOnDate, curDate.getYear(), curDate.getMonthValue()-1, curDate.getDayOfMonth());
     }
 }

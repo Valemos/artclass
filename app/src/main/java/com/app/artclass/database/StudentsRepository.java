@@ -67,14 +67,8 @@ public class StudentsRepository {
         return mStudentDao.get(studentName);
     }
 
-    public boolean isGroupExists(LocalDate date, LocalTime time) {
-        return mLessonDao.getForDateTime(LocalDateTime.of(date,time)).getValue()!=null;
-    }
-
     public void deleteLessons(LocalDateTime dateTime) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> {
-            mLessonDao.delete(dateTime);
-        });
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(dateTime));
     }
 
     public LiveData<List<Lesson>> getLessonList(LocalDateTime dateTime) {
@@ -127,14 +121,20 @@ public class StudentsRepository {
 
     public void initDefaultSettings() {
         DatabaseStudents.databaseWriteExecutor.execute(() -> {
-            mStudentDao.insert(new Student("Borya", 500, UserSettings.getInstance().getAllAbonements().get(0)));
-            mStudentDao.insert(new Student("Gavril", 15000, UserSettings.getInstance().getAllAbonements().get(0)));
-            mStudentDao.insert(new Student("Alexey", 500, UserSettings.getInstance().getAllAbonements().get(1)));
-            mStudentDao.insert(new Student("Бомжара 007", 0, UserSettings.getInstance().getAllAbonements().get(1)));
+            Student t1 = new Student("Borya", 500, UserSettings.getInstance().getAllAbonements().get(0));
+            Student t2 = new Student("Gavril", 15000, UserSettings.getInstance().getAllAbonements().get(0));
+            Student t3 = new Student("Alexey", 500, UserSettings.getInstance().getAllAbonements().get(1));
+            Student t4 =new Student("Бомжара 007", 0, UserSettings.getInstance().getAllAbonements().get(1));
+            mStudentDao.insert(t1);
+            mStudentDao.insert(t2);
+            mStudentDao.insert(t3);
+            mStudentDao.insert(t4);
 
-            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),"Gavril",UserSettings.getInstance().getAllGroupTypes().get(0)));
-            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),"Alexey",UserSettings.getInstance().getAllGroupTypes().get(0)));
-            mLessonDao.insert(new Lesson(LocalDate.now(),"Alexey",UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),t1,UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),t2,UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t2,UserSettings.getInstance().getAllGroupTypes().get(1)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t3,UserSettings.getInstance().getAllGroupTypes().get(1)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t4,UserSettings.getInstance().getAllGroupTypes().get(1)));
         });
     }
 

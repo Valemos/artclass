@@ -15,10 +15,12 @@ import java.util.Comparator;
 import java.util.List;
 
 @Entity(indices = {@Index(value = {"name"}, unique = true)})
-public class Student {
+public class Student implements Comparable{
+
+    @PrimaryKey(autoGenerate = true)
+    private int id;
 
     @NonNull
-    @PrimaryKey
     private final String name;
 
     @TypeConverters({DatabaseConverters.class})
@@ -41,10 +43,6 @@ public class Student {
         }
     }
 
-    public static Comparator<Student> getStudentComparator() {
-        return studentComparator;
-    }
-
     public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int balance, int hoursBalance) {
         this.name = name;
         this.phoneList = phoneList;
@@ -52,8 +50,6 @@ public class Student {
         this.balance = balance;
         this.hoursBalance = hoursBalance;
     }
-
-    private static Comparator<Student> studentComparator = (o1, o2) -> o1.name.compareTo(o2.name);
 
     @Ignore
     public Student(@NotNull String name, int balance, Abonement abonementType) {
@@ -103,5 +99,22 @@ public class Student {
 
     public void setPhoneList(List<String> phoneList) {
         this.phoneList = phoneList;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        try {
+            return name.compareTo(((Student) o).name);
+        }catch (ClassCastException e){
+            return 0;
+        }
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

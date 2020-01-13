@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.list_adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -16,6 +16,8 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.app.artclass.DialogHandler;
+import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.Lesson;
 import com.app.artclass.database.Student;

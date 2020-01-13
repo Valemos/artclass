@@ -65,7 +65,7 @@
             android:layout_width="@dimen/increment_button_size"
             android:layout_height="@dimen/increment_button_size"
             android:background="@drawable/ic_add_square"
-            android:backgroundTint="@color/color_StateOne"
+            android:backgroundTint="@color/color_StateTwo"
             android:longClickable="true" />
     </LinearLayout>
 

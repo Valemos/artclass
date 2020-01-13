@@ -1,7 +1,6 @@
 package com.app.artclass.fragments;
 
 
-import android.app.Application;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -23,7 +22,6 @@ import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -64,7 +62,7 @@ public class AllStudentsListFragment extends Fragment {
         });
 
         StudentsRepository.getInstance().getAllStudents().observe(this,studentList -> {
-            adapter.addStudents(studentList);
+            adapter.setStudents(studentList);
             adapter.notifyDataSetChanged();
         });
         return mainView;

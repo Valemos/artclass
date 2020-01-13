@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 
 import android.os.Build;
@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,10 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
+import com.app.artclass.ApplicationViewModel;
+import com.app.artclass.list_adapters.LessonsAdapter;
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 
@@ -90,12 +93,11 @@ public class StudentsPresentList extends Fragment {
                    groupsMap.get(groupType).observe(getViewLifecycleOwner(),lessons -> {
                        lessonsAdapter.clear();
                        lessonsAdapter.addAll(lessons);
+                       lessonsAdapter.notifyDataSetChanged();
                    });
                 }
             });
 
-
-            System.out.println("updated groups");
         });
 
         return view;

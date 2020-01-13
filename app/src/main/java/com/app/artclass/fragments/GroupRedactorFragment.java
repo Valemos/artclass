@@ -72,40 +72,40 @@ public class GroupRedactorFragment extends Fragment {
         dateText.setText(dateValue.format(DatabaseConverters.getDateFormatter()));
         timeText.setText(groupType.getGroupName());
 
+        StudentsRecyclerAdapter adapter =
+                new StudentsRecyclerAdapter(
+                        this,
+                        R.layout.item_group_redactor,
+                        R.id.name_view,
+                        R.id.hours_left_view,
+                        new ArrayList<>()
+                );
+        RecyclerView list = view.findViewById(R.id.group_redactor_list);
+        list.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        list.setAdapter(adapter);
+
+        FloatingActionButton btn_add_dialog = view.findViewById(R.id.fab_add_students);
+        btn_add_dialog.setOnClickListener(v -> DialogHandler.getInstance()
+                .CreateNewGroup(this,(RecyclerView.Adapter) v.getTag(),
+                        dateValue, groupType,
+                        ((StudentsRecyclerAdapter) v.getTag()).getItems())
+        );
+        btn_add_dialog.setTag(adapter);
+
+        FloatingActionButton btn_delete_selected = view.findViewById(R.id.fab_delete_selected);
+        btn_delete_selected.setOnClickListener(v -> {
+            StudentsRecyclerAdapter adapter1 = (StudentsRecyclerAdapter) v.getTag();
+            adapter1.deleteCheckedFromLesson(LocalDateTime.of(dateValue,groupType.getTime()));
+        });
+        btn_delete_selected.setTag(adapter);
+
         lessonList.observe(this, lessons -> {
             List<String> nameList = new ArrayList<>();
 
             lessons.forEach(lesson -> nameList.add(lesson.getStudentName()));
 
-            LiveData<List<Student>> studentsListData = studentsRepository.getStudentsForNames(nameList);
+            studentsRepository.getStudentsForNames(nameList).observe(getViewLifecycleOwner(), studentList -> {
 
-            studentsListData.observe(this, studentList -> {
-                StudentsRecyclerAdapter adapter =
-                        new StudentsRecyclerAdapter(
-                                this,
-                                R.layout.item_group_redactor,
-                                R.id.name_view,
-                                R.id.hours_left_view,
-                                studentList
-                        );
-                RecyclerView list = view.findViewById(R.id.group_redactor_list);
-                list.setLayoutManager(new LinearLayoutManager(this.getContext()));
-                list.setAdapter(adapter);
-
-                FloatingActionButton btn_add_dialog = view.findViewById(R.id.fab_add_students);
-                btn_add_dialog.setOnClickListener(v -> DialogHandler.getInstance()
-                        .CreateNewGroup(this,(RecyclerView.Adapter) v.getTag(),
-                                dateValue, groupType,
-                                ((StudentsRecyclerAdapter) v.getTag()).getItems())
-                );
-                btn_add_dialog.setTag(adapter);
-
-                FloatingActionButton btn_delete_selected = view.findViewById(R.id.fab_delete_selected);
-                btn_delete_selected.setOnClickListener(v -> {
-                    StudentsRecyclerAdapter adapter1 = (StudentsRecyclerAdapter) v.getTag();
-                    adapter1.deleteCheckedFromLesson(LocalDateTime.of(dateValue,groupType.getTime()));
-                });
-                btn_delete_selected.setTag(adapter);
             });
         });
 

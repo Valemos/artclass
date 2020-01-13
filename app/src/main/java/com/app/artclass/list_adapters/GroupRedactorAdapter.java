@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.list_adapters;
 
 import android.content.Context;
 import android.os.Build;
@@ -16,9 +16,9 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.Lesson;
-import com.app.artclass.database.Student;
 import com.app.artclass.fragments.StudentCard;
 
 import java.util.ArrayList;
@@ -87,8 +87,8 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     public boolean onLongClick(View v) {
         Lesson lesson = (Lesson) v.getTag(R.id.lesson);
         studentsRepository.getStudent(lesson.getStudentName()).observe(fragment,student -> {
-            if(student!=null) {
-                StudentCard studentCard = new StudentCard(student, null);
+            if(student!=null){
+                StudentCard studentCard = new StudentCard(student);
                 fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
             }
         });

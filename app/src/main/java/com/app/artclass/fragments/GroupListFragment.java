@@ -50,8 +50,6 @@ public class GroupListFragment extends Fragment {
         studentsRepository = StudentsRepository.getInstance(Objects.requireNonNull(getActivity()).getApplication());
         List<GroupsRecyclerAdapter.GroupData> groupsData = new ArrayList<>(); //labels to add to adapter
 
-
-
         //form list of lists for tagging the groups
         List<GroupType> groupTypes = UserSettings.getInstance().getAllGroupTypes();
 
@@ -65,9 +63,11 @@ public class GroupListFragment extends Fragment {
 
             //check if group exists for current day
             for (GroupType curGroupType: groupTypes) {
-                if (studentsRepository.isGroupExists(currentDate,curGroupType.getTime())) {
-                    groupsData.add(new GroupsRecyclerAdapter.GroupData(currentDate, curGroupType));
-                }
+                LocalDate finalCurrentDate = currentDate;
+                studentsRepository.getLessonList(currentDate,curGroupType).observe(getViewLifecycleOwner(), lessons -> {
+                    if(lessons!=null)
+                        groupsData.add(new GroupsRecyclerAdapter.GroupData(finalCurrentDate, curGroupType));
+                });
             }
             currentDate = currentDate.plusDays(1);
         }
@@ -84,8 +84,8 @@ public class GroupListFragment extends Fragment {
         // set add and delete buttons
 
         FloatingActionButton btn_floating_addnewgroup = mainView.findViewById(R.id.fab_add_new_group);
-        btn_floating_addnewgroup.setTag(adapter);
-        btn_floating_addnewgroup.setOnClickListener(view -> DialogHandler.getInstance().CreateNewGroup(this,(RecyclerView.Adapter) view.getTag(), null, null,null));
+        btn_floating_addnewgroup.setTag(R.id.adapter,adapter);
+        btn_floating_addnewgroup.setOnClickListener(view -> DialogHandler.getInstance().CreateNewGroup(this,(RecyclerView.Adapter) view.getTag(R.id.adapter), null, null,null));
 
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_help);
         btn_floating_helpbutton.setOnClickListener(v ->

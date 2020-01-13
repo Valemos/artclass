@@ -21,12 +21,6 @@ import static androidx.room.ForeignKey.CASCADE;
 @RequiresApi(api = Build.VERSION_CODES.O)
 
 @Entity(
-        foreignKeys = @ForeignKey(
-        entity = Student.class,
-        parentColumns = "name",
-        childColumns = "studentName",
-        onDelete = CASCADE),
-
         primaryKeys = {"dateTime","studentName"},
         indices = @Index(value = {"dateTime","studentName"},unique = true)
 )
@@ -37,11 +31,16 @@ public class Lesson {
     private LocalDateTime dateTime;
 
     @NonNull
+    @ForeignKey(
+            entity = Student.class,
+            parentColumns = "name",
+            childColumns = "studentName",
+            onDelete = CASCADE)
     private final String studentName;
 
     private int hoursWorked;
 
-    public Lesson(@NotNull LocalDateTime dateTime,final String studentName, int hoursWorked) {
+    public Lesson(@NotNull LocalDateTime dateTime, @NotNull final String studentName, int hoursWorked) {
         this.dateTime = dateTime;
         this.studentName = studentName;
         this.hoursWorked = hoursWorked;
@@ -51,8 +50,8 @@ public class Lesson {
         this(LocalDateTime.of(date,groupType.getTime()), studentName, 0);
     }
 
-    public Lesson(LocalDate fullDate, LocalTime time, Student student) {
-        this(LocalDateTime.of(fullDate,time), student.getName(), 0);
+    public Lesson(LocalDate fullDate, Student student, GroupType groupType) {
+        this(LocalDateTime.of(fullDate,groupType.getTime()), student.getName(), 0);
     }
 
     public Lesson(LocalDateTime dateTime, Student student) {

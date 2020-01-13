@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.list_adapters;
 
 import android.content.Context;
 import android.widget.ArrayAdapter;
