@@ -1,6 +1,5 @@
 package com.app.artclass.recycler_adapters;
 
-import android.content.Context;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.artclass.DialogHandler;
+import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.GroupType;
-import com.app.artclass.database.Student;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.GroupRedactorFragment;
 import com.app.artclass.R;

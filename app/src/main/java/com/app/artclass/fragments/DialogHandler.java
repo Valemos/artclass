@@ -1,4 +1,4 @@
-package com.app.artclass;
+package com.app.artclass.fragments;
 
 import android.app.AlertDialog;
 import android.app.Application;
@@ -22,6 +22,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.Abonement;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;

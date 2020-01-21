@@ -12,7 +12,6 @@ import com.app.artclass.UserSettings;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +26,8 @@ public class StudentsRepository {
     private LessonDao mLessonDao;
     private AbonementDao mAbonementDao;
     private GroupTypeDao mGroupTypeDao;
+    private LiveData<List<Student>> allStudentsData;
+    private List<Student> allStudentsList;
 
     public static StudentsRepository getInstance(Application application){
         if (instance == null){
@@ -42,6 +43,9 @@ public class StudentsRepository {
         this.mLessonDao = db.lessonDao();
         this.mAbonementDao = db.abonementDao();
         this.mGroupTypeDao = db.groupTypeDao();
+
+
+        this.allStudentsData =  mStudentDao.getAll();
     }
 
     @Nullable
@@ -84,7 +88,8 @@ public class StudentsRepository {
     }
 
     public LiveData<List<Student>> getAllStudents() {
-        return mStudentDao.getAll();
+        System.out.println(allStudentsData.getValue());
+        return allStudentsData;
     }
 
     public void addGroup(LocalDateTime groupDate, List<Student> students) {
@@ -130,16 +135,12 @@ public class StudentsRepository {
             mStudentDao.insert(t3);
             mStudentDao.insert(t4);
 
-            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),t1,UserSettings.getInstance().getAllGroupTypes().get(0)));
-            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),t2,UserSettings.getInstance().getAllGroupTypes().get(0)));
-            mLessonDao.insert(new Lesson(LocalDate.now(),t2,UserSettings.getInstance().getAllGroupTypes().get(1)));
-            mLessonDao.insert(new Lesson(LocalDate.now(),t3,UserSettings.getInstance().getAllGroupTypes().get(1)));
-            mLessonDao.insert(new Lesson(LocalDate.now(),t4,UserSettings.getInstance().getAllGroupTypes().get(1)));
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(1),t1,UserSettings.getInstance().getAllGroupTypes().get(1)));
+            mLessonDao.insert(new Lesson(LocalDate.now().plusDays(2),t2,UserSettings.getInstance().getAllGroupTypes().get(1)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t2,UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t3,UserSettings.getInstance().getAllGroupTypes().get(0)));
+            mLessonDao.insert(new Lesson(LocalDate.now(),t4,UserSettings.getInstance().getAllGroupTypes().get(0)));
         });
-    }
-
-    public LiveData<List<Student>> getStudentsForNames(List<String> names) {
-        return mStudentDao.getAllByNames(names);
     }
 
     public void insertAbonements(List<Abonement> allAbonements) {
@@ -148,6 +149,15 @@ public class StudentsRepository {
 
     public void insertGroupTypes(List<GroupType> allGroupTypes) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> allGroupTypes.forEach(groupType -> mGroupTypeDao.insert(groupType)));
+    }
+
+    public LiveData<Student> getStudentForName(String name) {
+        return mStudentDao.get(name);
+    }
+
+    public LiveData<List<Student>> getStudentsForNames(List<String> selectedStudentNames) {
+
+        return mStudentDao.getAllByNames(selectedStudentNames);
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)

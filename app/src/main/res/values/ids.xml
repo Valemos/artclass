@@ -8,4 +8,5 @@
     <item name="lessons_list" type="id" />
     <item name="student" type="id" />
     <item name="lesson" type="id" />
+    <item name="student_pos" type="id" />
 </resources>

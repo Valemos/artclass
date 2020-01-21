@@ -23,13 +23,7 @@ public class ApplicationViewModelFactory implements ViewModelProvider.Factory {
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         try {
             return modelClass.getConstructor().newInstance(application);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return null;

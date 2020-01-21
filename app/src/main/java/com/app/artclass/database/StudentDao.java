@@ -19,7 +19,7 @@ public interface StudentDao {
     LiveData<List<Student>> getAll();
 
     @Transaction
-    @Query("SELECT * FROM student WHERE name=:name")
+    @Query("SELECT * FROM student WHERE name=:name LIMIT 1")
     LiveData<Student> get(String name);
 
     @Transaction

@@ -3,6 +3,7 @@ package com.app.artclass.database;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -69,6 +70,21 @@ public class Lesson {
 
     public int getHoursWorked() {
         return hoursWorked;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        Lesson lesson = null;
+        try {
+            lesson = (Lesson)obj;
+            assert lesson != null;
+        }catch (Exception e){
+            return false;
+        }
+
+        return studentName.equals(lesson.getStudentName()) &&
+                dateTime.equals(lesson.dateTime) &&
+                hoursWorked==lesson.hoursWorked;
     }
 
     public void setHoursWorked(int hours_worked) {

@@ -8,10 +8,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -19,14 +22,17 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import com.app.artclass.ApplicationViewModel;
+import com.app.artclass.database.GroupType;
+import com.app.artclass.database.Lesson;
 import com.app.artclass.list_adapters.LessonsAdapter;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
-import com.app.artclass.database.StudentsRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -41,7 +47,7 @@ public class StudentsPresentList extends Fragment {
 
     LocalDate groupsDate;
 
-    public StudentsPresentList() {
+    public  StudentsPresentList() {
         this.groupsDate = LocalDate.now();
     }
 
@@ -80,24 +86,26 @@ public class StudentsPresentList extends Fragment {
         spinnerCurGroup.setAdapter(spinnerGroupAdapter);
 
         //setup the data when ready
-        ApplicationViewModel mAppViewModel = new ApplicationViewModel(StudentsRepository.getInstance().getMainApplication());
+        ApplicationViewModel mAppViewModel = ViewModelProviders.of(this).get(ApplicationViewModel.class);;
+        Map<GroupType, LiveData<List<Lesson>>> todayGroups = mAppViewModel.getTodayGroupsMap(groupsDate, this);
 
-        mAppViewModel.getTodayGroupsMap(groupsDate, this).observe(getViewLifecycleOwner(), groupsMap -> {
-
-            // handle adding new group type in settings
-            // can cause exception
-
-            UserSettings.getInstance().getAllGroupTypes().forEach(groupType -> {
-                if(spinnerCurGroup.getSelectedItem().equals(groupType)){
-                    //observe live data when list available change it
-                   groupsMap.get(groupType).observe(getViewLifecycleOwner(),lessons -> {
-                       lessonsAdapter.clear();
-                       lessonsAdapter.addAll(lessons);
-                       lessonsAdapter.notifyDataSetChanged();
-                   });
+        spinnerCurGroup.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(todayGroups.get(spinnerCurGroup.getSelectedItem())!=null) {
+                    lessonsAdapter.updateRepository();
+                    todayGroups.get(spinnerCurGroup.getSelectedItem()).observe(getViewLifecycleOwner(),lessons -> {
+                        lessonsAdapter.updateData(lessons);
+                    });
+                }else{
+                    lessonsAdapter.clear();
                 }
-            });
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                lessonsAdapter.clear();
+            }
         });
 
         return view;

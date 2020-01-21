@@ -20,7 +20,6 @@ import java.util.Objects;
 public class UserSettings {
 
     private List<GroupType> allGroupTypes;
-
     private List<Abonement> allAbonements;
 
     private List<String> allWeekdaysStr = new ArrayList<>(

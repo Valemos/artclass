@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.app.artclass.DialogHandler;
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.Student;

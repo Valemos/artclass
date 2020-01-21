@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.AllStudentsListFragment;
+import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.fragments.GroupListFragment;
 import com.app.artclass.fragments.StudentsPresentList;
 import com.google.android.material.navigation.NavigationView;
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity
         initSingltones(getApplication());
 
         StudentsRepository.getInstance().resetDatabase(getBaseContext());
-
         StudentsRepository.getInstance().initDefaultSettings();
 
         //start page

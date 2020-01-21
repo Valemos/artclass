@@ -16,10 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.app.artclass.DialogHandler;
 import com.app.artclass.R;
 import com.app.artclass.database.DatabaseConverters;
-import com.app.artclass.database.Student;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.GroupType;
 import com.app.artclass.database.Lesson;
@@ -30,7 +28,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 /**
