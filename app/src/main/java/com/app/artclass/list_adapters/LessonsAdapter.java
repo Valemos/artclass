@@ -79,7 +79,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-        refreshField(((View)view.getParent().getParent()), lesson);
+//        refreshField(((View)view.getParent().getParent()), lesson);
     };
 
     private View.OnClickListener incrementListener = view -> {
@@ -89,7 +89,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-        refreshField(((View)view.getParent().getParent()), lesson);
+//        refreshField(((View)view.getParent().getParent()), lesson);
     };
 
     private void refreshField(View view, Lesson lesson) {

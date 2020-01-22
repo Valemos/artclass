@@ -108,7 +108,7 @@ public class StudentsPresentList extends Fragment {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             todayGroups.forEach((groupType, listLiveData) -> listLiveData.removeObservers(getViewLifecycleOwner()));
-            todayGroups.getOrDefault(parent.getItemAtPosition(pos),null).observe(getViewLifecycleOwner(), lessons -> {
+            todayGroups.get(parent.getItemAtPosition(pos)).observe(getViewLifecycleOwner(), lessons -> {
                 if(lessons.size()>0){
                     lessonsAdapter.updateRepository();
                     lessonsAdapter.changeData(lessons);
