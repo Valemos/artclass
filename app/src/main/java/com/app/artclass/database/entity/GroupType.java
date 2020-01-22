@@ -1,10 +1,12 @@
-package com.app.artclass.database;
+package com.app.artclass.database.entity;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
+
+import com.app.artclass.database.DatabaseConverters;
 
 import java.time.LocalTime;
 

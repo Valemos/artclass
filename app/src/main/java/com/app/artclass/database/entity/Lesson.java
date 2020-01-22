@@ -1,66 +1,55 @@
-package com.app.artclass.database;
+package com.app.artclass.database.entity;
 
 import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.room.ColumnInfo;
+import androidx.room.Embedded;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
+import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
+
+import com.app.artclass.database.DatabaseConverters;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-
-import static androidx.room.ForeignKey.CASCADE;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 
-@Entity(
-        primaryKeys = {"dateTime","studentName"},
-        indices = @Index(value = {"dateTime","studentName"},unique = true)
-)
+@Entity(indices = @Index(value = {"dateTime","stud_id"},unique = true))
 public class Lesson {
+
+    @PrimaryKey(autoGenerate = true)
+    private long lessonId;
 
     @NonNull
     @TypeConverters({DatabaseConverters.class})
     private LocalDateTime dateTime;
 
     @NonNull
-    @ForeignKey(
-            entity = Student.class,
-            parentColumns = "name",
-            childColumns = "studentName",
-            onDelete = CASCADE)
-    private final String studentName;
+    @Embedded(prefix = "stud_")
+    private Student student;
 
     private int hoursWorked;
 
-    public Lesson(@NotNull LocalDateTime dateTime, @NotNull final String studentName, int hoursWorked) {
-        this.dateTime = dateTime;
-        this.studentName = studentName;
-        this.hoursWorked = hoursWorked;
-    }
-
-    public Lesson(LocalDate date, String studentName, GroupType groupType){
-        this(LocalDateTime.of(date,groupType.getTime()), studentName, 0);
-    }
-
     public Lesson(LocalDate fullDate, Student student, GroupType groupType) {
-        this(LocalDateTime.of(fullDate,groupType.getTime()), student.getName(), 0);
+        this(LocalDateTime.of(fullDate,groupType.getTime()), student, 0);
     }
 
+    @Ignore
     public Lesson(LocalDateTime dateTime, Student student) {
-        this(dateTime, student.getName(), 0);
+        this(dateTime, student, 0);
     }
 
     public Lesson(LocalDateTime dateTime, Student student, int hoursWorked) {
-        this(dateTime, student.getName(), hoursWorked);
+        this.dateTime = dateTime;
+        this.student = student;
+        this.hoursWorked = hoursWorked;
     }
 
     @NotNull
@@ -77,21 +66,30 @@ public class Lesson {
         Lesson lesson = null;
         try {
             lesson = (Lesson)obj;
-            assert lesson != null;
         }catch (Exception e){
             return false;
         }
 
-        return studentName.equals(lesson.getStudentName()) &&
+        assert lesson != null;
+
+        return student.getId()==(lesson.getStudent().getId()) &&
                 dateTime.equals(lesson.dateTime) &&
                 hoursWorked==lesson.hoursWorked;
+    }
+
+    public Student getStudent() {
+        return student;
     }
 
     public void setHoursWorked(int hours_worked) {
         this.hoursWorked = hours_worked;
     }
 
-    public String getStudentName() {
-        return studentName;
+    public long getLessonId() {
+        return lessonId;
+    }
+
+    public void setLessonId(long lessonId) {
+        this.lessonId = lessonId;
     }
 }

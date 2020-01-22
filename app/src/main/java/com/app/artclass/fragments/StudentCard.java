@@ -26,8 +26,8 @@ import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
-import com.app.artclass.database.Lesson;
-import com.app.artclass.database.Student;
+import com.app.artclass.database.entity.Lesson;
+import com.app.artclass.database.entity.Student;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -90,16 +90,16 @@ public class StudentCard extends Fragment {
 
         addMoney_btn.setOnClickListener(v -> {
             EditText moneyText = (EditText) v.getTag();
-            student.incrementBalance(Integer.valueOf(moneyText.getText().toString()));
+            student.incrementMoneyBalance(Integer.valueOf(moneyText.getText().toString()));
             updateBalance();
             moneyText.setText("");
         });
         makeZeroMoney.setOnClickListener(v -> {
-            student.setBalance(0);
+            student.setMoneyBalance(0);
             updateBalance();
         });
         View.OnClickListener incrBtnClickListener = v -> {
-            student.incrementBalance((Integer) v.getTag());
+            student.incrementMoneyBalance((Integer) v.getTag());
             updateBalance();
         };
         add1_btn.setOnClickListener(incrBtnClickListener);
@@ -139,14 +139,14 @@ public class StudentCard extends Fragment {
     }
 
     private void updateBalance(){
-        ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.getBalance()));
+        ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.getMoneyBalance()));
         studentsRepository.update(student);
     }
 
     @SuppressLint("DefaultLocale")
     private void updateStudentFields(View view, @NotNull Student curStudent) {
         ((TextView)view.findViewById(R.id.student_name_view)).setText(curStudent.getName());
-        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(curStudent.getBalance()));
+        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(curStudent.getMoneyBalance()));
         ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(curStudent.getAbonementType().getName());
         ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", curStudent.getHoursBalance()));
         ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", curStudent.getPhoneList()));

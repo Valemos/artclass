@@ -18,7 +18,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
-import com.app.artclass.database.Lesson;
+import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.fragments.StudentCard;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     private void refreshElementView(View view, Lesson lesson){
         TextView nameView = view.findViewById(R.id.name_view);
         TextView hoursTextView = view.findViewById(R.id.hours_left_view);
-        nameView.setText(lesson.getStudentName());
+        nameView.setText(lesson.getStudent().getName());
         hoursTextView.setText(String.valueOf(lesson.getHoursWorked()));
     }
 
@@ -72,7 +72,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
         TextView hoursTextView = convertView.findViewById(R.id.hours_left_view);
         CheckBox checkBox = convertView.findViewById(R.id.checkBox);
 
-        nameView.setText(lessonsList.get(position).getStudentName());
+        nameView.setText(lessonsList.get(position).getStudent().getName());
         hoursTextView.setText(String.valueOf(lessonsList.get(position).getHoursWorked()));
 
         convertView.setOnLongClickListener(this);
@@ -86,7 +86,7 @@ public class GroupRedactorAdapter extends LocalAdapter<Lesson> implements View.O
     @Override
     public boolean onLongClick(View v) {
         Lesson lesson = (Lesson) v.getTag(R.id.lesson);
-        studentsRepository.getStudent(lesson.getStudentName()).observe(fragment,student -> {
+        studentsRepository.getStudent(lesson.getStudent().getName()).observe(fragment,student -> {
             if(student!=null){
                 StudentCard studentCard = new StudentCard(student);
                 fragmentManager.beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();

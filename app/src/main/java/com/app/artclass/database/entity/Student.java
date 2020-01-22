@@ -1,4 +1,4 @@
-package com.app.artclass.database;
+package com.app.artclass.database.entity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,27 +9,29 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import com.app.artclass.database.DatabaseConverters;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(indices = {@Index(value = {"name"}, unique = true)})
 public class Student implements Comparable{
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private long id;
 
     @NonNull
     private final String name;
 
     @TypeConverters({DatabaseConverters.class})
-    private List<String> phoneList;
+    private List<String> phoneList = new ArrayList<>();
 
     @Embedded
     private Abonement abonementType;
 
-    private int balance;
+    private int moneyBalance;
 
     private int hoursBalance;
 
@@ -43,18 +45,18 @@ public class Student implements Comparable{
         }
     }
 
-    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int balance, int hoursBalance) {
+    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int moneyBalance, int hoursBalance) {
         this.name = name;
         this.phoneList = phoneList;
         this.abonementType = abonementType;
-        this.balance = balance;
+        this.moneyBalance = moneyBalance;
         this.hoursBalance = hoursBalance;
     }
 
     @Ignore
-    public Student(@NotNull String name, int balance, Abonement abonementType) {
+    public Student(@NotNull String name, int moneyBalance, Abonement abonementType) {
         this.name = name;
-        this.setBalance(balance);
+        this.setMoneyBalance(moneyBalance);
 
         this.setAbonementType(abonementType);
         this.hoursBalance = abonementType.getHours();
@@ -73,16 +75,16 @@ public class Student implements Comparable{
         return name;
     }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
+    public void setMoneyBalance(int moneyBalance) {
+        this.moneyBalance = moneyBalance;
     }
 
-    public int getBalance() {
-        return balance;
+    public int getMoneyBalance() {
+        return moneyBalance;
     }
 
-    public void incrementBalance(int incr){
-        balance += incr;
+    public void incrementMoneyBalance(int incr){
+        moneyBalance += incr;
     }
 
     public List<String> getPhoneList() {
@@ -110,11 +112,11 @@ public class Student implements Comparable{
         }
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 }

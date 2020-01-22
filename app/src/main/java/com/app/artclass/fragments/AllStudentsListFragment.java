@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
-import com.app.artclass.database.Student;
+import com.app.artclass.database.entity.Student;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 

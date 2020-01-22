@@ -11,14 +11,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.StudentCard;
-import com.app.artclass.database.Student;
+import com.app.artclass.database.entity.Student;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -119,7 +117,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             if(parameterTextId == R.id.hours_left_view){
                 parameterView.setText(String.valueOf(studentList.get(position).getHoursBalance())+" h");
             }else if(parameterTextId == R.id.balance_view){
-                parameterView.setText(String.valueOf(studentList.get(position).getBalance()));
+                parameterView.setText(String.valueOf(studentList.get(position).getMoneyBalance()));
             }
         }
 

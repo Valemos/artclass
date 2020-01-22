@@ -22,8 +22,8 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import com.app.artclass.ApplicationViewModel;
-import com.app.artclass.database.GroupType;
-import com.app.artclass.database.Lesson;
+import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.list_adapters.LessonsAdapter;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
@@ -87,28 +87,41 @@ public class StudentsPresentList extends Fragment {
 
         //setup the data when ready
         ApplicationViewModel mAppViewModel = ViewModelProviders.of(this).get(ApplicationViewModel.class);;
-        Map<GroupType, LiveData<List<Lesson>>> todayGroups = mAppViewModel.getTodayGroupsMap(groupsDate, this);
 
-        spinnerCurGroup.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(todayGroups.get(spinnerCurGroup.getSelectedItem())!=null) {
-                    lessonsAdapter.updateRepository();
-                    todayGroups.get(spinnerCurGroup.getSelectedItem()).observe(getViewLifecycleOwner(),lessons -> {
-                        lessonsAdapter.updateData(lessons);
-                    });
-                }else{
-                    lessonsAdapter.clear();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                lessonsAdapter.clear();
-            }
-        });
+        SpinnerInteractionListener spinnerListener = new SpinnerInteractionListener(mAppViewModel, groupsDate, lessonsAdapter);
+        spinnerCurGroup.setOnItemSelectedListener(spinnerListener);
+        spinnerCurGroup.setSelection(0,false);
 
         return view;
     }
 
+    private class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener {
+
+        Map<GroupType, LiveData<List<Lesson>>> todayGroups;
+        private LessonsAdapter lessonsAdapter;
+
+        public SpinnerInteractionListener(ApplicationViewModel mAppViewModel, LocalDate groupsDate, LessonsAdapter lessonsAdapter) {
+            this.lessonsAdapter = lessonsAdapter;
+            todayGroups = mAppViewModel.getTodayGroupsMap(groupsDate, UserSettings.getInstance().getAllGroupTypes());
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            todayGroups.forEach((groupType, listLiveData) -> listLiveData.removeObservers(getViewLifecycleOwner()));
+            todayGroups.getOrDefault(parent.getItemAtPosition(pos),null).observe(getViewLifecycleOwner(), lessons -> {
+                if(lessons.size()>0){
+                    lessonsAdapter.updateRepository();
+                    lessonsAdapter.changeData(lessons);
+                }else{
+                    lessonsAdapter.clear();
+                }
+            });
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            lessonsAdapter.clear();
+            lessonsAdapter.notifyDataSetChanged();
+        }
+    }
 }

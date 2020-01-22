@@ -1,13 +1,10 @@
 package com.app.artclass;
 
-import android.app.Application;
-
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.app.artclass.database.GroupType;
-import com.app.artclass.database.Lesson;
+import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.database.StudentsRepository;
 
 import java.time.LocalDate;
@@ -24,16 +21,14 @@ public class ApplicationViewModel extends ViewModel {
     public ApplicationViewModel() {
     }
 
-    public Map<GroupType, LiveData<List<Lesson>>> getTodayGroupsMap(LocalDate date, Fragment fragment) {
+    public Map<GroupType, LiveData<List<Lesson>>> getTodayGroupsMap(LocalDate date, List<GroupType> groupTypes) {
         if(allTodayGroupsMap == null || !groupsDate.equals(date)){
             allTodayGroupsMap = new HashMap<>();
-            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
+            for (GroupType groupType : groupTypes) {
                 allTodayGroupsMap.put(groupType,StudentsRepository.getInstance().getLessonList(date,groupType));
             }
             groupsDate = date;
         }
         return allTodayGroupsMap;
     }
-
-
 }

@@ -1,13 +1,12 @@
 package com.app.artclass;
 
-import android.content.Context;
 import android.os.Build;
 import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
 
-import com.app.artclass.database.Abonement;
-import com.app.artclass.database.GroupType;
+import com.app.artclass.database.entity.Abonement;
+import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
 
 import java.time.LocalTime;

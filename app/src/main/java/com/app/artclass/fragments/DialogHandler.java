@@ -24,12 +24,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.Abonement;
+import com.app.artclass.database.entity.Abonement;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
-import com.app.artclass.database.GroupType;
-import com.app.artclass.database.Lesson;
-import com.app.artclass.database.Student;
+import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.Lesson;
+import com.app.artclass.database.entity.Student;
 import com.app.artclass.recycler_adapters.GroupsRecyclerAdapter;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 

@@ -19,8 +19,8 @@ import android.widget.TextView;
 import com.app.artclass.R;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
-import com.app.artclass.database.GroupType;
-import com.app.artclass.database.Lesson;
+import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -39,7 +39,7 @@ public class GroupRedactorFragment extends Fragment {
 
     private LocalDate dateValue;
     private GroupType groupType;
-    private LiveData<List<Lesson>> lessonList;
+    private LiveData<List<Lesson>> lessonslistData;
     private FragmentManager fragmentManager;
     private StudentsRepository studentsRepository;
 
@@ -51,7 +51,7 @@ public class GroupRedactorFragment extends Fragment {
         this.dateValue = date;
         this.groupType = groupType;
         this.studentsRepository = StudentsRepository.getInstance();
-        this.lessonList = studentsRepository.getLessonList(LocalDateTime.of(date,groupType.getTime()));
+        this.lessonslistData = studentsRepository.getLessonList(LocalDateTime.of(date,groupType.getTime()));
         this.fragmentManager = fragmentManager;
     }
 
@@ -96,14 +96,8 @@ public class GroupRedactorFragment extends Fragment {
         });
         btn_delete_selected.setTag(adapter);
 
-        lessonList.observe(this, lessons -> {
-            List<String> nameList = new ArrayList<>();
-
-            lessons.forEach(lesson -> nameList.add(lesson.getStudentName()));
-
-            studentsRepository.getStudentsForNames(nameList).observe(getViewLifecycleOwner(), studentList -> {
-
-            });
+        lessonslistData.observe(this, lessons -> {
+            //lessons.forEach(lesson -> ));
         });
 
         return view;

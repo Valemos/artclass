@@ -1,4 +1,4 @@
-package com.app.artclass.database;
+package com.app.artclass.database.entity;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
@@ -9,11 +9,12 @@ public class Abonement {
 
     @NonNull
     @PrimaryKey
+    public
     String abonementName;
 
     int abonementPrice;
 
-    int hoursToWork;
+    public int hoursToWork;
 
     public Abonement(String abonementName, int abonementPrice, int hoursToWork) {
         this.abonementName = abonementName;
@@ -27,6 +28,10 @@ public class Abonement {
         return abonementName;
     }
 
+    public static Abonement getNoAbonement(){
+        return new Abonement("без абонемента",0,0);
+    }
+
     public int getPrice() {
         return abonementPrice;
     }
@@ -37,5 +42,21 @@ public class Abonement {
 
     public String getName() {
         return abonementName;
+    }
+
+    public void setName(@NonNull String abonementName) {
+        this.abonementName = abonementName;
+    }
+
+    public int getAbonementPrice() {
+        return abonementPrice;
+    }
+
+    public void setPrice(int abonementPrice) {
+        this.abonementPrice = abonementPrice;
+    }
+
+    public void setHours(int hoursToWork) {
+        this.hoursToWork = hoursToWork;
     }
 }

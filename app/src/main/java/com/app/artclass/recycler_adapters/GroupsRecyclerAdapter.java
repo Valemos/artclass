@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.GroupType;
+import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.GroupRedactorFragment;
 import com.app.artclass.R;

@@ -1,4 +1,4 @@
-package com.app.artclass.database;
+package com.app.artclass.database.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -7,9 +7,11 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
-import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 import androidx.room.Update;
+
+import com.app.artclass.database.DatabaseConverters;
+import com.app.artclass.database.entity.Lesson;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,11 +28,11 @@ public interface LessonDao {
     LiveData<List<Lesson>> getForDateTime(@TypeConverters({DatabaseConverters.class}) LocalDateTime date_time);
 
     @Transaction
-    @Query("SELECT * FROM lesson WHERE studentName=:name")
+    @Query("SELECT * FROM lesson WHERE stud_name=:name")
     LiveData<List<Lesson>> getForStudent(String name);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Lesson lesson);
+    long insert(Lesson lesson);
 
     @Update
     void update(Lesson lesson);
@@ -43,10 +45,10 @@ public interface LessonDao {
     void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND studentName = :name")
+    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND stud_name = :name")
     void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, String name);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND studentName IN (:studentNames)")
+    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND stud_name IN (:studentNames)")
     void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, List<String> studentNames);
 }

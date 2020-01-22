@@ -43,30 +43,18 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        // must be initialised
+        // very important
+        // must call initialisation
         // before using singleton classes
         initSingltones(getApplication());
 
-        StudentsRepository.getInstance().resetDatabase(getBaseContext());
+        assert StudentsRepository.getInstance() != null;
         StudentsRepository.getInstance().initDefaultSettings();
 
         //start page
         StudentsPresentList list = new StudentsPresentList(LocalDate.now());
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.contentmain, list).commit();
-
-        // test place
-
-//        StudentsPresentList listFragment = new StudentsPresentList(studentDataManager);
-//        fragmentManager.beginTransaction().replace(R.id.contentmain, listFragment).commit();
-
-
-//        GroupListFragment groupListFragment = new GroupListFragment(fragmentManager);
-//        fragmentManager.beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
-
-
-//        AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment(fragmentManager);
-//        fragmentManager.beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
     }
 
     private void initSingltones(Application application) {
@@ -111,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        if(id == R.id.nav_home){
+        if(id == R.id.nav_students_present){
 
             StudentsPresentList listFragment = new StudentsPresentList();
             fragmentManager.beginTransaction().replace(R.id.contentmain, listFragment).commit();

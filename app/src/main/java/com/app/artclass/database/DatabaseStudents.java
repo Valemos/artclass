@@ -2,25 +2,30 @@ package com.app.artclass.database;
 
 
 import android.content.Context;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.app.artclass.UserSettings;
+import com.app.artclass.database.dao.AbonementDao;
+import com.app.artclass.database.dao.GroupTypeDao;
+import com.app.artclass.database.dao.LessonDao;
+import com.app.artclass.database.dao.StudentDao;
+import com.app.artclass.database.entity.Abonement;
+import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.Lesson;
+import com.app.artclass.database.entity.Student;
 
-import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class,Lesson.class,Abonement.class,GroupType.class}, version = 4, exportSchema = false)
+@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 8, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
-    public static final String DATABASE_NAME = "studentsData";
+    public static final String DATABASE_NAME = "students_database.db";
     private static volatile DatabaseStudents instance;
 
     private static final int NUMBER_OF_THREADS = 4;
@@ -36,7 +41,7 @@ public abstract class DatabaseStudents extends RoomDatabase {
         if (instance == null) {
             synchronized (DatabaseStudents.class) {
                 if (instance == null) {
-                    instance = Room.databaseBuilder(context.getApplicationContext(),DatabaseStudents.class, "word_database")
+                    instance = Room.databaseBuilder(context.getApplicationContext(),DatabaseStudents.class, DatabaseStudents.DATABASE_NAME)
                             .addCallback(DatabaseCallback)
                             .fallbackToDestructiveMigration()
                             .build();
@@ -50,6 +55,9 @@ public abstract class DatabaseStudents extends RoomDatabase {
         @Override
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
+
+            assert StudentsRepository.getInstance() != null;
+            UserSettings.getInstance().writeSettingsToRepository(StudentsRepository.getInstance());
         }
     };
 }

@@ -1,4 +1,4 @@
-package com.app.artclass.database;
+package com.app.artclass.database.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -8,6 +8,8 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
+
+import com.app.artclass.database.entity.Student;
 
 import java.util.List;
 
@@ -27,7 +29,7 @@ public interface StudentDao {
     LiveData<List<Student>> getAllByNames(List<String> names);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Student student);
+    long insert(Student student);
 
     @Update
     void update(Student student);
