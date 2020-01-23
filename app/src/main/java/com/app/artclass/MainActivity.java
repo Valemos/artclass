@@ -27,8 +27,6 @@ import java.time.LocalDate;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private FragmentManager fragmentManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,9 +50,11 @@ public class MainActivity extends AppCompatActivity
         StudentsRepository.getInstance().initDefaultSettings();
 
         //start page
-        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
-        fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.contentmain, list).commit();
+//        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
+//        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, list).commit();
+        GroupListFragment groupListFragment = new GroupListFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
+
     }
 
     private void initSingltones(Application application) {
@@ -102,17 +102,17 @@ public class MainActivity extends AppCompatActivity
         if(id == R.id.nav_students_present){
 
             StudentsPresentList listFragment = new StudentsPresentList();
-            fragmentManager.beginTransaction().replace(R.id.contentmain, listFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, listFragment).commit();
 
         }else if (id == R.id.nav_groups) {
 
             GroupListFragment groupListFragment = new GroupListFragment();
-            fragmentManager.beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
 
         }else if (id == R.id.nav_allstudents){
 
             AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
-            fragmentManager.beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
 
         }
 

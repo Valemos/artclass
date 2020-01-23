@@ -306,7 +306,7 @@ public class DialogHandler {
 
                 if (outerAdapter != null) {
                     if (outerAdapter.getClass().equals(GroupsRecyclerAdapter.class)) {
-                        ((GroupsRecyclerAdapter) outerAdapter).addGroup(groupDate, curGroupType);
+                        ((GroupsRecyclerAdapter) outerAdapter).addGroup(new GroupsRecyclerAdapter.GroupData(groupDate, curGroupType));
                     } else if (outerAdapter.getClass().equals(StudentsRecyclerAdapter.class)) {
                         ((StudentsRecyclerAdapter) outerAdapter).setStudents(studentList);
                     }

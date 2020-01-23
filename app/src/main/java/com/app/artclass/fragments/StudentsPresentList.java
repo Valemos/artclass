@@ -44,6 +44,7 @@ public class StudentsPresentList extends Fragment {
 
     ListView lessonsTodayList;
     Spinner spinnerCurGroup;
+    LessonsAdapter lessonsAdapter;
 
     LocalDate groupsDate;
 
@@ -53,6 +54,12 @@ public class StudentsPresentList extends Fragment {
 
     public StudentsPresentList(LocalDate date) {
         this.groupsDate = date;
+    }
+
+    @Override
+    public void onDestroy() {
+        lessonsAdapter.updateRepository();
+        super.onDestroy();
     }
 
     @Override
@@ -75,7 +82,7 @@ public class StudentsPresentList extends Fragment {
         dateView.setText(groupsDate.format(DatabaseConverters.getDateFormatter()));
 
         //setup the adapters
-        LessonsAdapter lessonsAdapter = new LessonsAdapter(this,R.layout.item_students_presentlist, new ArrayList<>());
+        lessonsAdapter = new LessonsAdapter(this,R.layout.item_students_presentlist, new ArrayList<>());
         lessonsTodayList.setAdapter(lessonsAdapter);
 
         SpinnerAdapter spinnerGroupAdapter = new ArrayAdapter<>(
@@ -98,20 +105,23 @@ public class StudentsPresentList extends Fragment {
     private class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener {
 
         Map<GroupType, LiveData<List<Lesson>>> todayGroups;
+        private final ApplicationViewModel mAppViewModel;
+        private final LocalDate date;
         private LessonsAdapter lessonsAdapter;
 
-        public SpinnerInteractionListener(ApplicationViewModel mAppViewModel, LocalDate groupsDate, LessonsAdapter lessonsAdapter) {
+        public SpinnerInteractionListener(ApplicationViewModel mAppViewModel, LocalDate date, LessonsAdapter lessonsAdapter) {
+            this.mAppViewModel = mAppViewModel;
+            this.date = date;
             this.lessonsAdapter = lessonsAdapter;
-            todayGroups = mAppViewModel.getTodayGroupsMap(groupsDate, UserSettings.getInstance().getAllGroupTypes());
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            todayGroups.forEach((groupType, listLiveData) -> listLiveData.removeObservers(getViewLifecycleOwner()));
-            todayGroups.get(parent.getItemAtPosition(pos)).observe(getViewLifecycleOwner(), lessons -> {
+            mAppViewModel.getTodayGroupsMap(date).forEach((groupType, listLiveData) -> listLiveData.removeObservers(getViewLifecycleOwner()));
+            mAppViewModel.getTodayGroupsMap(date).get(parent.getItemAtPosition(pos)).observe(getViewLifecycleOwner(), lessons -> {
                 if(lessons.size()>0){
                     lessonsAdapter.updateRepository();
-                    lessonsAdapter.changeData(lessons);
+                    lessonsAdapter.changeData(lessons, mAppViewModel, (GroupType)parent.getItemAtPosition(pos));
                 }else{
                     lessonsAdapter.clear();
                 }

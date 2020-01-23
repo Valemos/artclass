@@ -139,6 +139,13 @@ public class StudentsRepository {
         DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.update(lesson));
     }
 
+    public void update(List<Lesson> lessonsList) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> lessonsList.forEach(lesson -> {
+            mStudentDao.update(lesson.getStudent());
+            mLessonDao.update(lesson);
+        }));
+    }
+
     public void delete(@NonNull Student student) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> mStudentDao.delete(student));
     }

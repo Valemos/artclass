@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import com.app.artclass.ApplicationViewModel;
+import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
@@ -36,7 +38,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
         this.fragment = fragment;
 
         lessonsList = lessons;
-        changeData(lessons);
+        changeData(lessons, null, null);
 
         mResource = resource;
     }
@@ -79,7 +81,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-//        refreshField(((View)view.getParent().getParent()), lesson);
+        refreshField(((View)view.getParent().getParent()), lesson);
     };
 
     private View.OnClickListener incrementListener = view -> {
@@ -89,7 +91,7 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-//        refreshField(((View)view.getParent().getParent()), lesson);
+        refreshField(((View)view.getParent().getParent()), lesson);
     };
 
     private void refreshField(View view, Lesson lesson) {
@@ -123,18 +125,21 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
         student.setHoursBalance(finHoursToWork);
     }
 
-    public void changeData(List<Lesson> updateLessons) {
+    public void changeData(List<Lesson> updateLessons, ApplicationViewModel mAppViewModel, GroupType spinnerItem) {
         lessonsList.clear();
         lessonsList.addAll(updateLessons);
         notifyDataSetChanged();
+
+        if(mAppViewModel != null && spinnerItem != null) {
+            if (mAppViewModel.getTodayGroupsMap() != null) {
+                mAppViewModel.getTodayGroupsMap().get(spinnerItem).removeObservers(fragment.getViewLifecycleOwner());
+            }
+        }
     }
 
     public void updateRepository(){
         assert StudentsRepository.getInstance() != null;
 
-        lessonsList.forEach(lesson -> {
-            StudentsRepository.getInstance().update(lesson);
-            StudentsRepository.getInstance().update(lesson.getStudent());
-        });
+        StudentsRepository.getInstance().update(lessonsList);
     }
 }

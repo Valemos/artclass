@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.entity.GroupType;
@@ -20,46 +21,60 @@ import com.app.artclass.fragments.GroupRedactorFragment;
 import com.app.artclass.R;
 import com.app.artclass.database.DatabaseConverters;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAdapter.GroupViewHolder>{
 
     private Fragment fragment;
-    private StudentsRepository studentsRepository;
     private List<GroupViewHolder> viewHolders;
-    private List<GroupData> groupDataList;
 
+    /**
+     * holds lessons for certain GroupData and assures groups has no duplicates
+     */
+    private TreeMap<GroupData, List<Lesson>> groupDataMap;
+    private GroupData[] groupDataKeysArray;
 
-    public GroupsRecyclerAdapter(Fragment fragment, StudentsRepository studentsRepository, List<GroupData> groups) {
+    public GroupsRecyclerAdapter(Fragment fragment, List<GroupData> groups) {
         this.fragment = fragment;
-        this.studentsRepository = studentsRepository;
-
-        groupDataList = groups;
-        groupDataList.sort(GroupData.getGroupsListComparator());
-
-        this.viewHolders = new ArrayList<>();
-
-    }
-
-    public void addGroup(LocalDate dateTime, GroupType groupType){
-        GroupData groupDataNew = new GroupData(dateTime, groupType);
-
-        boolean exists = false;
-        for (GroupData data:groupDataList) {
-            if (data.equals(groupDataNew)){
-                exists=true;
-            }
+        groupDataMap = new TreeMap<>();
+        for (GroupData groupData : groups) {
+            final GroupData finGroupData = groupData;
+            StudentsRepository.getInstance().getLessonList(groupData.date, groupData.groupType)
+                .observe(fragment.getViewLifecycleOwner(), lessons ->
+                    groupDataMap.put(finGroupData, lessons));
         }
 
-        if(!exists)groupDataList.add(groupDataNew);
+        groupDataKeysArray = groupDataMap.keySet().toArray(new GroupData[0]);
 
-        groupDataList.sort(GroupsRecyclerAdapter.GroupData.getGroupsListComparator());
-        this.notifyDataSetChanged();
+        viewHolders = new ArrayList<>();
+    }
+
+    public void addGroup(GroupData groupData){
+        groupDataMap.put(groupData, null);
+        StudentsRepository.getInstance().getLessonList(groupData.date,groupData.groupType).observe(fragment.getViewLifecycleOwner(),lessons ->
+                groupDataMap.put(groupData, lessons.size() > 0 ? lessons : null));
+        groupDataKeysArray = groupDataMap.keySet().toArray(new GroupData[0]);
+        notifyDataSetChanged();
+    }
+
+    public void addGroups(List<GroupData> groupDataList){
+        groupDataList.forEach(groupData -> {
+            groupDataMap.put(groupData, null);
+            StudentsRepository.getInstance().getLessonList(groupData.date,groupData.groupType).observe(fragment.getViewLifecycleOwner(),lessons ->
+                    groupDataMap.put(groupData, lessons.size() > 0 ? lessons : null));
+        });
+
+        groupDataKeysArray = groupDataMap.keySet().toArray(new GroupData[0]);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -78,10 +93,10 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
     @Override
     public int getItemCount() {
-        if(groupDataList == null)
+        if(groupDataMap == null)
             return 0;
         else
-            return groupDataList.size();
+            return groupDataMap.size();
     }
 
     public class GroupViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
@@ -105,21 +120,20 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
             final int deletePos = getAdapterPosition();
             DialogHandler.getInstance()
-                    .ConfirmDeleteObject(fragment.getContext(),fragment.getContext().getString(R.string.group_str) + " for " + groupDataList.get(deletePos).dateLabel +" "+ timeTextField.getText(),
+                    .ConfirmDeleteObject(fragment.getContext(),fragment.getContext().getString(R.string.group_str) + " for " + groupDataKeysArray[deletePos].dateLabel +" "+ timeTextField.getText(),
                     () -> {
                         try {
-                            studentsRepository.deleteLessons(
+                            assert StudentsRepository.getInstance()!=null;
+                            StudentsRepository.getInstance().deleteLessons(
                                     LocalDateTime.of(
                                     groupDate,
-                                    groupDataList
-                                            .get(deletePos).groupType
-                                            .getTime()
+                                    groupDataKeysArray[deletePos].groupType.getTime()
                                     )
                             );
-                        }catch (Exception e){
+                        }catch (Exception | AssertionError e){
                             e.printStackTrace();
                         }finally {
-                            groupDataList.remove(deletePos);
+                            groupDataMap.remove(deletePos);
                             notifyDataSetChanged();
                         }
                     },null);
@@ -138,39 +152,29 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
             fragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, groupRedactorFragment).addToBackStack(null).commit();
         }
 
-        void bind(int position){
-            if(position==0){
-                dateTextField.setText(groupDataList.get(position).dateLabel);
-                dateTextField.setVisibility(View.VISIBLE);
-            }else {
-                if (!groupDataList.get(position - 1).dateLabel
-                        .equals(groupDataList.get(position).dateLabel))
-                {
-                    dateTextField.setText(groupDataList.get(position).dateLabel);
-                    dateTextField.setVisibility(View.VISIBLE);
-                } else {
-                    dateTextField.setVisibility(View.GONE);
-                }
+        void bind(int position) {
+
+            GroupData groupDataToBind = groupDataKeysArray[position];
+
+            //needs fixes
+            if (groupDataMap.get(groupDataToBind) != null) {
+
+            }else{
+
             }
-
-            timeTextField.setText(groupDataList.get(position).timeLabel);
-            groupDate = groupDataList.get(position).date;
-            groupType = groupDataList.get(position).groupType;
         }
-
     }
 
-    public static class GroupData{
+    /**
+     * Class holds only data about group type
+     * Lessons list loads asynchronously with process of creating new item in groups list
+     */
+    public static class GroupData implements Comparable{
 
-        private String dateLabel;
-        private String timeLabel;
-        private LocalDate date;
-        private GroupType groupType;
-
-        boolean equals(@Nullable GroupData obj) {
-            assert obj != null;
-            return (date ==obj.date && groupType==obj.groupType);
-        }
+        String dateLabel;
+        String timeLabel;
+        LocalDate date;
+        public GroupType groupType;
 
         public GroupData(LocalDate date, GroupType groupType) {
             this.date = date;
@@ -179,11 +183,29 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
             this.groupType = groupType;
         }
 
-        private static final Comparator<GroupData> groupsListComparator = (o1, o2) -> o1.date.compareTo(o2.date);
 
-        static Comparator<GroupData> getGroupsListComparator() {
-            return groupsListComparator;
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            try{
+                GroupData grd = (GroupData)obj;
+
+                return grd != null && (date == grd.date && groupType == grd.groupType);
+
+            }catch (ClassCastException | AssertionError e){
+                return false;
+            }
         }
 
+        @Override
+        public int compareTo(@NotNull Object o) {
+            try{
+                GroupData gr = (GroupData) o;
+                return this.date.compareTo(gr.date)*10+
+                        this.groupType.getGroupName().compareTo(gr.groupType.getGroupName());
+            }catch (ClassCastException e){
+                return 0;
+            }
+
+        }
     }
 }

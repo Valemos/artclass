@@ -46,44 +46,33 @@ public class GroupListFragment extends Fragment {
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_group_list, container, false);
 
-        studentsRepository = StudentsRepository.getInstance(Objects.requireNonNull(getActivity()).getApplication());
-        List<GroupsRecyclerAdapter.GroupData> groupsData = new ArrayList<>(); //labels to add to adapter
-
-        //form list of lists for tagging the groups
-        List<GroupType> groupTypes = UserSettings.getInstance().getAllGroupTypes();
-
         //how much days to get
         //get groups for that days
-
         LocalDate currentDate = LocalDate.now();
         LocalDate endDate = currentDate.plusDays(UserSettings.getGroupDaysInitAmount());
 
-        for (int i = 0; currentDate.isBefore(endDate); i++) {
 
-            //check if group exists for current day
-            for (GroupType curGroupType: groupTypes) {
-                LocalDate finalCurrentDate = currentDate;
-                studentsRepository.getLessonList(currentDate,curGroupType).observe(getViewLifecycleOwner(), lessons -> {
-                    if(lessons!=null)
-                        groupsData.add(new GroupsRecyclerAdapter.GroupData(finalCurrentDate, curGroupType));
-                });
+        //add adapter to update if groups are deleted
+        final GroupsRecyclerAdapter groupsRecyclerAdapter = new GroupsRecyclerAdapter(this, new ArrayList<>());
+        mainView.setTag(groupsRecyclerAdapter);
+
+        // setup groups recycler view
+        List<GroupsRecyclerAdapter.GroupData> curGroupDataList = new ArrayList<>();
+        while(currentDate.isBefore(endDate)) {
+            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
+                curGroupDataList.add(new GroupsRecyclerAdapter.GroupData(currentDate, groupType));
             }
             currentDate = currentDate.plusDays(1);
         }
-        // setup groups recycler view
-
-        //add adapter to update if groups are deleted
-        final GroupsRecyclerAdapter adapter = new GroupsRecyclerAdapter(this, studentsRepository, groupsData);
-        mainView.setTag(adapter);
+        groupsRecyclerAdapter.addGroups(curGroupDataList);
 
         RecyclerView groupsList = mainView.findViewById(R.id.groups_list);
         groupsList.setLayoutManager(new LinearLayoutManager(getContext()));
-        groupsList.setAdapter(adapter);
+        groupsList.setAdapter(groupsRecyclerAdapter);
 
         // set add and delete buttons
-
         FloatingActionButton btn_floating_addnewgroup = mainView.findViewById(R.id.fab_add_new_group);
-        btn_floating_addnewgroup.setTag(R.id.adapter,adapter);
+        btn_floating_addnewgroup.setTag(R.id.adapter,groupsRecyclerAdapter);
         btn_floating_addnewgroup.setOnClickListener(view -> DialogHandler.getInstance().CreateNewGroup(this,(RecyclerView.Adapter) view.getTag(R.id.adapter), null, null,null));
 
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_help);
