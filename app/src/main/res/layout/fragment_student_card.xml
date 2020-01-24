@@ -32,16 +32,18 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="50"
+                android:layout_weight="5"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/abonement_studcard_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLines="2"
+                    android:minLines="2"
                     android:paddingStart="15dp"
                     android:paddingEnd="10dp"
-                    android:text="@string/_abonement_sample"
+                    android:text="без абонемenta"
                     android:textSize="@dimen/default_text_size"
                     android:textStyle="bold" />
 
@@ -70,7 +72,7 @@
                 android:id="@+id/addCustomCash_view"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="50"
+                android:layout_weight="5"
                 android:gravity="center"
                 android:hint="@string/how_much_to_add"
                 android:inputType="numberSigned"
@@ -78,11 +80,10 @@
 
             <ImageButton
                 android:id="@+id/addMoney_button"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_gravity="center_vertical"
                 android:layout_margin="0dp"
-                android:layout_weight="30"
                 android:background="@drawable/ic_add_square"
                 android:backgroundTint="@color/color_StateOne"
                 android:padding="0dp" />

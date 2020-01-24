@@ -129,7 +129,7 @@ public class StudentCard extends Fragment {
     }
 
     private void updateBalance(){
-        ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.getMoneyBalance()));
+        ((TextView)getView().findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(student.getMoneyBalance()));
         StudentsRepository.getInstance().update(student);
     }
 

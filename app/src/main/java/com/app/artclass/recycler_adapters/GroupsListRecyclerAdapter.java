@@ -36,6 +36,7 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
     /**
      * holds lessons for certain GroupData and assures groups has no duplicates
+     * every time map updates keys array must be updated to to function properly
      */
     private TreeMap<GroupData, List<Lesson>> groupDataMap;
     private GroupData[] groupDataKeysArray;
@@ -129,7 +130,8 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
                         }catch (Exception e){
                             e.printStackTrace();
                         }finally {
-                            groupDataMap.remove(deletePos);
+                            groupDataMap.remove(groupDataKeysArray[deletePos]);
+                            groupDataKeysArray = groupDataMap.keySet().toArray(new GroupData[0]);
                             notifyDataSetChanged();
                         }
                     },null);

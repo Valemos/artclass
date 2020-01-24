@@ -13,7 +13,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="student_name">Student Name</string>
     <string name="_balance_sample">1000 ₴</string>
-    <string name="_abonement_sample">1200 ₴</string>
+    <string name="_abonement_sample">обычный 12ч</string>
     <string name="_hours_sample">16 h</string>
     <string name="how_much_to_add">add money</string>
     <string name="surname">Surname</string>

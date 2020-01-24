@@ -309,7 +309,7 @@ public class DialogHandler {
 
     private void DatePicker(Context context,final TextView textView, LocalDate date) {
 
-        final DatePickerDialog datePickerDialog = getDatePickerDialog(textView.getContext(), date,null);
+        DatePickerDialog datePickerDialog = getDatePickerDialog(textView.getContext(), date,null);
         datePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.label_OK), (dialog, which) ->
                 textView.setText(
                     LocalDate.of(
