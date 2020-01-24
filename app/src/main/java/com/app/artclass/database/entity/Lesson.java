@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.room.Embedded;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -19,9 +20,12 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static androidx.room.ForeignKey.CASCADE;
+
 @RequiresApi(api = Build.VERSION_CODES.O)
 
-@Entity(indices = @Index(value = {"dateTime","stud_id"},unique = true))
+@Entity(foreignKeys = @ForeignKey(entity = Student.class, parentColumns = "id", childColumns = "stud_id", onDelete = CASCADE),
+        indices = @Index(value = {"date","group_time","stud_id"},unique = true))
 public class Lesson {
 
     @PrimaryKey(autoGenerate = true)
@@ -29,32 +33,36 @@ public class Lesson {
 
     @NonNull
     @TypeConverters({DatabaseConverters.class})
-    private LocalDateTime dateTime;
+    private LocalDate date;
 
     @NonNull
     @Embedded(prefix = "stud_")
     private Student student;
 
+    @NonNull
+    @Embedded(prefix = "group_")
+    private GroupType groupType;
+
     private int hoursWorked;
 
-    public Lesson(LocalDate fullDate, Student student, GroupType groupType) {
-        this(LocalDateTime.of(fullDate,groupType.getTime()), student, 0);
+    public Lesson(@NotNull LocalDate date, @NotNull GroupType groupType, @NotNull Student student) {
+        this.date = date;
+        this.student = student;
+        this.groupType = groupType;
     }
 
     @Ignore
-    public Lesson(LocalDateTime dateTime, Student student) {
-        this(dateTime, student, 0);
+    public Lesson(LocalDate date, Student student) {
+        this(date, GroupType.getNoGroup(), student);
     }
 
-    public Lesson(LocalDateTime dateTime, Student student, int hoursWorked) {
-        this.dateTime = dateTime;
-        this.student = student;
-        this.hoursWorked = hoursWorked;
+    @Ignore
+    public Lesson(LocalDate date, Student student, GroupType groupType) {
+        this(date, groupType, student);
     }
 
-    @NotNull
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public LocalDate getDate() {
+        return date;
     }
 
     public int getHoursWorked() {
@@ -63,18 +71,14 @@ public class Lesson {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        Lesson lesson = null;
+        Lesson lesson;
         try {
             lesson = (Lesson)obj;
         }catch (Exception e){
             return false;
         }
 
-        assert lesson != null;
-
-        return student.getId()==(lesson.getStudent().getId()) &&
-                dateTime.equals(lesson.dateTime) &&
-                hoursWorked==lesson.hoursWorked;
+        return lesson != null && lessonId == lesson.getLessonId();
     }
 
     public Student getStudent() {
@@ -91,5 +95,14 @@ public class Lesson {
 
     public void setLessonId(long lessonId) {
         this.lessonId = lessonId;
+    }
+
+    @NonNull
+    public GroupType getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(@NonNull GroupType groupType) {
+        this.groupType = groupType;
     }
 }

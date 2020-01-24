@@ -4,10 +4,9 @@ package com.app.artclass.fragments;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,15 +17,12 @@ import android.widget.TextView;
 
 import com.app.artclass.R;
 import com.app.artclass.database.DatabaseConverters;
-import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.entity.Lesson;
-import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
+import com.app.artclass.recycler_adapters.GroupRedactorAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,20 +35,12 @@ public class GroupRedactorFragment extends Fragment {
 
     private LocalDate dateValue;
     private GroupType groupType;
-    private LiveData<List<Lesson>> lessonslistData;
-    private FragmentManager fragmentManager;
-    private StudentsRepository studentsRepository;
+    private final List<Lesson> lessonsList;
 
-    public GroupRedactorFragment() {
-        // Required empty public constructor
-    }
-
-    public GroupRedactorFragment(LocalDate date, GroupType groupType, FragmentManager fragmentManager) {
+    public GroupRedactorFragment(@NonNull LocalDate date, @NonNull GroupType groupType, List<Lesson> lessons) {
         this.dateValue = date;
         this.groupType = groupType;
-        this.studentsRepository = StudentsRepository.getInstance();
-        this.lessonslistData = studentsRepository.getLessonList(LocalDateTime.of(date,groupType.getTime()));
-        this.fragmentManager = fragmentManager;
+        lessonsList = lessons;
     }
 
 
@@ -67,38 +55,21 @@ public class GroupRedactorFragment extends Fragment {
         TextView timeText = view.findViewById(R.id.time_redactor_view);
 
         dateText.setText(dateValue.format(DatabaseConverters.getDateFormatter()));
-        timeText.setText(groupType.getGroupName());
+        timeText.setText(groupType.getName());
 
-        StudentsRecyclerAdapter adapter =
-                new StudentsRecyclerAdapter(
-                        this,
-                        R.layout.item_group_redactor,
-                        R.id.name_view,
-                        R.id.hours_left_view,
-                        new ArrayList<>()
-                );
-        RecyclerView list = view.findViewById(R.id.group_redactor_list);
-        list.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        list.setAdapter(adapter);
+        GroupRedactorAdapter groupRedactorAdapter = new GroupRedactorAdapter(this, R.layout.item_all_students_list, R.id.name_view, R.id.balance_view, lessonsList);
+        RecyclerView groupLessonsListView = view.findViewById(R.id.group_redactor_list);
+        groupLessonsListView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false));
+        groupLessonsListView.setAdapter(groupRedactorAdapter);
 
         FloatingActionButton btn_add_dialog = view.findViewById(R.id.fab_add_students);
-        btn_add_dialog.setOnClickListener(v -> DialogHandler.getInstance()
-                .CreateNewGroup(this,(RecyclerView.Adapter) v.getTag(),
+        btn_add_dialog.setOnClickListener(v ->
+                DialogHandler.getInstance().AddStudentsToGroup(this, groupRedactorAdapter,
                         dateValue, groupType,
-                        ((StudentsRecyclerAdapter) v.getTag()).getItems())
-        );
-        btn_add_dialog.setTag(adapter);
+                        groupRedactorAdapter.getStudents()));
 
         FloatingActionButton btn_delete_selected = view.findViewById(R.id.fab_delete_selected);
-        btn_delete_selected.setOnClickListener(v -> {
-            StudentsRecyclerAdapter adapter1 = (StudentsRecyclerAdapter) v.getTag();
-            adapter1.deleteCheckedFromLesson(LocalDateTime.of(dateValue,groupType.getTime()));
-        });
-        btn_delete_selected.setTag(adapter);
-
-        lessonslistData.observe(this, lessons -> {
-            //lessons.forEach(lesson -> ));
-        });
+        btn_delete_selected.setOnClickListener(v -> groupRedactorAdapter.deleteCheckedItems());
 
         return view;
     }

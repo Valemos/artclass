@@ -14,11 +14,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.R;
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
+import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.database.entity.Student;
+import com.app.artclass.list_adapters.LocalAdapter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +31,7 @@ import java.util.List;
 //
 
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder>{
+public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder> implements LocalAdapter {
 
     private Integer nameViewId;
     private Integer parameterTextId;
@@ -42,7 +47,6 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         this.elementLayout = elementLayout;
         this.nameViewId = nameViewId;
         this.parameterTextId = parameterTextId;
-
         mFragment = fragment;
     }
 
@@ -71,8 +75,12 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         return studentList;
     }
 
-    public class StudentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    @Override
+    public void update() {
+        notifyDataSetChanged();
+    }
 
+    public class StudentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         // each data item is just a string in this case
         TextView nameView;
@@ -88,19 +96,32 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
                 parameterView = itemView.findViewById(parameterTextId);
             }
 
-            nameView.setOnClickListener(v -> {
-                String studentName = ((TextView)v).getText().toString();
+            nameView.setOnClickListener(this);
 
-                StudentsRepository.getInstance().getStudent(studentName).observe(mFragment.getViewLifecycleOwner(),student -> {
-                    StudentCard studentCard = new StudentCard(student);
-                    mFragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
-                });
-
-            });
-
-            checkBox.setOnClickListener(this);
+            checkBox.setOnClickListener(checkboxListener);
         }
 
+        View.OnClickListener checkboxListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int adapterPosition = getAdapterPosition();
+                if (!itemCheckedStates.get(adapterPosition, false)) {
+                    checkBox.setChecked(true);
+                    itemCheckedStates.put(adapterPosition, true);
+                }else{
+                    checkBox.setChecked(false);
+                    itemCheckedStates.put(adapterPosition, false);
+                }
+            }
+        };
+
+        @Override
+        public void onClick(View v) {
+            if(getAdapterPosition()!=RecyclerView.NO_POSITION) {
+                StudentCard studentCard = new StudentCard(studentList.get(getAdapterPosition()));
+                mFragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+            }
+        }
 
         void bind(int position) {
             // use the sparse boolean array to check
@@ -109,7 +130,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             else {
                 checkBox.setChecked(true);
             }
-            nameView.setText(String.valueOf(studentList.get(position).getName()));
+            nameView.setText(studentList.get(position).getName());
 
             if(parameterView == null){
                 return;
@@ -117,20 +138,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             if(parameterTextId == R.id.hours_left_view){
                 parameterView.setText(String.valueOf(studentList.get(position).getHoursBalance())+" h");
             }else if(parameterTextId == R.id.balance_view){
-                parameterView.setText(String.valueOf(studentList.get(position).getMoneyBalance()));
-            }
-        }
-
-        @Override
-        public void onClick(View v) {
-            int adapterPosition = getAdapterPosition();
-            if (!itemCheckedStates.get(adapterPosition, false)) {
-                checkBox.setChecked(true);
-                itemCheckedStates.put(adapterPosition, true);
-            }
-            else  {
-                checkBox.setChecked(false);
-                itemCheckedStates.put(adapterPosition, false);
+                parameterView.setText(DatabaseConverters.getMoneyFormat().format(studentList.get(position).getMoneyBalance()));
             }
         }
     }
@@ -147,7 +155,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         notifyDataSetChanged();
     }
 
-    public void deleteCheckedFromLesson(LocalDateTime dateTime){
+    public void deleteCheckedFromLesson(LocalDate date, GroupType groupType){
         List<Student> toDelete = new ArrayList<>();
         for (int i = 0; i < studentList.size(); i++){
             if(itemCheckedStates.get(i,false)){
@@ -155,8 +163,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
         }
 
-
-        StudentsRepository.getInstance().deleteLessonsForStudentsList(dateTime, toDelete);
+        StudentsRepository.getInstance().deleteLessonsForStudentsList(date, groupType, toDelete);
         studentList.removeAll(toDelete);
 
         itemCheckedStates = new SparseBooleanArray();
@@ -178,11 +185,11 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         notifyDataSetChanged();
     }
 
-    public List<String> getSelectedStudentNames(){
-        List<String> selected = new ArrayList<>();
+    public List<Student> getSelectedStudents(){
+        List<Student> selected = new ArrayList<>();
         for(int i = 0; i < studentList.size(); i++){
             if(itemCheckedStates.get(i,false)){
-                selected.add(studentList.get(i).getName());
+                selected.add(studentList.get(i));
             }
         }
 

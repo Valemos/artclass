@@ -17,15 +17,14 @@ import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.GroupType;
-import com.app.artclass.recycler_adapters.GroupsRecyclerAdapter;
+import com.app.artclass.list_adapters.LocalAdapter;
+import com.app.artclass.recycler_adapters.GroupsListRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupListFragment extends Fragment {
@@ -53,18 +52,19 @@ public class GroupListFragment extends Fragment {
 
 
         //add adapter to update if groups are deleted
-        final GroupsRecyclerAdapter groupsRecyclerAdapter = new GroupsRecyclerAdapter(this, new ArrayList<>());
+        final GroupsListRecyclerAdapter groupsRecyclerAdapter = new GroupsListRecyclerAdapter(this, new ArrayList<>());
         mainView.setTag(groupsRecyclerAdapter);
 
         // setup groups recycler view
-        List<GroupsRecyclerAdapter.GroupData> curGroupDataList = new ArrayList<>();
         while(currentDate.isBefore(endDate)) {
             for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
-                curGroupDataList.add(new GroupsRecyclerAdapter.GroupData(currentDate, groupType));
+                LocalDate finalCurrentDate = currentDate;
+                StudentsRepository.getInstance().getLessonList(currentDate, groupType).observe(getViewLifecycleOwner(), lessons -> {
+                    groupsRecyclerAdapter.addGroup(new GroupsListRecyclerAdapter.GroupData(finalCurrentDate, groupType), lessons);
+                });
             }
             currentDate = currentDate.plusDays(1);
         }
-        groupsRecyclerAdapter.addGroups(curGroupDataList);
 
         RecyclerView groupsList = mainView.findViewById(R.id.groups_list);
         groupsList.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -73,7 +73,8 @@ public class GroupListFragment extends Fragment {
         // set add and delete buttons
         FloatingActionButton btn_floating_addnewgroup = mainView.findViewById(R.id.fab_add_new_group);
         btn_floating_addnewgroup.setTag(R.id.adapter,groupsRecyclerAdapter);
-        btn_floating_addnewgroup.setOnClickListener(view -> DialogHandler.getInstance().CreateNewGroup(this,(RecyclerView.Adapter) view.getTag(R.id.adapter), null, null,null));
+        btn_floating_addnewgroup.setOnClickListener(view ->
+                DialogHandler.getInstance().AddStudentsToGroup(this,(LocalAdapter) view.getTag(R.id.adapter), null, null,null));
 
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_help);
         btn_floating_helpbutton.setOnClickListener(v ->

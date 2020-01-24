@@ -5,6 +5,7 @@ import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -26,7 +27,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class LessonsAdapter extends LocalAdapter<Lesson> {
+public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter{
 
     private final int mResource; // layout/item_students_presentlist.xml
     @NonNull
@@ -141,5 +142,10 @@ public class LessonsAdapter extends LocalAdapter<Lesson> {
         assert StudentsRepository.getInstance() != null;
 
         StudentsRepository.getInstance().update(lessonsList);
+    }
+
+    @Override
+    public void update() {
+        notifyDataSetChanged();
     }
 }

@@ -5,8 +5,6 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
@@ -14,6 +12,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
@@ -21,13 +20,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.app.artclass.list_adapters.LocalAdapter;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.database.entity.Student;
+import com.app.artclass.list_adapters.LocalAdapter;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -42,20 +41,11 @@ import java.util.List;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentCard extends Fragment {
 
-    private StudentsRepository studentsRepository;
     private Student student;
-    private LocalAdapter outerAdapter = null;
     private List<Lesson> studLessonsList;
 
-    public StudentCard(@NonNull Student student, @Nullable LocalAdapter adapter){
-        this.student = student;
-        System.out.println(student.toString());
-        this.outerAdapter = adapter;
-        this.studentsRepository = StudentsRepository.getInstance();
-    }
-
     public StudentCard(Student student) {
-        this(student,null);
+        this.student = student;
     }
 
     @Override
@@ -112,10 +102,10 @@ public class StudentCard extends Fragment {
 
             StringBuilder groupsTimeBuilder = new StringBuilder();
             for(Lesson curLesson: studLessonsList){
-                if(curLesson.getDateTime().toLocalDate()==curDate){
+                if(curLesson.getDate()==curDate){
                     groupsTimeBuilder
                             .append(
-                                    curLesson.getDateTime().format(DatabaseConverters.getDateTimeFormatter()))
+                                    curLesson.getDate().format(DatabaseConverters.getDateTimeFormatter()))
                             .append(" - ")
                             .append(curLesson.getHoursWorked())
                             .append("\n");
@@ -140,13 +130,13 @@ public class StudentCard extends Fragment {
 
     private void updateBalance(){
         ((TextView)getView().findViewById(R.id.balance_view)).setText(String.valueOf(student.getMoneyBalance()));
-        studentsRepository.update(student);
+        StudentsRepository.getInstance().update(student);
     }
 
     @SuppressLint("DefaultLocale")
     private void updateStudentFields(View view, @NotNull Student curStudent) {
         ((TextView)view.findViewById(R.id.student_name_view)).setText(curStudent.getName());
-        ((TextView)view.findViewById(R.id.balance_view)).setText(String.valueOf(curStudent.getMoneyBalance()));
+        ((TextView)view.findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(curStudent.getMoneyBalance()));
         ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(curStudent.getAbonementType().getName());
         ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", curStudent.getHoursBalance()));
         ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", curStudent.getPhoneList()));

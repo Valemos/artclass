@@ -10,28 +10,32 @@ import com.app.artclass.database.DatabaseConverters;
 
 import java.time.LocalTime;
 
-@Entity(indices = @Index(value = "groupName",unique = true))
+@Entity(indices = @Index(value = "name",unique = true))
 public class GroupType {
     @TypeConverters({DatabaseConverters.class})
     private LocalTime time;
 
     @NonNull
     @PrimaryKey
-    String groupName;
+    private String name;
 
-    public GroupType(LocalTime time, String groupName) {
+    public GroupType(LocalTime time, String name) {
         this.time = time;
-        this.groupName = groupName;
+        this.name = name;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public String getName() {
+        return name;
     }
 
     public LocalTime getTime() { return time; }
 
     @Override
     public String toString() {
-        return groupName;
+        return name;
+    }
+
+    public static GroupType getNoGroup(){
+        return new GroupType(LocalTime.of(0,0), "нет группы");
     }
 }

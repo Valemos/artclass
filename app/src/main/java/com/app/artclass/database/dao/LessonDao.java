@@ -13,7 +13,9 @@ import androidx.room.Update;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.entity.Lesson;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Dao
@@ -24,8 +26,9 @@ public interface LessonDao {
     LiveData<List<Lesson>> getAll();
 
     @Transaction
-    @Query("SELECT * FROM lesson WHERE dateTime = :date_time")
-    LiveData<List<Lesson>> getForDateTime(@TypeConverters({DatabaseConverters.class}) LocalDateTime date_time);
+    @Query("SELECT * FROM lesson WHERE date = :date_time AND group_name=:groupName")
+    @TypeConverters({DatabaseConverters.class})
+    LiveData<List<Lesson>> getForGroup(LocalDate date_time, String groupName);
 
     @Transaction
     @Query("SELECT * FROM lesson WHERE stud_name=:name")
@@ -41,14 +44,26 @@ public interface LessonDao {
     void delete(Lesson lesson);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime")
-    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime);
+    @Delete
+    void delete(List<Lesson> lessons);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND stud_name = :name")
-    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, String name);
+    @Query("DELETE FROM lesson WHERE date=:date")
+    @TypeConverters({DatabaseConverters.class})
+    void delete(LocalDate date);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE dateTime=:dateTime AND stud_name IN (:studentNames)")
-    void delete(@TypeConverters({DatabaseConverters.class}) LocalDateTime dateTime, List<String> studentNames);
+    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName")
+    @TypeConverters({DatabaseConverters.class})
+    void delete(LocalDate date, String groupName);
+
+    @Transaction
+    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_id = :studentId")
+    @TypeConverters({DatabaseConverters.class})
+    void delete(LocalDate date, String groupName, long studentId);
+
+    @Transaction
+    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_id IN (:studentIds)")
+    @TypeConverters({DatabaseConverters.class})
+    void delete( LocalDate date, String groupName, List<Long> studentIds);
 }

@@ -22,7 +22,7 @@ import com.app.artclass.database.entity.Student;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 8, exportSchema = false)
+@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 10, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
     public static final String DATABASE_NAME = "students_database.db";

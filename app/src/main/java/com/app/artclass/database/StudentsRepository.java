@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LiveData;
 
@@ -21,6 +20,7 @@ import com.app.artclass.database.entity.Student;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class StudentsRepository {
         this.allStudentsData =  mStudentDao.getAll();
     }
 
-    @Nullable
+    @NonNull
     public static StudentsRepository getInstance() {return instance;}
 
     public Application getMainApplication() {
@@ -105,16 +105,16 @@ public class StudentsRepository {
         return mStudentDao.get(studentName);
     }
 
-    public void deleteLessons(LocalDateTime dateTime) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(dateTime));
+    public void deleteLessons(LocalDate date, GroupType groupType) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(date,groupType.getName()));
     }
 
-    public LiveData<List<Lesson>> getLessonList(LocalDateTime dateTime)  {
-        return mLessonDao.getForDateTime(dateTime);
+    public void deleteLessons(List<Lesson> lessons){
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(lessons));
     }
 
-    public LiveData<List<Lesson>> getLessonList(LocalDate date, GroupType groupType){
-        return getLessonList(LocalDateTime.of(date,groupType.getTime()));
+    public LiveData<List<Lesson>> getLessonList(LocalDate date, GroupType groupType)  {
+        return mLessonDao.getForGroup(date, groupType.getName());
     }
 
     public LiveData<List<Lesson>> getLessonList(@NonNull Student student){
@@ -125,10 +125,14 @@ public class StudentsRepository {
         return allStudentsData;
     }
 
-    public void addGroup(LocalDateTime groupDate,@NonNull List<Student> students) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> students.forEach(student ->
-                mLessonDao.insert(new Lesson(groupDate,student)
-                )));
+    public void addGroup(List<Lesson> lessons) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> lessons.forEach(lesson -> mLessonDao.insert(lesson)));
+    }
+
+    public void addGroup(LocalDate date, GroupType groupType, List<Student> students){
+        DatabaseStudents.databaseWriteExecutor.execute(() ->
+                students.forEach(student ->
+                        mLessonDao.insert(new Lesson(date, groupType, student))));
     }
 
     public void update(@NonNull Student student) {
@@ -150,10 +154,10 @@ public class StudentsRepository {
         DatabaseStudents.databaseWriteExecutor.execute(() -> mStudentDao.delete(student));
     }
 
-    public void deleteLessonsForStudentsList(LocalDateTime dateTime, List<Student> studentList) {
-        List<String> names = new ArrayList<>();
-        studentList.forEach(student -> names.add(student.getName()));
-        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(dateTime, names));
+    public void deleteLessonsForStudentsList(LocalDate date, GroupType groupType, List<Student> studentList) {
+        List<Long> idList = new ArrayList<>();
+        studentList.forEach(student -> idList.add(student.getId()));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.delete(date, groupType.getName(), idList));
     }
 
     public void deleteStudents(List<Student> studentList) {

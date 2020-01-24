@@ -82,7 +82,7 @@ public class UserSettings {
     }
 
     public static long getGroupDaysInitAmount() {
-        return 10;
+        return 7;
     }
 
     public List<String> getWeekdayLabels() {
@@ -91,12 +91,12 @@ public class UserSettings {
 
     public List<String> getGroupLabels() {
         List<String> allGroupsStr = new ArrayList<>();
-        allGroupTypes.forEach((e)-> allGroupsStr.add(e.getGroupName()));
+        allGroupTypes.forEach((e)-> allGroupsStr.add(e.getName()));
         return allGroupsStr;
     }
 
     public LocalTime getGroupTime(String groupName) {
-        return Objects.requireNonNull(allGroupTypes.stream().filter(groupType -> groupType.getGroupName().equals(groupName))
+        return Objects.requireNonNull(allGroupTypes.stream().filter(groupType -> groupType.getName().equals(groupName))
                 .findFirst().orElse(null)).getTime();
     }
 
@@ -121,7 +121,7 @@ public class UserSettings {
     }
 
     public GroupType getGroupType(String name) {
-        return allGroupTypes.stream().filter(groupType -> groupType.getGroupName().equals(name))
+        return allGroupTypes.stream().filter(groupType -> groupType.getName().equals(name))
                 .findFirst().orElse(null);
     }
 
