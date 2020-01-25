@@ -76,7 +76,7 @@ public class GroupListFragment extends Fragment {
         btn_floating_addnewgroup.setOnClickListener(view ->
                 DialogHandler.getInstance().AddStudentsToGroup(this,(LocalAdapter) view.getTag(R.id.adapter), null, null,null));
 
-        FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_help);
+        FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_secondary);
         btn_floating_helpbutton.setOnClickListener(v ->
                 DialogHandler.getInstance()
                         .AlertDialog(this.getContext(),getString(R.string.title_help),getString(R.string.message_group_delete_help))

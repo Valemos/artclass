@@ -9,4 +9,5 @@
     <item name="student" type="id" />
     <item name="lesson" type="id" />
     <item name="student_pos" type="id" />
+    <item name="date" type="id" />
 </resources>

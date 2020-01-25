@@ -34,7 +34,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="5dp"
                 android:layout_marginStart="10dp"
-                android:background="@color/color_StateOne"
+                android:background="@color/colorPrimaryDark"
                 android:gravity="center" />
         </LinearLayout>
 

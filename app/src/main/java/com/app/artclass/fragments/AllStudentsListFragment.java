@@ -53,7 +53,7 @@ public class AllStudentsListFragment extends Fragment {
         btn_floating_addnew.setTag(adapter);
         btn_floating_addnew.setOnClickListener(view -> DialogHandler.getInstance().AddNewStudent(this.getContext(),(StudentsRecyclerAdapter)view.getTag()));
 
-        FloatingActionButton btn_floating_delete = mainView.findViewById(R.id.fab_help);
+        FloatingActionButton btn_floating_delete = mainView.findViewById(R.id.fab_secondary);
         btn_floating_delete.setTag(adapter);
         btn_floating_delete.setOnClickListener(view -> {
             StudentsRecyclerAdapter curAdapter = (StudentsRecyclerAdapter)view.getTag();

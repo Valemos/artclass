@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentManager;
 
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.AllStudentsListFragment;
@@ -20,8 +19,6 @@ import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.fragments.GroupListFragment;
 import com.app.artclass.fragments.StudentsPresentList;
 import com.google.android.material.navigation.NavigationView;
-
-import java.time.LocalDate;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
@@ -46,8 +43,7 @@ public class MainActivity extends AppCompatActivity
         // before using singleton classes
         initSingltones(getApplication());
 
-        assert StudentsRepository.getInstance() != null;
-        StudentsRepository.getInstance().initDefaultSettings();
+//        StudentsRepository.getInstance().initDatabaseTest();
 
         //start page
 //        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
