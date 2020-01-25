@@ -39,21 +39,9 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="@dimen/bottom_offset"
-        android:layout_gravity="bottom|center_horizontal"
-        android:gravity="center_vertical"
+        android:layout_gravity="bottom|center_horizontal|end"
+        android:layout_marginEnd="@dimen/end_offset"
         android:orientation="horizontal">
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="5dp"
-            android:backgroundTintMode="src_in"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_help_black_24dp"
-            app:backgroundTint="@color/colorNonAccent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add_new_group"
@@ -66,6 +54,17 @@
             android:src="@drawable/ic_add_black_24dp"
             app:backgroundTint="@android:color/holo_blue_dark" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:backgroundTintMode="src_in"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_help_black_24dp"
+            app:backgroundTint="@color/colorNonAccent" />
     </LinearLayout>
 
 </FrameLayout>
