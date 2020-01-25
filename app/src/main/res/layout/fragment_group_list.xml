@@ -17,7 +17,6 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/small_list_item_height"
             android:layout_gravity="fill_horizontal|top"
-            android:background="@android:color/background_light"
             android:gravity="center"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"

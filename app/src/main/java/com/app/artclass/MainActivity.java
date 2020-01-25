@@ -20,6 +20,8 @@ import com.app.artclass.fragments.GroupListFragment;
 import com.app.artclass.fragments.StudentsPresentList;
 import com.google.android.material.navigation.NavigationView;
 
+import java.time.LocalDate;
+
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,11 +48,8 @@ public class MainActivity extends AppCompatActivity
 //        StudentsRepository.getInstance().initDatabaseTest();
 
         //start page
-//        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
-//        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, list).commit();
-        GroupListFragment groupListFragment = new GroupListFragment();
-        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
-
+        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
+        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, list).commit();
     }
 
     private void initSingltones(Application application) {
