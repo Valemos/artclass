@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -108,6 +109,7 @@ public class DialogHandler {
                 R.id.text_spinner_item,
                 UserSettings.getInstance().getAllAbonements());
         spinnerAbonement.setAdapter(abonAdapter);
+        spinnerAbonement.setSelection(SpinnerAdapter.NO_SELECTION);
 
         // group time spinner
         SpinnerAdapter timeAdapter = new ArrayAdapter<>(context,
@@ -115,61 +117,65 @@ public class DialogHandler {
                 R.id.text_spinner_item,
                 UserSettings.getInstance().getAllGroupTypes());
         spinnerTime.setAdapter(timeAdapter);
+        spinnerTime.setSelection(SpinnerAdapter.NO_SELECTION);
 
         // weekdays spinner
         final SpinnerAdapter dayAdapter = new ArrayAdapter<>(context,
                 R.layout.item_spinner,
                 R.id.text_spinner_item,
-                UserSettings.getInstance().getWeekdayLabels());
+                UserSettings.getInstance().getWeekdays());
         spinnerDay.setAdapter(dayAdapter);
+        spinnerDay.setSelection(SpinnerAdapter.NO_SELECTION);
 
         dialogView.setTag(outerAdapter);
         final View dialogViewFinalized = dialogView;
         DialogInterface.OnClickListener addStudentListener = (dialog, which) -> {
             EditText studNameField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_fullname);
             EditText notesTextField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_notes);
-            Spinner spinnerAbonement1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_abonement);
-            Spinner spinnerDay1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_day);
-            Spinner spinnerTime1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_time);
 
             if(studNameField.getText().length()>0) {
-                Abonement curAbonement = (Abonement) spinnerAbonement1.getSelectedItem();
+                if(spinnerAbonement.getSelectedItemPosition() != SpinnerAdapter.NO_SELECTION) {
+                    Abonement curAbonement = (Abonement) spinnerAbonement.getSelectedItem();
 
-                Student studentNew = new Student(studNameField.getText().toString(), 0, curAbonement); // get the value of list with abonements
+                    Student studentNew = new Student(studNameField.getText().toString(), 0, curAbonement); // get the value of list with abonements
 
-                studentNew.setNotes(notesTextField.getText().toString());
+                    studentNew.setNotes(notesTextField.getText().toString());
 
-                studentsRepository.addStudent(studentNew);
+                    StudentsRepository.getInstance().addStudent(studentNew);
 
-                // get first day to start adding lessons
-                // Calendar calendar = Calendar.getInstance();
-                LocalDate currentDate = LocalDate.now();
+                    // get first day to start adding lessons
+                    // Calendar calendar = Calendar.getInstance();
+                    LocalDate currentDate = LocalDate.now();
 
-                // we need to start with a first weekday that matches
-                int weekdayCurrent = currentDate.getDayOfWeek().getValue();
-                int weekdayChosen = UserSettings.getInstance().getWeekdayIndex(spinnerDay1.getSelectedItem().toString());
+                    if(spinnerDay.getSelectedItemPosition()!=SpinnerAdapter.NO_SELECTION &&
+                       spinnerTime.getSelectedItemPosition()!=SpinnerAdapter.NO_SELECTION)
+                    {
+                        //shift to one week
+                        // when weekday was before on this week
+                        int weekdayCurrent = currentDate.getDayOfWeek().getValue();
+                        int weekdayChosen = UserSettings.getInstance().getWeekdayIndex((UserSettings.WEEKDAY) spinnerDay.getSelectedItem());
+                        int shift = weekdayChosen - weekdayCurrent;
+                        if (shift < 0) shift += 7;
+                        currentDate = currentDate.plusDays(shift);
 
-                int shift = weekdayChosen - weekdayCurrent;
-                if(shift < 0) shift += 7;
+                        // setup lessons
+                        int lessonDuration = UserSettings.getDefaultLessonHours();
+                        int hoursToWorkIterator = studentNew.getHoursBalance();
+                        GroupType curGroupType = (GroupType) spinnerTime.getSelectedItem();
 
-                currentDate = currentDate.plusDays(shift);
+                        List<Lesson> lessonsNew = new ArrayList<>();
+                        for (int i = hoursToWorkIterator; i > 0; i -= lessonDuration) {
+                            lessonsNew.add(new Lesson(currentDate, studentNew, curGroupType));
+                            //repeats every week
+                            currentDate = currentDate.plusDays(7);
+                        }
+                        StudentsRepository.getInstance().addLessons(lessonsNew);
 
-
-                // setup lessons
-                int lessonDuration=UserSettings.getDefaultLessonHours();
-                int hoursToWorkIterator = studentNew.getHoursBalance();
-                GroupType curGroupType = (GroupType) spinnerTime1.getSelectedItem();
-
-                for(int i = hoursToWorkIterator; i > 0; i-=lessonDuration){
-                    studentsRepository.addLesson(new Lesson(currentDate, studentNew, curGroupType));
-                    currentDate = currentDate.plusDays(7);
+                        StudentsRecyclerAdapter studAdapter = (StudentsRecyclerAdapter) dialogViewFinalized.getTag();
+                        studAdapter.addStudent(studentNew);
+                        studAdapter.notifyDataSetChanged();
+                    }
                 }
-
-                StudentsRecyclerAdapter studAdapter = (StudentsRecyclerAdapter) dialogViewFinalized.getTag();
-                studAdapter.addStudent(studentNew);
-                studAdapter.notifyDataSetChanged();
-
-                // init lessons in database
             }
         };
 
@@ -202,12 +208,9 @@ public class DialogHandler {
 
         View dialogView = LayoutInflater.from(fragment.getContext()).inflate(R.layout.dialog_create_group, null);
         RecyclerView listSelectStudents = dialogView.findViewById(R.id.dialogcreate_select_students_list);
+        SearchView searchView = dialogView.findViewById(R.id.dialog_search_view);
 
-        // setup spinners for group specification
-        // group time spinner
         Spinner spinnerGroupType= dialogView.findViewById(R.id.dialogcreate_spinner_time);
-
-
         if(groupType == null) {
             SpinnerAdapter groupAdapter = new ArrayAdapter<>(fragment.getContext(),
                     R.layout.item_spinner,
@@ -280,12 +283,15 @@ public class DialogHandler {
         listSelectStudents.setLayoutManager(new LinearLayoutManager(fragment.getContext()));
         dialogView.setTag(R.id.adapter,studentsAdapter);
 
-        StudentsRepository.getInstance().getAllStudents().observe(fragment, studentList -> {
+        // filter students by query in adapter
+        FilterInteractionListener filterInteractionListener = new FilterInteractionListener(studentsAdapter);
+        searchView.setOnQueryTextListener(filterInteractionListener);
 
+        // get all required students
+        StudentsRepository.getInstance().getAllStudents().observe(fragment, studentList -> {
             if(date != null && excludedStudents != null && excludedStudents.size()>0){
                 studentList.removeAll(excludedStudents);
             }
-
             studentsAdapter.setStudents(studentList);
         });
 
@@ -308,6 +314,27 @@ public class DialogHandler {
                 .setPositiveButton(R.string.label_add, createGroupClickListener)
                 .setNegativeButton(R.string.label_cancel, defaultNegativeClickListener)
                 .create().show();
+    }
+
+    private class FilterInteractionListener implements SearchView.OnQueryTextListener {
+
+        private final StudentsRecyclerAdapter studentsAdapter;
+
+        public FilterInteractionListener(StudentsRecyclerAdapter studentsAdapter) {
+            this.studentsAdapter = studentsAdapter;
+        }
+
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            studentsAdapter.getFilter().filter(query);
+            return true;
+        }
+
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            studentsAdapter.getFilter().filter(newText);
+            return false;
+        }
     }
 
     private void DatePicker(Context context,final TextView textView, @Nullable LocalDate startDate) {

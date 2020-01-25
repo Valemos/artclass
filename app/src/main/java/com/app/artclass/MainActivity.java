@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         //init search bar
-        SearchView searchView = findViewById(R.id.search);
+        SearchView searchView = findViewById(R.id.main_search);
         searchView.setOnQueryTextListener(searchQueryListener);
 
         // very important

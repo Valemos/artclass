@@ -4,12 +4,12 @@ import android.os.Build;
 import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
-import androidx.lifecycle.ViewModelProviders;
 
 import com.app.artclass.database.entity.Abonement;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,17 +22,33 @@ public class UserSettings {
     private List<GroupType> allGroupTypes;
     private List<Abonement> allAbonements;
 
-    private List<String> allWeekdaysStr = new ArrayList<>(
-            Arrays.asList(
-                    "Суббота",
-                    "Воскресенье",
-                    "Понедельник",
-                    "Вторник",
-                    "Среда",
-                    "Четверг",
-                    "Пятница"
-                    ));
+    public WEEKDAY[] getWeekdays() {
+        return WEEKDAY.values();
+    }
 
+    public enum WEEKDAY {
+        MONDAY("Понедельник"),
+        TUESDAY("Вторник"),
+        WEDNESDAY("Среда"),
+        THURSDAY("Четверг"),
+        FRIDAY("Пятница"),
+        SATURDAY("Суббота"),
+        SUNDAY("Воскресенье");
+
+        String name;
+
+        WEEKDAY(String weekName) {
+            name = weekName;
+        }
+
+        private String getName() {
+            return name;
+        }
+
+        public static WEEKDAY get(int pos) {
+            return WEEKDAY.values()[pos-1];
+        }
+    }
     private SparseArray<String> balanceButtonIncrements;
 
     private static UserSettings classInstance;
@@ -43,12 +59,12 @@ public class UserSettings {
         }
         return classInstance;
     }
+
     private UserSettings() {
         allGroupTypes = initDefaultGroupTypes();
         allAbonements = initDefaultAbonements();
         balanceButtonIncrements = initDefaultBtnIncrements();
     }
-
     private List<GroupType> initDefaultGroupTypes() {
         return Arrays.asList(
                 new GroupType(LocalTime.of(11,0),"дети 11:00"),
@@ -87,7 +103,21 @@ public class UserSettings {
     }
 
     public List<String> getWeekdayLabels() {
-        return allWeekdaysStr;
+        List<String> out = new ArrayList<>();
+        for(WEEKDAY c : WEEKDAY.values()){
+            out.add(c.getName());
+        }
+        return out;
+    }
+
+    public int getWeekdayIndex(WEEKDAY toCheck) {
+        for (int pos = 0; pos < WEEKDAY.values().length; pos++) {
+            if(toCheck==WEEKDAY.get(pos)){
+                // +1 required for LocalDate Weekdays
+                return pos+1;
+            }
+        }
+        return 0;
     }
 
     public List<String> getGroupLabels() {
@@ -113,10 +143,6 @@ public class UserSettings {
         return allGroupTypes;
     }
 
-    public int getWeekdayIndex(String weekday) {
-        return allWeekdaysStr.indexOf(weekday);
-    }
-
     public SparseArray<String> getBalanceIncrements() {
         return balanceButtonIncrements;
     }
@@ -133,5 +159,9 @@ public class UserSettings {
 
     public void getSettingsFromRepository(StudentsRepository repository, MainActivity mainActivity) {
 
+    }
+
+    public String getWeekday(LocalDate date) {
+        return WEEKDAY.get(date.getDayOfWeek().getValue()).getName();
     }
 }

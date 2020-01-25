@@ -14,4 +14,5 @@
     <dimen name="increment_button_size">50dp</dimen>
     <dimen name="bottom_offset">70dp</dimen>
     <dimen name="side_offset">20dp</dimen>
+    <dimen name="narrow_height">45dp</dimen>
 </resources>

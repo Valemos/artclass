@@ -75,4 +75,5 @@
     <string name="title_activity_login">Sign in</string>
     <string name="students_number_sample">99</string>
     <string name="groupredctor_amount_label">Amount: %d</string>
+    <string name="weekday_sample">Воскресенье</string>
 </resources>

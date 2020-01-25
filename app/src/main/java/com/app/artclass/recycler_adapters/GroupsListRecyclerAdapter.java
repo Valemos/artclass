@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.database.entity.GroupType;
@@ -24,7 +25,6 @@ import com.app.artclass.list_adapters.LocalAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -100,15 +100,17 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
     public class GroupViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
-        TextView dateTextField;
-        TextView timeTextField;
+        TextView dateField;
+        TextView weekDayField;
+        TextView timeField;
         TextView studentsCountField;
         GroupData groupData;
 
         GroupViewHolder(@NonNull View itemView) {
             super(itemView);
-            timeTextField = itemView.findViewById(R.id.time_view);
-            dateTextField = itemView.findViewById(R.id.date_view);
+            timeField = itemView.findViewById(R.id.time_view);
+            dateField = itemView.findViewById(R.id.date_view);
+            weekDayField = itemView.findViewById(R.id.weekday_view);
             studentsCountField = itemView.findViewById(R.id.students_count_view);
 
             itemView.setOnClickListener(this);
@@ -120,7 +122,7 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
             final int deletePos = getAdapterPosition();
             DialogHandler.getInstance()
-                    .ConfirmDeleteObject(fragment.getContext(),fragment.getContext().getString(R.string.group_str) + " for " + groupDataKeysArray[deletePos].dateLabel +" "+ timeTextField.getText(),() -> {
+                    .ConfirmDeleteObject(fragment.getContext(),fragment.getContext().getString(R.string.group_str) + " for " + groupDataKeysArray[deletePos].dateLabel +" "+ timeField.getText(),() -> {
                         try {
                             StudentsRepository.getInstance()
                                     .deleteLessons(groupData.date, groupDataKeysArray[deletePos].groupType);
@@ -150,18 +152,19 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
             // set date view to group by date
             if (pos == 0) {
-                dateTextField.setText(groupData.dateLabel);
-                dateTextField.setVisibility(View.VISIBLE);
+                dateField.setText(groupData.dateLabel);
+                weekDayField.setText(UserSettings.getInstance().getWeekday(groupData.date));
+                dateField.setVisibility(View.VISIBLE);
             }else{
                 if(groupDataKeysArray[pos-1].date!=groupDataKeysArray[pos].date){
-                    dateTextField.setVisibility(View.VISIBLE);
-                    dateTextField.setText(groupData.dateLabel);
+                    dateField.setVisibility(View.VISIBLE);
+                    dateField.setText(groupData.dateLabel);
                 }else {
-                    dateTextField.setVisibility(View.GONE);
+                    dateField.setVisibility(View.GONE);
                 }
             }
 
-            timeTextField.setText(groupData.timeLabel);
+            timeField.setText(groupData.timeLabel);
             studentsCountField.setText(String.valueOf(groupDataMap.get(groupData).size()));
         }
     }

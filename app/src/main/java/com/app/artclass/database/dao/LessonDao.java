@@ -37,6 +37,10 @@ public interface LessonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Lesson lesson);
 
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(List<Lesson> lesson);
+
     @Update
     void update(Lesson lesson);
 

@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,7 +31,7 @@ import java.util.List;
 //
 
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder> implements LocalAdapter {
+public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecyclerAdapter.StudentViewHolder> implements LocalAdapter, Filterable {
 
     private Integer nameViewId;
     private Integer parameterTextId;
@@ -38,6 +40,8 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
     private final boolean isStudentSelectionAdapter;
     private List<Student> studentList;
+    private List<Student> filteredStudentList;
+    private Filter studentQueryFilter;
 
 
     public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, boolean isStudentSelectionAdapter, List<Student> data) {
@@ -75,9 +79,83 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         return studentList;
     }
 
+    public void addStudent(Student student) {
+        studentList.add(student);
+        studentList.sort(null);
+        notifyDataSetChanged();
+    }
+
+    public void setStudents(List<Student> students) {
+        studentList = students;
+        studentList.sort(null);
+        notifyDataSetChanged();
+    }
+
+    public void deleteCheckedFromLesson(LocalDate date, GroupType groupType){
+        List<Student> toDelete = new ArrayList<>();
+        for (int i = 0; i < studentList.size(); i++){
+            if(itemCheckedStates.get(i,false)){
+                toDelete.add(studentList.get(i));
+            }
+        }
+
+        StudentsRepository.getInstance().deleteLessonsForStudentsList(date, groupType, toDelete);
+        studentList.removeAll(toDelete);
+
+        itemCheckedStates = new SparseBooleanArray();
+        notifyDataSetChanged();
+    }
+
+    public void deleteCheckedStudents(){
+        List<Student> toDelete = new ArrayList<>();
+        for (int i = 0; i < studentList.size(); i++){
+            if(itemCheckedStates.get(i,false)){
+                toDelete.add(studentList.get(i));
+            }
+        }
+
+        StudentsRepository.getInstance().deleteStudents(toDelete);
+        studentList.remove(toDelete);
+
+        itemCheckedStates = new SparseBooleanArray();
+        notifyDataSetChanged();
+    }
+
+    public List<Student> getSelectedStudents(){
+        List<Student> selected = new ArrayList<>();
+        for(int i = 0; i < studentList.size(); i++){
+            if(itemCheckedStates.get(i,false)){
+                selected.add(studentList.get(i));
+            }
+        }
+
+        return selected;
+    }
+
     @Override
     public void update() {
         notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        if(studentQueryFilter==null){
+            studentQueryFilter = new StudentQueryFilter();
+        }
+        return studentQueryFilter;
+    }
+
+    private class StudentQueryFilter extends Filter{
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            return null;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+
+        }
     }
 
     public class StudentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -148,56 +226,5 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         }
     }
 
-    public void addStudent(Student student) {
-        studentList.add(student);
-        studentList.sort(null);
-        notifyDataSetChanged();
-    }
 
-    public void setStudents(List<Student> students) {
-        studentList = students;
-        studentList.sort(null);
-        notifyDataSetChanged();
-    }
-
-    public void deleteCheckedFromLesson(LocalDate date, GroupType groupType){
-        List<Student> toDelete = new ArrayList<>();
-        for (int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                toDelete.add(studentList.get(i));
-            }
-        }
-
-        StudentsRepository.getInstance().deleteLessonsForStudentsList(date, groupType, toDelete);
-        studentList.removeAll(toDelete);
-
-        itemCheckedStates = new SparseBooleanArray();
-        notifyDataSetChanged();
-    }
-
-    public void deleteCheckedStudents(){
-        List<Student> toDelete = new ArrayList<>();
-        for (int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                toDelete.add(studentList.get(i));
-            }
-        }
-
-        StudentsRepository.getInstance().deleteStudents(toDelete);
-        studentList.remove(toDelete);
-
-        itemCheckedStates = new SparseBooleanArray();
-        notifyDataSetChanged();
-    }
-
-    public List<Student> getSelectedStudents(){
-        List<Student> selected = new ArrayList<>();
-        for(int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                selected.add(studentList.get(i));
-            }
-        }
-
-        return selected;
-    }
 }

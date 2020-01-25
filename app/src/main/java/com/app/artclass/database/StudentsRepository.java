@@ -1252,4 +1252,8 @@ public class StudentsRepository {
     public LiveData<List<GroupType>> getGroupTypes() {
         return mGroupTypeDao.getAll();
     }
+
+    public void addLessons(List<Lesson> lessonsNew) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> mLessonDao.insert(lessonsNew));
+    }
 }

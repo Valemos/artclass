@@ -68,7 +68,7 @@
     </LinearLayout>
 
     <SearchView
-        android:id="@+id/search_view"
+        android:id="@+id/dialog_search_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/small_list_item_height"
         android:layout_margin="5dp" />
@@ -77,8 +77,8 @@
         android:id="@+id/dialogcreate_select_students_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="7dp"
-        android:padding="5dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="5dp"
         tools:listitem="@layout/item_dialog_student_selector">
 
     </androidx.recyclerview.widget.RecyclerView>
