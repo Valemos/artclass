@@ -1,7 +1,6 @@
 package com.app.artclass.fragments;
 
 import android.app.AlertDialog;
-import android.app.Application;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,7 +34,6 @@ import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -44,24 +42,18 @@ public class DialogHandler {
     private static DialogHandler instance;
 
     private StudentsRepository studentsRepository;
-    private final Application mApplication;
 
     private Runnable proc_positive = null;
     private Runnable proc_negative = null;
 
-    public static DialogHandler getInstance(Application application){
+    public static DialogHandler getInstance(){
         if(instance == null){
-            instance = new DialogHandler(application);
+            instance = new DialogHandler();
         }
-
         return instance;
     }
 
-    public static DialogHandler getInstance(){return instance;}
-
-    private DialogHandler(Application application) {
-        this.studentsRepository = StudentsRepository.getInstance(application);
-        mApplication = application;
+    private DialogHandler() {
     }
 
     // default listeners
@@ -92,9 +84,10 @@ public class DialogHandler {
         dialog.show();
     }
 
-    public void AlertDialog(Context context,String title, String message){
+    public void AlertDialog(Context context, String title, String message, Runnable positive_action){
+        proc_positive = positive_action;
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setPositiveButton(R.string.label_OK,null)
+        builder.setPositiveButton(R.string.label_OK,defaultPositiveClickListener)
                 .setCancelable(false)
                 .setTitle(title)
                 .setMessage(message)
@@ -134,7 +127,7 @@ public class DialogHandler {
         final View dialogViewFinalized = dialogView;
         DialogInterface.OnClickListener addStudentListener = (dialog, which) -> {
             EditText studNameField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_fullname);
-            EditText phoneNumberField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_phone);
+            EditText notesTextField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_notes);
             Spinner spinnerAbonement1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_abonement);
             Spinner spinnerDay1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_day);
             Spinner spinnerTime1 = ((AlertDialog)dialog).findViewById(R.id.dialogadd_spinner_time);
@@ -144,9 +137,7 @@ public class DialogHandler {
 
                 Student studentNew = new Student(studNameField.getText().toString(), 0, curAbonement); // get the value of list with abonements
 
-                if(phoneNumberField.getText().length()>0){
-                    studentNew.getPhoneList().add(phoneNumberField.getText().toString());
-                }
+                studentNew.setNotes(notesTextField.getText().toString());
 
                 studentsRepository.addStudent(studentNew);
 
@@ -226,10 +217,12 @@ public class DialogHandler {
             spinnerGroupType.setSelection(0);
         }
         else{
-            SpinnerAdapter groupAdapter = new ArrayAdapter<GroupType>(fragment.getContext(),
+            SpinnerAdapter groupAdapter = new ArrayAdapter<>(fragment.getContext(),
                     R.layout.item_spinner,
                     R.id.text_spinner_item,
-                    new ArrayList<GroupType>(){{add(groupType);}});
+                    new ArrayList<GroupType>() {{
+                        add(groupType);
+                    }});
             spinnerGroupType.setAdapter(groupAdapter);
             spinnerGroupType.setSelection(0);
             //disable spinner
@@ -259,6 +252,7 @@ public class DialogHandler {
                     DialogHandler.getInstance().DatePicker(fragment.getContext(),(TextView) textView, date);
                 }
             });
+            datePickerTextView.setTag(R.id.date, LocalDate.now());
         }
         else {
             datePickerDateText = date.format(DatabaseConverters.getDateFormatter());
@@ -280,6 +274,7 @@ public class DialogHandler {
                 R.layout.item_dialog_student_selector,
                 R.id.name_view,
                 null,
+                true,
                 new ArrayList<>());
         listSelectStudents.setAdapter(studentsAdapter);
         listSelectStudents.setLayoutManager(new LinearLayoutManager(fragment.getContext()));

@@ -53,11 +53,12 @@ public class GroupRedactorFragment extends Fragment {
         // set date and time
         TextView dateText = view.findViewById(R.id.date_redactor_view);
         TextView timeText = view.findViewById(R.id.time_redactor_view);
+        TextView studentsAmountTextView = view.findViewById(R.id.students_count_view);
 
         dateText.setText(dateValue.format(DatabaseConverters.getDateFormatter()));
         timeText.setText(groupType.getName());
 
-        GroupRedactorAdapter groupRedactorAdapter = new GroupRedactorAdapter(this, R.layout.item_all_students_list, R.id.name_view, R.id.balance_view, lessonsList);
+        GroupRedactorAdapter groupRedactorAdapter = new GroupRedactorAdapter(this, R.layout.item_all_students_list, R.id.name_view, R.id.balance_view, studentsAmountTextView, lessonsList);
         RecyclerView groupLessonsListView = view.findViewById(R.id.group_redactor_list);
         groupLessonsListView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false));
         groupLessonsListView.setAdapter(groupRedactorAdapter);

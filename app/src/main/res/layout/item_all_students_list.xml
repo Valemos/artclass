@@ -2,41 +2,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/small_list_item_height"
+    android:background="@color/colorAccent"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingStart="2dp"
+    android:paddingTop="2dp"
+    android:paddingEnd="0dp"
+    android:paddingBottom="2dp">
 
     <TextView
         android:id="@+id/name_view"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
         android:layout_weight="5"
+        android:background="@android:color/white"
+        android:gravity="start|center_vertical"
         android:padding="5dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
+        android:selectAllOnFocus="false"
         android:singleLine="true"
         android:text="@string/student_name"
+        android:textIsSelectable="false"
         android:textSize="@dimen/default_text_size" />
 
     <TextView
         android:id="@+id/balance_view"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
         android:layout_weight="4"
-        android:background="@color/color_StateOne"
-        android:padding="5dp"
+        android:background="@color/colorPrimaryDark"
+        android:gravity="start|center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:selectAllOnFocus="false"
         android:singleLine="true"
         android:text="@string/_balance_sample"
+        android:textColor="@android:color/white"
+        android:textIsSelectable="false"
         android:textSize="@dimen/default_text_size" />
 
     <CheckBox
         android:id="@+id/checkBox"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
         android:layout_weight="1"
+        android:background="@android:color/white"
         android:clickable="false"
-        android:focusable="false"
-        android:scrollbarSize="4dp" />
+        android:focusable="false" />
 </LinearLayout>

@@ -7,13 +7,9 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
-
-import com.app.artclass.database.DatabaseConverters;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity(indices = {@Index(value = {"name"}, unique = true)})
@@ -25,10 +21,9 @@ public class Student implements Comparable{
     @NonNull
     private final String name;
 
-    @TypeConverters({DatabaseConverters.class})
-    private List<String> phoneList = new ArrayList<>();
+    private String notes;
 
-    @Embedded
+    @Embedded(prefix = "abon_")
     private Abonement abonementType;
 
     private int moneyBalance;
@@ -45,9 +40,9 @@ public class Student implements Comparable{
         }
     }
 
-    public Student(@NonNull String name, List<String> phoneList, Abonement abonementType, int moneyBalance, int hoursBalance) {
+    public Student(@NonNull String name, String notes, Abonement abonementType, int moneyBalance, int hoursBalance) {
         this.name = name;
-        this.phoneList = phoneList;
+        this.notes = notes;
         this.abonementType = abonementType;
         this.moneyBalance = moneyBalance;
         this.hoursBalance = hoursBalance;
@@ -87,20 +82,12 @@ public class Student implements Comparable{
         moneyBalance += incr;
     }
 
-    public List<String> getPhoneList() {
-        return phoneList;
-    }
-
     public Abonement getAbonementType() {
         return abonementType;
     }
 
     public void setAbonementType(Abonement abonementType) {
         this.abonementType = abonementType;
-    }
-
-    public void setPhoneList(List<String> phoneList) {
-        this.phoneList = phoneList;
     }
 
     @Override
@@ -118,5 +105,13 @@ public class Student implements Comparable{
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

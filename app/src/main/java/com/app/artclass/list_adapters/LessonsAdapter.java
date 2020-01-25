@@ -109,7 +109,7 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         int finHoursWorkedToday = lesson.getHoursWorked() + howMuchWorked;
 
         if(finHoursToWork <= 0){
-            DialogHandler.getInstance().AlertDialog(fragment.getContext(), fragment.getContext().getString(R.string.title_alert_abonement), fragment.getContext().getString(R.string.message_abonement_finished));
+            DialogHandler.getInstance().AlertDialog(fragment.getContext(), fragment.getContext().getString(R.string.title_alert_abonement), fragment.getContext().getString(R.string.message_abonement_finished), null);
         }
 
         if (finHoursToWork < 0) {

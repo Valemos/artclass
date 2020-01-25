@@ -29,9 +29,6 @@ import java.util.ArrayList;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupListFragment extends Fragment {
 
-    private FragmentManager fragmentManager;
-    private StudentsRepository studentsRepository;
-
     public GroupListFragment() {
         // Required empty public constructor
     }
@@ -79,7 +76,7 @@ public class GroupListFragment extends Fragment {
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_secondary);
         btn_floating_helpbutton.setOnClickListener(v ->
                 DialogHandler.getInstance()
-                        .AlertDialog(this.getContext(),getString(R.string.title_help),getString(R.string.message_group_delete_help))
+                        .AlertDialog(this.getContext(),getString(R.string.title_help),getString(R.string.message_group_delete_help), null)
         );
 
         return mainView;

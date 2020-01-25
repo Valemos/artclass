@@ -22,10 +22,10 @@ import com.app.artclass.database.entity.Student;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 10, exportSchema = false)
+@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 12, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
-    public static final String DATABASE_NAME = "students_database.db";
+    private static final String DATABASE_NAME = "students_database.db";
     private static volatile DatabaseStudents instance;
 
     private static final int NUMBER_OF_THREADS = 4;
@@ -43,6 +43,7 @@ public abstract class DatabaseStudents extends RoomDatabase {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(),DatabaseStudents.class, DatabaseStudents.DATABASE_NAME)
                             .addCallback(DatabaseCallback)
+                            .addMigrations(DatabaseMigrations.getAllMigrations())
                             .fallbackToDestructiveMigration()
                             .build();
                 }
@@ -56,7 +57,6 @@ public abstract class DatabaseStudents extends RoomDatabase {
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
 
-            assert StudentsRepository.getInstance() != null;
             UserSettings.getInstance().writeSettingsToRepository(StudentsRepository.getInstance());
         }
     };

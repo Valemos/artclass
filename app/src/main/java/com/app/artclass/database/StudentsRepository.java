@@ -1244,4 +1244,12 @@ public class StudentsRepository {
 
         return mStudentDao.getAllByNames(selectedStudentNames);
     }
+
+    public LiveData<List<Abonement>> getAbonements() {
+        return mAbonementDao.getAll();
+    }
+
+    public LiveData<List<GroupType>> getGroupTypes() {
+        return mGroupTypeDao.getAll();
+    }
 }

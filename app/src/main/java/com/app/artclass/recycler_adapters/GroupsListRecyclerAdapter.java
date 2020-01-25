@@ -32,11 +32,10 @@ import java.util.TreeMap;
 public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRecyclerAdapter.GroupViewHolder> implements LocalAdapter {
 
     private Fragment fragment;
-    private List<GroupViewHolder> viewHolders;
 
     /**
      * holds lessons for certain GroupData and assures groups has no duplicates
-     * every time map updates keys array must be updated to to function properly
+     * every time map updates it`s keys groupDataKeysArray must be updated to function properly
      */
     private TreeMap<GroupData, List<Lesson>> groupDataMap;
     private GroupData[] groupDataKeysArray;
@@ -52,8 +51,6 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
         }
 
         groupDataKeysArray = groupDataMap.keySet().toArray(new GroupData[0]);
-
-        viewHolders = new ArrayList<>();
     }
 
     public void addGroup(GroupData groupData, List<Lesson> lessons){
@@ -80,9 +77,7 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
     @Override
     public GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View elementView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_group_list, parent,false);
-        GroupViewHolder viewHolder = new GroupViewHolder(elementView);
-        viewHolders.add(viewHolder);
-        return viewHolder;
+        return new GroupViewHolder(elementView);
     }
 
     @Override
@@ -107,12 +102,14 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
         TextView dateTextField;
         TextView timeTextField;
+        TextView studentsCountField;
         GroupData groupData;
 
         GroupViewHolder(@NonNull View itemView) {
             super(itemView);
             timeTextField = itemView.findViewById(R.id.time_view);
             dateTextField = itemView.findViewById(R.id.date_view);
+            studentsCountField = itemView.findViewById(R.id.students_count_view);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -145,29 +142,27 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
             GroupRedactorFragment groupRedactorFragment =
                     new GroupRedactorFragment(groupData.date, groupData.groupType, groupDataMap.get(groupData));
 
-            fragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, groupRedactorFragment).addToBackStack(null).commit();
+            fragment.getFragmentManager().beginTransaction().replace(R.id.main_content_id, groupRedactorFragment).addToBackStack(null).commit();
         }
 
         void bind(int pos) {
+            groupData = groupDataKeysArray[pos];
 
-            GroupData bindData = groupDataKeysArray[pos];
-            groupData = bindData;
-
+            // set date view to group by date
             if (pos == 0) {
-                dateTextField.setText(bindData.dateLabel);
-                timeTextField.setText(bindData.timeLabel);
+                dateTextField.setText(groupData.dateLabel);
                 dateTextField.setVisibility(View.VISIBLE);
             }else{
                 if(groupDataKeysArray[pos-1].date!=groupDataKeysArray[pos].date){
                     dateTextField.setVisibility(View.VISIBLE);
-                    dateTextField.setText(bindData.dateLabel);
-                    timeTextField.setText(bindData.timeLabel);
+                    dateTextField.setText(groupData.dateLabel);
                 }else {
                     dateTextField.setVisibility(View.GONE);
-                    timeTextField.setText(bindData.timeLabel);
                 }
             }
 
+            timeTextField.setText(groupData.timeLabel);
+            studentsCountField.setText(String.valueOf(groupDataMap.get(groupData).size()));
         }
     }
 

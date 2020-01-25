@@ -17,9 +17,9 @@
     <string name="_hours_sample">16 h</string>
     <string name="how_much_to_add">add money</string>
     <string name="surname">Surname</string>
-    <string name="group1">11:00</string>
-    <string name="group2">15:00</string>
-    <string name="group3">17:00</string>
+    <string name="group1">взрослая 11:00</string>
+    <string name="group2">дети 15:00</string>
+    <string name="group3">странности 17:00</string>
     <string name="student_info">Student Info</string>
     <string name="student_history">Student History</string>
     <string name="regular_surname_sample">Tester Antonio</string>
@@ -43,7 +43,7 @@
     <string name="abonement_ended_text">Abonement has finished</string>
     <string name="add_student_to_group">Add student to group</string>
     <string name="enter_full_name">enter full name</string>
-    <string name="_phone_number_hint">+380--</string>
+    <string name="_notes_hint">student relatives etc.</string>
     <string name="add_new_student">Add new student</string>
     <string name="group_day">group day</string>
     <string name="group_time">group time</string>
@@ -73,4 +73,6 @@
     <string name="message_group_delete_help">To delete group hold group time until delete message appears</string>
     <string name="message_student_not_worked">Не работал</string>
     <string name="title_activity_login">Sign in</string>
+    <string name="students_number_sample">99</string>
+    <string name="groupredctor_amount_label">Amount: %d</string>
 </resources>

@@ -21,6 +21,7 @@
             android:paddingTop="7dp"
             android:paddingBottom="7dp"
             android:text="@string/all_students"
+            android:textColor="@android:color/white"
             android:textSize="@dimen/default_text_size" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -30,7 +31,14 @@
             android:layout_marginBottom="@dimen/bottom_offset"
             android:background="@android:color/background_light"
             android:overScrollMode="ifContentScrolls"
+            android:scrollbarSize="10dp"
+            android:scrollbarStyle="insideOverlay"
             android:scrollbars="vertical"
+            app:fastScrollEnabled="true"
+            app:fastScrollHorizontalThumbDrawable="@drawable/thumb_drawable"
+            app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
+            app:fastScrollVerticalThumbDrawable="@drawable/thumb_drawable"
+            app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
             tools:listitem="@layout/item_all_students_list" />
 
     </LinearLayout>
@@ -39,7 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/bottom_offset"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/end_offset"
+        android:layout_marginEnd="@dimen/side_offset"
         android:orientation="horizontal">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

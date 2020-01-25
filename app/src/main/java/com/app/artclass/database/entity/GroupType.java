@@ -12,6 +12,7 @@ import java.time.LocalTime;
 
 @Entity(indices = @Index(value = "name",unique = true))
 public class GroupType {
+    @NonNull
     @TypeConverters({DatabaseConverters.class})
     private LocalTime time;
 

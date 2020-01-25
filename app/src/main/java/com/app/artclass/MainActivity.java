@@ -5,26 +5,39 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.AllStudentsListFragment;
-import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.fragments.GroupListFragment;
 import com.app.artclass.fragments.StudentsPresentList;
 import com.google.android.material.navigation.NavigationView;
 
-import java.time.LocalDate;
-
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+
+    private SearchView.OnQueryTextListener searchQueryListener = new SearchView.OnQueryTextListener() {
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,22 +53,29 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        // very important
-        // must call initialisation
-        // before using singleton classes
-        initSingltones(getApplication());
+        //init search bar
+        SearchView searchView = findViewById(R.id.search);
+        searchView.setOnQueryTextListener(searchQueryListener);
 
-//        StudentsRepository.getInstance().initDatabaseTest();
+        // very important
+        // you must call initialisation
+        // before using singleton classes
+        initBaseClasses(getApplication());
 
         //start page
-        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
-        getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, list).commit();
+//        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, list).commit();
+//        GroupListFragment groupListFragment = new GroupListFragment();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, groupListFragment).commit();
+        AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, allStudentsListFragment).commit();
+
     }
 
-    private void initSingltones(Application application) {
+    private void initBaseClasses(Application application) {
         StudentsRepository.getInstance(application);
-        DialogHandler.getInstance(application);
-        UserSettings.getInstance().writeSettingsToRepository(StudentsRepository.getInstance());
+        Logger.getInstance(this).appendLog("init complete");
+//        StudentsRepository.getInstance().initDatabaseTest();
     }
 
     @Override
@@ -97,17 +117,17 @@ public class MainActivity extends AppCompatActivity
         if(id == R.id.nav_students_present){
 
             StudentsPresentList listFragment = new StudentsPresentList();
-            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, listFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, listFragment).commit();
 
         }else if (id == R.id.nav_groups) {
 
             GroupListFragment groupListFragment = new GroupListFragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, groupListFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, groupListFragment).commit();
 
         }else if (id == R.id.nav_allstudents){
 
             AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.contentmain, allStudentsListFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, allStudentsListFragment).commit();
 
         }
 

@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/bottom_offset"
         android:layout_gravity="bottom|center_horizontal|end"
-        android:layout_marginEnd="@dimen/end_offset"
+        android:layout_marginEnd="@dimen/side_offset"
         android:orientation="horizontal">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

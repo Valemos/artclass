@@ -4,6 +4,7 @@ import android.os.Build;
 import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.app.artclass.database.entity.Abonement;
 import com.app.artclass.database.entity.GroupType;
@@ -128,5 +129,9 @@ public class UserSettings {
     public void writeSettingsToRepository(StudentsRepository repository) {
         repository.insertAbonements(allAbonements);
         repository.insertGroupTypes(allGroupTypes);
+    }
+
+    public void getSettingsFromRepository(StudentsRepository repository, MainActivity mainActivity) {
+
     }
 }

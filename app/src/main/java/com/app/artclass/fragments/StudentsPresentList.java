@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.view.LayoutInflater;
@@ -23,7 +22,6 @@ import android.widget.TextView;
 
 import com.app.artclass.ApplicationViewModel;
 import com.app.artclass.database.entity.GroupType;
-import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.list_adapters.LessonsAdapter;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
@@ -31,8 +29,6 @@ import com.app.artclass.database.DatabaseConverters;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -42,11 +38,9 @@ import java.util.Objects;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentsPresentList extends Fragment {
 
-    ListView lessonsTodayList;
-    Spinner spinnerCurGroup;
-    LessonsAdapter lessonsAdapter;
-
-    LocalDate groupsDate;
+    private TextView studentsCount;
+    private LessonsAdapter lessonsAdapter;
+    private LocalDate groupsDate;
 
     public  StudentsPresentList() {
         this.groupsDate = LocalDate.now();
@@ -74,9 +68,10 @@ public class StudentsPresentList extends Fragment {
         View view = inflater.inflate(R.layout.fragment_students_presentlist, container, false);
 
         //memorise list of students
-        TextView dateView = view.findViewById(R.id.dateWeekday_view);
-        lessonsTodayList = view.findViewById(R.id.studentsPresentList);
-        spinnerCurGroup = view.findViewById(R.id.spinner_select_group);
+        TextView dateView = view.findViewById(R.id.date_view);
+        studentsCount = view.findViewById(R.id.students_count_view);
+        ListView lessonsTodayList = view.findViewById(R.id.students_present_list);
+        Spinner spinnerCurGroup = view.findViewById(R.id.spinner_select_group);
 
         // output start date
         dateView.setText(groupsDate.format(DatabaseConverters.getDateFormatter()));
@@ -93,9 +88,10 @@ public class StudentsPresentList extends Fragment {
         spinnerCurGroup.setAdapter(spinnerGroupAdapter);
 
         //setup the data when ready
-        ApplicationViewModel mAppViewModel = ViewModelProviders.of(this).get(ApplicationViewModel.class);;
+        ApplicationViewModel mAppViewModel = ViewModelProviders.of(this).get(ApplicationViewModel.class);
 
         SpinnerInteractionListener spinnerListener = new SpinnerInteractionListener(mAppViewModel, groupsDate, lessonsAdapter);
+
         spinnerCurGroup.setOnItemSelectedListener(spinnerListener);
         spinnerCurGroup.setSelection(0,false);
 
@@ -104,12 +100,11 @@ public class StudentsPresentList extends Fragment {
 
     private class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener {
 
-        Map<GroupType, LiveData<List<Lesson>>> todayGroups;
         private final ApplicationViewModel mAppViewModel;
         private final LocalDate date;
         private LessonsAdapter lessonsAdapter;
 
-        public SpinnerInteractionListener(ApplicationViewModel mAppViewModel, LocalDate date, LessonsAdapter lessonsAdapter) {
+        SpinnerInteractionListener(ApplicationViewModel mAppViewModel, LocalDate date, LessonsAdapter lessonsAdapter) {
             this.mAppViewModel = mAppViewModel;
             this.date = date;
             this.lessonsAdapter = lessonsAdapter;
@@ -122,8 +117,10 @@ public class StudentsPresentList extends Fragment {
                 if(lessons.size()>0){
                     lessonsAdapter.updateRepository();
                     lessonsAdapter.changeData(lessons, mAppViewModel, (GroupType)parent.getItemAtPosition(pos));
+                    studentsCount.setText(String.valueOf(lessons.size()));
                 }else{
                     lessonsAdapter.clear();
+                    studentsCount.setText("0");
                 }
             });
         }

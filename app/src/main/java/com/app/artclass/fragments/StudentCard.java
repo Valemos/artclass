@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
@@ -83,6 +84,7 @@ public class StudentCard extends Fragment {
             student.incrementMoneyBalance(Integer.valueOf(moneyText.getText().toString()));
             updateBalance();
             moneyText.setText("");
+            Logger.getInstance().appendLog(getClass().getName()+": used custom money");
         });
         makeZeroMoney.setOnClickListener(v -> {
             student.setMoneyBalance(0);
@@ -139,7 +141,7 @@ public class StudentCard extends Fragment {
         ((TextView)view.findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(curStudent.getMoneyBalance()));
         ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(curStudent.getAbonementType().getName());
         ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", curStudent.getHoursBalance()));
-        ((TextView)view.findViewById(R.id.phone_view)).setText(String.join("\n", curStudent.getPhoneList()));
+        ((TextView)view.findViewById(R.id.phone_view)).setText(curStudent.getNotes());
     }
 
 }

@@ -44,7 +44,13 @@ public class AllStudentsListFragment extends Fragment {
         View mainView = inflater.inflate(R.layout.fragment_all_students_list, container, false);
 
 
-        StudentsRecyclerAdapter adapter = new StudentsRecyclerAdapter(this, R.layout.item_all_students_list, R.id.name_view, R.id.balance_view, new ArrayList<Student>());
+        StudentsRecyclerAdapter adapter = new StudentsRecyclerAdapter(
+                this,
+                R.layout.item_all_students_list,
+                R.id.name_view,
+                R.id.balance_view,
+                false,
+                new ArrayList<>());
         RecyclerView list_st_view = mainView.findViewById(R.id.all_students_list);
         list_st_view.setLayoutManager(new LinearLayoutManager(this.getContext()));
         list_st_view.setAdapter(adapter);

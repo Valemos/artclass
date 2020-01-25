@@ -1,5 +1,6 @@
 package com.app.artclass;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
@@ -22,15 +23,22 @@ public class ApplicationViewModel extends ViewModel {
     public ApplicationViewModel() {
     }
 
-    public Map<GroupType, LiveData<List<Lesson>>> getTodayGroupsMap(LocalDate date) {
-        if(allTodayGroupsMap == null || !groupsDate.equals(date)){
-            allTodayGroupsMap = new HashMap<>();
-            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
-                allTodayGroupsMap.put(groupType,StudentsRepository.getInstance().getLessonList(date,groupType));
-            }
-            groupsDate = date;
+    @NonNull
+    public Map<GroupType, LiveData<List<Lesson>>> getTodayGroupsMap(@NonNull LocalDate date) {
+        if(allTodayGroupsMap == null){
+            updateGroupsMap(date);
         }
         return allTodayGroupsMap;
+    }
+
+    public void updateGroupsMap(@NonNull LocalDate date) {
+        allTodayGroupsMap = new HashMap<>();
+        if(date != groupsDate){
+            groupsDate = date;
+            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
+                allTodayGroupsMap.put(groupType, StudentsRepository.getInstance().getLessonList(groupsDate,groupType));
+            }
+        }
     }
 
     @Nullable

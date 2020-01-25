@@ -22,8 +22,6 @@ import com.app.artclass.database.entity.Student;
 import com.app.artclass.list_adapters.LocalAdapter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +36,12 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     private Integer elementLayout;
     private Fragment mFragment;
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
+    private final boolean isStudentSelectionAdapter;
     private List<Student> studentList;
 
 
-    public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, List<Student> data) {
+    public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, boolean isStudentSelectionAdapter, List<Student> data) {
+        this.isStudentSelectionAdapter = isStudentSelectionAdapter;
         studentList = data;
         studentList.sort(null);
         this.elementLayout = elementLayout;
@@ -92,13 +92,18 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             nameView = itemView.findViewById(nameViewId);
             checkBox = itemView.findViewById(R.id.checkBox);
 
-            if(parameterTextId != null) {
-                parameterView = itemView.findViewById(parameterTextId);
+            if(isStudentSelectionAdapter){
+                itemView.setOnClickListener(checkboxListener);
             }
+            else{
+                nameView.setOnClickListener(this);
+                checkBox.setOnClickListener(checkboxListener);
 
-            nameView.setOnClickListener(this);
-
-            checkBox.setOnClickListener(checkboxListener);
+                if(parameterTextId != null) {
+                    parameterView = itemView.findViewById(parameterTextId);
+                    parameterView.setOnClickListener(checkboxListener);
+                }
+            }
         }
 
         View.OnClickListener checkboxListener = new View.OnClickListener() {
@@ -119,7 +124,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         public void onClick(View v) {
             if(getAdapterPosition()!=RecyclerView.NO_POSITION) {
                 StudentCard studentCard = new StudentCard(studentList.get(getAdapterPosition()));
-                mFragment.getFragmentManager().beginTransaction().replace(R.id.contentmain, studentCard).addToBackStack(null).commit();
+                mFragment.getFragmentManager().beginTransaction().replace(R.id.main_content_id, studentCard).addToBackStack(null).commit();
             }
         }
 
