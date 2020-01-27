@@ -1,5 +1,6 @@
 package com.app.artclass.recycler_adapters;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -40,7 +41,6 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
     private final boolean isStudentSelectionAdapter;
     private List<Student> studentList;
-    private List<Student> filteredStudentList;
     private Filter studentQueryFilter;
 
 
@@ -206,6 +206,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             }
         }
 
+        @SuppressLint("DefaultLocale")
         void bind(int position) {
             // use the sparse boolean array to check
             if (!itemCheckedStates.get(position, false)) {
@@ -219,7 +220,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
                 return;
             }
             if(parameterTextId == R.id.hours_left_view){
-                parameterView.setText(String.valueOf(studentList.get(position).getHoursBalance())+" h");
+                parameterView.setText(String.format("%d h", studentList.get(position).getHoursBalance()));
             }else if(parameterTextId == R.id.balance_view){
                 parameterView.setText(DatabaseConverters.getMoneyFormat().format(studentList.get(position).getMoneyBalance()));
             }

@@ -5,11 +5,9 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
-import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -22,9 +20,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.entity.Abonement;
+import com.app.artclass.WEEKDAY;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.GroupType;
@@ -59,16 +58,18 @@ public class DialogHandler {
 
     // default listeners
     private DialogInterface.OnClickListener defaultPositiveClickListener = (dialog, which) -> {
-        if(proc_positive!=null)
+        if(proc_positive!=null) {
             proc_positive.run();
+            Logger.getInstance().appendLog(getClass(),"handled positive runnable");
+        }
     };
 
     private DialogInterface.OnClickListener defaultNegativeClickListener = (dialog, which) -> {
-        if(proc_negative!=null)
+        if(proc_negative!=null) {
             proc_negative.run();
+            Logger.getInstance().appendLog(getClass(),"handled negative runnable");
+        }
     };
-
-    // Dialog. --------------------------------------------------------------
 
     public void ConfirmDeleteObject(Context context,String objectName, Runnable positiveProcedure, Runnable negativeProcedure) {
 
@@ -77,7 +78,7 @@ public class DialogHandler {
 
         AlertDialog dialog = new AlertDialog.Builder(context).create();
         dialog.setTitle(context.getString(R.string.title_confirm_delete_student));
-        dialog.setMessage(context.getString(R.string.message_confirm_delete) + "\n" +objectName);
+        dialog.setMessage(String.format(context.getString(R.string.message_confirm_delete_placeholder),objectName));
         dialog.setCancelable(false);
         dialog.setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.label_OK),defaultPositiveClickListener);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, context.getString(R.string.label_cancel),defaultNegativeClickListener);
@@ -99,88 +100,40 @@ public class DialogHandler {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_new_student, null);
 
-        Spinner spinnerAbonement = dialogView.findViewById(R.id.dialogadd_spinner_abonement);
         Spinner spinnerDay= dialogView.findViewById(R.id.dialogadd_spinner_day);
-        Spinner spinnerTime= dialogView.findViewById(R.id.dialogadd_spinner_time);
+        Spinner spinnerTime= dialogView.findViewById(R.id.dialogadd_spinner_group_type);
 
-        // abonement type spinner
-        SpinnerAdapter abonAdapter = new ArrayAdapter<>(context,
-                R.layout.item_spinner,
-                R.id.text_spinner_item,
-                UserSettings.getInstance().getAllAbonements());
-        spinnerAbonement.setAdapter(abonAdapter);
-        spinnerAbonement.setSelection(SpinnerAdapter.NO_SELECTION);
+        /**
+         * all spinners must have element at position 0
+         * it indicates that user not selected any options
+         */
 
         // group time spinner
-        SpinnerAdapter timeAdapter = new ArrayAdapter<>(context,
+        SpinnerAdapter groupTypeAdapter = new ArrayAdapter<>(context,
                 R.layout.item_spinner,
-                R.id.text_spinner_item,
-                UserSettings.getInstance().getAllGroupTypes());
-        spinnerTime.setAdapter(timeAdapter);
-        spinnerTime.setSelection(SpinnerAdapter.NO_SELECTION);
+                R.id.text_spinner_view,
+                UserSettings.getInstance().getAllGroupTypesWithDefault(context));
+        spinnerTime.setAdapter(groupTypeAdapter);
+        spinnerTime.setSelection(0,false);
 
         // weekdays spinner
-        final SpinnerAdapter dayAdapter = new ArrayAdapter<>(context,
+        List<WEEKDAY> weekdayList = new ArrayList<>();
+        weekdayList.add(WEEKDAY.getNoWeekday(context));
+        weekdayList.addAll(WEEKDAY.getValues());
+        final SpinnerAdapter weekdayAdapter = new ArrayAdapter<>(context,
                 R.layout.item_spinner,
-                R.id.text_spinner_item,
-                UserSettings.getInstance().getWeekdays());
-        spinnerDay.setAdapter(dayAdapter);
-        spinnerDay.setSelection(SpinnerAdapter.NO_SELECTION);
+                R.id.text_spinner_view,
+                weekdayList);
+        spinnerDay.setAdapter(weekdayAdapter);
+        spinnerDay.setSelection(0, false);
 
         dialogView.setTag(outerAdapter);
         final View dialogViewFinalized = dialogView;
         DialogInterface.OnClickListener addStudentListener = (dialog, which) -> {
-            EditText studNameField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_fullname);
-            EditText notesTextField = ((AlertDialog)dialog).findViewById(R.id.dialogadd_notes);
 
-            if(studNameField.getText().length()>0) {
-                if(spinnerAbonement.getSelectedItemPosition() != SpinnerAdapter.NO_SELECTION) {
-                    Abonement curAbonement = (Abonement) spinnerAbonement.getSelectedItem();
-
-                    Student studentNew = new Student(studNameField.getText().toString(), 0, curAbonement); // get the value of list with abonements
-
-                    studentNew.setNotes(notesTextField.getText().toString());
-
-                    StudentsRepository.getInstance().addStudent(studentNew);
-
-                    // get first day to start adding lessons
-                    // Calendar calendar = Calendar.getInstance();
-                    LocalDate currentDate = LocalDate.now();
-
-                    if(spinnerDay.getSelectedItemPosition()!=SpinnerAdapter.NO_SELECTION &&
-                       spinnerTime.getSelectedItemPosition()!=SpinnerAdapter.NO_SELECTION)
-                    {
-                        //shift to one week
-                        // when weekday was before on this week
-                        int weekdayCurrent = currentDate.getDayOfWeek().getValue();
-                        int weekdayChosen = UserSettings.getInstance().getWeekdayIndex((UserSettings.WEEKDAY) spinnerDay.getSelectedItem());
-                        int shift = weekdayChosen - weekdayCurrent;
-                        if (shift < 0) shift += 7;
-                        currentDate = currentDate.plusDays(shift);
-
-                        // setup lessons
-                        int lessonDuration = UserSettings.getDefaultLessonHours();
-                        int hoursToWorkIterator = studentNew.getHoursBalance();
-                        GroupType curGroupType = (GroupType) spinnerTime.getSelectedItem();
-
-                        List<Lesson> lessonsNew = new ArrayList<>();
-                        for (int i = hoursToWorkIterator; i > 0; i -= lessonDuration) {
-                            lessonsNew.add(new Lesson(currentDate, studentNew, curGroupType));
-                            //repeats every week
-                            currentDate = currentDate.plusDays(7);
-                        }
-                        StudentsRepository.getInstance().addLessons(lessonsNew);
-
-                        StudentsRecyclerAdapter studAdapter = (StudentsRecyclerAdapter) dialogViewFinalized.getTag();
-                        studAdapter.addStudent(studentNew);
-                        studAdapter.notifyDataSetChanged();
-                    }
-                }
-            }
         };
 
-        builder
-                .setView(dialogView)
+        builder.setView(dialogView)
                 .setTitle(R.string.title_add_student_togroup)
                 .setPositiveButton(context.getString(R.string.label_add), addStudentListener)
                 .setNegativeButton(context.getString(R.string.label_cancel), (dialog, which) -> dialog.cancel())
@@ -198,13 +151,12 @@ public class DialogHandler {
      * @param fragment
      * @param outerAdapter
      * this adapter will be updated using LocalAdapter:update()
-     * @param date
      * @param groupType
      * @param excludedStudents
      * these students will not be in list when available students will be shown
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void AddStudentsToGroup(@NonNull Fragment fragment,LocalAdapter outerAdapter,@Nullable LocalDate date,@Nullable GroupType groupType,@Nullable List<Student> excludedStudents){
+    public void AddStudentsToGroup(@NonNull Fragment fragment,LocalAdapter outerAdapter ,@Nullable GroupType groupType,@Nullable List<Student> excludedStudents){
 
         View dialogView = LayoutInflater.from(fragment.getContext()).inflate(R.layout.dialog_create_group, null);
         RecyclerView listSelectStudents = dialogView.findViewById(R.id.dialogcreate_select_students_list);
@@ -214,7 +166,7 @@ public class DialogHandler {
         if(groupType == null) {
             SpinnerAdapter groupAdapter = new ArrayAdapter<>(fragment.getContext(),
                     R.layout.item_spinner,
-                    R.id.text_spinner_item,
+                    R.id.text_spinner_view,
                     UserSettings.getInstance().getAllGroupTypes());
             spinnerGroupType.setAdapter(groupAdapter);
             spinnerGroupType.setSelection(0);
@@ -222,7 +174,7 @@ public class DialogHandler {
         else{
             SpinnerAdapter groupAdapter = new ArrayAdapter<>(fragment.getContext(),
                     R.layout.item_spinner,
-                    R.id.text_spinner_item,
+                    R.id.text_spinner_view,
                     new ArrayList<GroupType>() {{
                         add(groupType);
                     }});
@@ -233,39 +185,6 @@ public class DialogHandler {
             spinnerGroupType.setFocusable(View.NOT_FOCUSABLE);
             spinnerGroupType.setBackgroundColor(fragment.getContext().getColor(R.color.colorNonAccent));
         }
-
-        // date picker for choosing date
-        TextView datePickerTextView = dialogView.findViewById(R.id.dialogcreate_datepicker_text);
-        String datePickerDateText;
-        if(date == null) {
-            datePickerDateText = LocalDate.now().format(DatabaseConverters.getDateFormatter());
-            datePickerTextView.setOnClickListener(new View.OnClickListener() {
-
-                private long mLastClickTime = 0;
-
-                @Override
-                public void onClick(final View textView) {
-
-                    // Preventing multiple clicks, using threshold of 1 second
-                    if (SystemClock.elapsedRealtime() - mLastClickTime < 1000) {
-                        return;
-                    }
-                    mLastClickTime = SystemClock.elapsedRealtime();
-
-                    DialogHandler.getInstance().DatePicker(fragment.getContext(),(TextView) textView, date);
-                }
-            });
-            datePickerTextView.setTag(R.id.date, LocalDate.now());
-        }
-        else {
-            datePickerDateText = date.format(DatabaseConverters.getDateFormatter());
-            datePickerTextView.setClickable(false);
-            datePickerTextView.setFocusable(false);
-            datePickerTextView.setBackgroundColor(fragment.getContext().getColor(R.color.colorNonAccent));
-            datePickerTextView.setTag(R.id.date, date);
-        }
-        datePickerTextView.setText(datePickerDateText);
-
 
         // setup students list
         // all students by default
@@ -289,23 +208,20 @@ public class DialogHandler {
 
         // get all required students
         StudentsRepository.getInstance().getAllStudents().observe(fragment, studentList -> {
-            if(date != null && excludedStudents != null && excludedStudents.size()>0){
+            if(excludedStudents != null && excludedStudents.size()>0){
                 studentList.removeAll(excludedStudents);
             }
             studentsAdapter.setStudents(studentList);
         });
 
         dialogView.setTag(R.id.tag_spinner_time,spinnerGroupType);
-        dialogView.setTag(R.id.tag_date_picker,datePickerTextView);
 
         DialogInterface.OnClickListener createGroupClickListener = (dialog, which) -> {
-            TextView dateText = ((AlertDialog)dialog).findViewById(R.id.dialogcreate_datepicker_text);
             Spinner timeSpinner = ((AlertDialog)dialog).findViewById(R.id.dialogcreate_spinner_time);
 
-            LocalDate groupDate = (LocalDate) dateText.getTag(R.id.date);
             GroupType curGroupType = (GroupType) timeSpinner.getSelectedItem();
 
-            StudentsRepository.getInstance().addGroup(groupDate, curGroupType, studentsAdapter.getSelectedStudents());
+            StudentsRepository.getInstance().addStudentsToGroup(curGroupType, studentsAdapter.getSelectedStudents());
             outerAdapter.update();
         };
 
@@ -351,6 +267,7 @@ public class DialogHandler {
                 textView.setTag(R.id.date,outputDate);
             });
         datePickerDialog.show();
+        Logger.getInstance().appendLog(getClass(),"DatePicker showed dialog");
     }
 
     public DatePickerDialog getDatePickerDialog(Context context, LocalDate curDate, DatePickerDialog.OnDateSetListener listenerOnDate){

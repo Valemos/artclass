@@ -1,27 +1,43 @@
 package com.app.artclass.database.entity;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import com.app.artclass.R;
+import com.app.artclass.UserSettings;
+import com.app.artclass.WEEKDAY;
 import com.app.artclass.database.DatabaseConverters;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity(indices = @Index(value = "name",unique = true))
-public class GroupType {
+@Entity(indices = @Index(value = {"time","weekday","name"},unique = true))
+public class GroupType implements Comparable {
+
+    @PrimaryKey(autoGenerate = true)
+    private long groupTypeId;
+
     @NonNull
     @TypeConverters({DatabaseConverters.class})
     private LocalTime time;
 
     @NonNull
-    @PrimaryKey
+    @TypeConverters({DatabaseConverters.class})
+    private WEEKDAY weekday;
+
+    @NonNull
     private String name;
 
-    public GroupType(LocalTime time, String name) {
+    public GroupType(LocalTime time, @NonNull WEEKDAY weekday, String name) {
         this.time = time;
+        this.weekday = weekday;
         this.name = name;
     }
 
@@ -36,7 +52,41 @@ public class GroupType {
         return name;
     }
 
+    @NonNull
+    public WEEKDAY getWeekday() {
+        return weekday;
+    }
+
+    public void setName(@NonNull String name) {
+        this.name = name;
+    }
+
+    public void setWeekday(@NonNull WEEKDAY weekday) {
+        this.weekday = weekday;
+    }
+
+    public void setGroupTypeId(long groupTypeId) {
+        this.groupTypeId = groupTypeId;
+    }
+
+    public long getGroupTypeId() {
+        return groupTypeId;
+    }
+
     public static GroupType getNoGroup(){
-        return new GroupType(LocalTime.of(0,0), "нет группы");
+        return UserSettings.getInstance().getNoGroup();
+    }
+
+    public static GroupType getNoGroup(Context context){
+        return UserSettings.getInstance().getNoGroup(context);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        try{
+            return weekday.compareTo(((GroupType)o).getWeekday());
+        }catch (Exception e){
+            return 0;
+        }
     }
 }

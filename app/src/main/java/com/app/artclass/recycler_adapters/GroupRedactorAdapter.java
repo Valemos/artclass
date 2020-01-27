@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.R;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.GroupType;
@@ -22,7 +23,6 @@ import com.app.artclass.database.entity.Student;
 import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.list_adapters.LocalAdapter;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,28 +38,23 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
     private List<LessonViewHolder> viewHolders = new ArrayList<>();
 
-    private final LocalDate groupDate;
-    private final GroupType groupType;
-    private List<Lesson> mLessonsList;
+    private GroupType mGroupType;
+    private List<Student> mStudentsList;
 
-    public GroupRedactorAdapter(@NonNull Fragment fragment, int elementLayout, int nameViewId, int balanceTextViewId, TextView studentsCountView, @NonNull List<Lesson> lessons) {
+    public GroupRedactorAdapter(@NonNull Fragment fragment, int elementLayout, int nameViewId, int balanceTextViewId, TextView studentsCountView, GroupType groupType, List<Student> studentsList) {
         this.mFragment = fragment;
         this.elementLayout = elementLayout;
         this.balanceTextId = balanceTextViewId;
         this.nameViewId = nameViewId;
-        mLessonsList = lessons;
+        mGroupType = groupType;
+        mStudentsList = studentsList;
 
         this.studentsCountView = studentsCountView;
-        this.studentsCountView.setText(String.format(mFragment.getContext().getString(R.string.groupredctor_amount_label), mLessonsList.size()));
-
-        groupDate = lessons.get(0).getDate();
-        groupType = lessons.get(0).getGroupType();
+        this.studentsCountView.setText(String.format(mFragment.getContext().getString(R.string.groupredctor_amount_label), mStudentsList.size()));
     }
 
     public List<Student> getStudents() {
-        List<Student> students = new ArrayList<>();
-        mLessonsList.forEach(lesson -> students.add(lesson.getStudent()));
-        return students;
+        return mStudentsList;
     }
 
     @NonNull
@@ -79,37 +74,36 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
 
     @Override
     public int getItemCount() {
-        return mLessonsList !=null? mLessonsList.size():0;
+        return mStudentsList != null? mStudentsList.size():0;
     }
 
     public void deleteCheckedItems(){
-        List<Lesson> toDelete = new ArrayList<>();
-        for (int i = 0; i < mLessonsList.size(); i++){
+        List<Student> toDelete = new ArrayList<>();
+        for (int i = 0; i < mStudentsList.size(); i++){
             if(itemCheckedStates.get(i,false)){
-                toDelete.add(mLessonsList.get(i));
+                toDelete.add(mStudentsList.get(i));
             }
         }
 
-        StudentsRepository.getInstance().deleteLessons(toDelete);
-        mLessonsList.removeAll(toDelete);
+        StudentsRepository.getInstance().deleteStudentsFromGroup(mGroupType,toDelete);
+        mStudentsList.removeAll(toDelete);
         itemCheckedStates = new SparseBooleanArray();
         viewHolders.forEach(lessonViewHolder -> lessonViewHolder.setCheckBox(false));
         notifyDataSetChanged();
     }
 
     public void addStudentToGroup(Student studentNew){
-        Lesson lessonNew = new Lesson(groupDate, studentNew, groupType);
-        StudentsRepository.getInstance().addLesson(lessonNew);
-        mLessonsList.add(lessonNew);
+        StudentsRepository.getInstance().addStudentToGroup(mGroupType, studentNew);
+        mStudentsList.add(studentNew);
         notifyDataSetChanged();
     }
 
     @Override
     public void update() {
-        StudentsRepository.getInstance().getLessonList(groupDate,groupType).observe(mFragment.getViewLifecycleOwner(),lessons -> {
-            mLessonsList.clear();
-            mLessonsList.addAll(lessons);
-            studentsCountView.setText(String.format(mFragment.getContext().getString(R.string.groupredctor_amount_label), mLessonsList.size()));
+        StudentsRepository.getInstance().getStudentsForGroup(mGroupType).observe(mFragment.getViewLifecycleOwner(),groupTypeWithStudents -> {
+            mStudentsList.clear();
+            mStudentsList.addAll(groupTypeWithStudents.studentList);
+            studentsCountView.setText(String.format(mFragment.getContext().getString(R.string.groupredctor_amount_label), mStudentsList.size()));
             notifyDataSetChanged();
         });
     }
@@ -151,16 +145,14 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
 
         @Override
         public void onClick(View v) {
-            if(getAdapterPosition()!=RecyclerView.NO_POSITION) {
-                StudentCard studentCard = new StudentCard(mLessonsList.get(getAdapterPosition()).getStudent());
-                mFragment.getFragmentManager().beginTransaction().replace(R.id.main_content_id, studentCard).addToBackStack(null).commit();
-            }
+            StudentCard studentCard = new StudentCard(mStudentsList.get(getAdapterPosition()));
+            mFragment.getFragmentManager().beginTransaction().replace(R.id.main_content_id, studentCard).addToBackStack(null).commit();
         }
 
         void bind(int pos) {
-            Student student = mLessonsList.get(pos).getStudent();
+            Student student = mStudentsList.get(pos);
             nameView.setText(student.getName());
-            balanceView.setText(DatabaseConverters.getMoneyFormat().format(student.getMoneyBalance()));
+            balanceView.setText(String.format(UserSettings.getInstance().getHoursTextFormat()));
         }
     }
 }

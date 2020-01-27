@@ -17,35 +17,28 @@
         android:gravity="start|top"
         android:hint="@string/enter_full_name"
         android:inputType="textMultiLine"
+        android:paddingHorizontal="10dp"
         android:textSize="@dimen/default_text_size"
         tools:targetApi="o" />
 
     <EditText
         android:id="@+id/dialogadd_notes"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/small_list_item_height"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:height="@dimen/big_list_item_height"
         android:autofillHints=""
         android:ems="10"
+        android:gravity="start|top"
         android:hint="@string/_notes_hint"
-        android:inputType="phone"
+        android:inputType="textMultiLine"
+        android:lines="6"
+        android:maxLines="10"
+        android:minLines="6"
+        android:paddingHorizontal="10dp"
+        android:singleLine="false"
         android:textSize="@dimen/default_text_size"
         tools:targetApi="o" />
-
-    <TextView
-        android:id="@+id/textView11"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="@string/abonement_type"
-        android:textSize="@dimen/default_text_size" />
-
-    <Spinner
-        android:id="@+id/dialogadd_spinner_abonement"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/small_list_item_height"
-        android:layout_margin="5dp" />
 
     <TextView
         android:id="@+id/textView8"
@@ -53,14 +46,16 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="@string/group_time"
+        android:paddingVertical="5dp"
+        android:text="@string/group_type_label"
         android:textSize="@dimen/default_text_size" />
 
     <Spinner
-        android:id="@+id/dialogadd_spinner_time"
+        android:id="@+id/dialogadd_spinner_group_type"
         android:layout_width="match_parent"
         android:layout_height="@dimen/small_list_item_height"
-        android:layout_margin="5dp" />
+        android:layout_margin="5dp"
+        tools:listitem="@layout/item_spinner" />
 
     <TextView
         android:id="@+id/textView9"
@@ -68,6 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
+        android:paddingVertical="5dp"
         android:text="@string/group_day"
         android:textSize="@dimen/default_text_size" />
 
@@ -75,6 +71,7 @@
         android:id="@+id/dialogadd_spinner_day"
         android:layout_width="match_parent"
         android:layout_height="@dimen/small_list_item_height"
-        android:layout_margin="5dp" />
+        android:layout_margin="5dp"
+        tools:listitem="@layout/item_spinner" />
 
 </LinearLayout>

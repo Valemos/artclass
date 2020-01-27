@@ -8,15 +8,21 @@ import android.os.Bundle;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,12 +33,14 @@ import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.database.entity.Student;
-import com.app.artclass.list_adapters.LocalAdapter;
+import com.app.artclass.list_adapters.LessonsHistoryAdapter;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -43,7 +51,6 @@ import java.util.List;
 public class StudentCard extends Fragment {
 
     private Student student;
-    private List<Lesson> studLessonsList;
 
     public StudentCard(Student student) {
         this.student = student;
@@ -53,21 +60,18 @@ public class StudentCard extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_student_card, container, false);
+        View mainView = inflater.inflate(R.layout.fragment_student_card, container, false);
 
-        ImageButton addMoney_btn = view.findViewById(R.id.addMoney_button);
-        EditText moneyAmountEditText = view.findViewById(R.id.addCustomCash_view);
+        ImageButton addMoney_btn = mainView.findViewById(R.id.add_money_button);
+        EditText moneyAmountEditText = mainView.findViewById(R.id.add_custom_money_view);
         addMoney_btn.setTag(moneyAmountEditText);
-
-        Button makeZeroMoney = view.findViewById(R.id.make_zero_money);
-
-        CalendarView calendarView = view.findViewById(R.id.calendarView);
 
         // custom increments
 
-        Button add1_btn = view.findViewById(R.id.add1_btn);
-        Button add2_btn = view.findViewById(R.id.add2_btn);
-        Button add3_btn = view.findViewById(R.id.add3_btn);
+        Button add1_btn = mainView.findViewById(R.id.add1_btn);
+        Button add2_btn = mainView.findViewById(R.id.add2_btn);
+        Button add3_btn = mainView.findViewById(R.id.add3_btn);
+        Button makeZeroMoney = mainView.findViewById(R.id.make_zero_money);
 
         SparseArray<String> buttonIncrements = UserSettings.getInstance().getBalanceIncrements();
 
@@ -98,40 +102,31 @@ public class StudentCard extends Fragment {
         add2_btn.setOnClickListener(incrBtnClickListener);
         add3_btn.setOnClickListener(incrBtnClickListener);
 
-        calendarView.setOnDateChangeListener((calendarView1, y, m, d) -> {
-            String groupsTimeWorked;
-            final LocalDate curDate = LocalDate.of(y,m,d);
+        EditText notesTextView = mainView.findViewById(R.id.notes_view);
+        notesTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            StringBuilder groupsTimeBuilder = new StringBuilder();
-            for(Lesson curLesson: studLessonsList){
-                if(curLesson.getDate()==curDate){
-                    groupsTimeBuilder
-                            .append(
-                                    curLesson.getDate().format(DatabaseConverters.getDateTimeFormatter()))
-                            .append(" - ")
-                            .append(curLesson.getHoursWorked())
-                            .append("\n");
-                }
             }
-            groupsTimeWorked = groupsTimeBuilder.toString();
 
-            if(groupsTimeWorked.equals("")) groupsTimeWorked = getString(R.string.message_student_not_worked);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                student.setNotes(String.valueOf(s));
+            }
 
-            String workString = String.format(
-                    "%s\n%s",
-                    curDate.format(DatabaseConverters.getDateFormatter()),
-                    groupsTimeWorked);
+            @Override
+            public void afterTextChanged(Editable s) {
 
-            Toast.makeText(getContext(), workString, Toast.LENGTH_LONG).show();
+            }
         });
-
-        updateStudentFields(view, student);
-
-        return view;
+        updateStudentFields(mainView, student);
+        return mainView;
     }
 
     private void updateBalance(){
         ((TextView)getView().findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(student.getMoneyBalance()));
+        ((TextView)getView().findViewById(R.id.hours_studcard_view)).setText(String.format(UserSettings.getInstance().getHoursTextFormat(), student.getHoursBalance()));
+
         StudentsRepository.getInstance().update(student);
     }
 
@@ -139,9 +134,23 @@ public class StudentCard extends Fragment {
     private void updateStudentFields(View view, @NotNull Student curStudent) {
         ((TextView)view.findViewById(R.id.student_name_view)).setText(curStudent.getName());
         ((TextView)view.findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(curStudent.getMoneyBalance()));
-        ((TextView)view.findViewById(R.id.abonement_studcard_view)).setText(curStudent.getAbonementType().getName());
-        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format("%d h", curStudent.getHoursBalance()));
-        ((TextView)view.findViewById(R.id.phone_view)).setText(curStudent.getNotes());
+        ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format(UserSettings.getInstance().getHoursTextFormat(), curStudent.getHoursBalance()));
+        ((TextView)view.findViewById(R.id.notes_view)).setText(curStudent.getNotes());
+
+        LessonsHistoryAdapter lessonsHistoryAdapter = new LessonsHistoryAdapter(this.getContext(), R.layout.item_lessons_history, new ArrayList<>());
+        ((ListView)view.findViewById(R.id.student_lessons_list_view)).setAdapter(lessonsHistoryAdapter);
+
+        StudentsRepository.getInstance().getLessonList(student).observe(getViewLifecycleOwner(),lessons -> {
+            lessonsHistoryAdapter.clear();
+            lessonsHistoryAdapter.addAll(lessons);
+            lessonsHistoryAdapter.update();
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        StudentsRepository.getInstance().update(student);
+        super.onDestroy();
     }
 
 }

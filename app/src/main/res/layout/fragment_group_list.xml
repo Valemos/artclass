@@ -20,7 +20,8 @@
             android:gravity="center"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:text="@string/groups"
+            android:text="@string/group_list_label"
+            android:textColor="@color/secondary_text_color"
             android:textSize="@dimen/default_text_size" />
 
         <androidx.recyclerview.widget.RecyclerView

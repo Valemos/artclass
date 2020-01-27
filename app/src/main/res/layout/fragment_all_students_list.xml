@@ -20,8 +20,8 @@
             android:gravity="center"
             android:paddingTop="7dp"
             android:paddingBottom="7dp"
-            android:text="@string/all_students"
-            android:textColor="@android:color/white"
+            android:text="@string/menu_all_students"
+            android:textColor="@color/secondary_text_color"
             android:textSize="@dimen/default_text_size" />
 
         <androidx.recyclerview.widget.RecyclerView

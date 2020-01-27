@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/small_list_item_height">
+
+    <TextView
+        android:id="@+id/student_name_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:gravity="start|center_vertical"
+        android:paddingHorizontal="20dp"
+        android:text="@string/regular_surname_sample"
+        android:textColor="@color/main_text_color"
+        android:textSize="@dimen/default_text_size" />
+</LinearLayout>

@@ -10,19 +10,19 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.dao.AbonementDao;
+import com.app.artclass.database.dao.GroupStudentRefDao;
 import com.app.artclass.database.dao.GroupTypeDao;
 import com.app.artclass.database.dao.LessonDao;
 import com.app.artclass.database.dao.StudentDao;
-import com.app.artclass.database.entity.Abonement;
 import com.app.artclass.database.entity.GroupType;
+import com.app.artclass.database.entity.GroupTypeStudentsRef;
 import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.database.entity.Student;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class, Lesson.class, Abonement.class, GroupType.class}, version = 12, exportSchema = false)
+@Database(entities = {Student.class, Lesson.class, GroupType.class, GroupTypeStudentsRef.class}, version = 14, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
     private static final String DATABASE_NAME = "students_database.db";
@@ -34,8 +34,8 @@ public abstract class DatabaseStudents extends RoomDatabase {
 
     public abstract StudentDao studentDao();
     public abstract LessonDao lessonDao();
-    public abstract AbonementDao abonementDao();
     public abstract GroupTypeDao groupTypeDao();
+    public abstract GroupStudentRefDao groupStudentRefDao();
 
     static DatabaseStudents getDatabase(final Context context) {
         if (instance == null) {

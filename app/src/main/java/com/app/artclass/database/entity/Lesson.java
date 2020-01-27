@@ -19,13 +19,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 import static androidx.room.ForeignKey.CASCADE;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 
-@Entity(foreignKeys = @ForeignKey(entity = Student.class, parentColumns = "id", childColumns = "stud_id", onDelete = CASCADE),
-        indices = @Index(value = {"date","group_time","stud_id"},unique = true))
+@Entity(foreignKeys = @ForeignKey(entity = Student.class, parentColumns = "studentId", childColumns = "stud_studentId", onDelete = CASCADE),
+        indices = @Index(value = {"date","group_time","stud_studentId"},unique = true))
 public class Lesson {
 
     @PrimaryKey(autoGenerate = true)
@@ -44,6 +45,9 @@ public class Lesson {
     private GroupType groupType;
 
     private int hoursWorked;
+
+    @Ignore
+    private static Comparator<Lesson> dateComparator = (o1, o2) -> o1.getDate().compareTo(o2.getDate());
 
     public Lesson(@NotNull LocalDate date, @NotNull GroupType groupType, @NotNull Student student) {
         this.date = date;
@@ -104,5 +108,9 @@ public class Lesson {
 
     public void setGroupType(@NonNull GroupType groupType) {
         this.groupType = groupType;
+    }
+
+    public static Comparator<Lesson> getDateComparator() {
+        return dateComparator;
     }
 }

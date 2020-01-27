@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/big_list_item_height">
+
+    <TextView
+        android:id="@+id/group_name_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="start|center_vertical"
+        android:inputType="textMultiLine"
+        android:paddingHorizontal="15dp"
+        android:text="@string/group_sample"
+        android:textColor="@color/main_text_color"
+        android:textSize="@dimen/default_text_size" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/date_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start|center_vertical"
+            android:paddingHorizontal="15dp"
+            android:text="@string/date_sample"
+            android:textColor="@color/main_text_color"
+            android:textSize="@dimen/default_text_size" />
+
+        <TextView
+            android:id="@+id/weekday_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:gravity="start|center_vertical"
+            android:paddingHorizontal="15dp"
+            android:text="@string/weekday_sample"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="@dimen/default_text_size" />
+    </LinearLayout>
+</LinearLayout>

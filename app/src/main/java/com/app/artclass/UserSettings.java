@@ -1,11 +1,11 @@
 package com.app.artclass;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
 
-import com.app.artclass.database.entity.Abonement;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
 
@@ -14,41 +14,30 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class UserSettings {
 
     private List<GroupType> allGroupTypes;
-    private List<Abonement> allAbonements;
+    private static GroupType noGroup;
 
-    public WEEKDAY[] getWeekdays() {
-        return WEEKDAY.values();
+
+    public List<WEEKDAY> getWeekdays() {
+        return WEEKDAY.getValues();
     }
 
-    public enum WEEKDAY {
-        MONDAY("Понедельник"),
-        TUESDAY("Вторник"),
-        WEDNESDAY("Среда"),
-        THURSDAY("Четверг"),
-        FRIDAY("Пятница"),
-        SATURDAY("Суббота"),
-        SUNDAY("Воскресенье");
-
-        String name;
-
-        WEEKDAY(String weekName) {
-            name = weekName;
-        }
-
-        private String getName() {
-            return name;
-        }
-
-        public static WEEKDAY get(int pos) {
-            return WEEKDAY.values()[pos-1];
-        }
+    public int getHoursForMoney(int moneyBalance) {
+        return moneyBalance / getMoneyPerHour();
     }
+
+    public int getMoneyForHours(int hours) {
+        return hours * getMoneyPerHour();
+    }
+
+    private int getMoneyPerHour() {
+        return 75;
+    }
+
     private SparseArray<String> balanceButtonIncrements;
 
     private static UserSettings classInstance;
@@ -62,20 +51,17 @@ public class UserSettings {
 
     private UserSettings() {
         allGroupTypes = initDefaultGroupTypes();
-        allAbonements = initDefaultAbonements();
         balanceButtonIncrements = initDefaultBtnIncrements();
-    }
-    private List<GroupType> initDefaultGroupTypes() {
-        return Arrays.asList(
-                new GroupType(LocalTime.of(11,0),"дети 11:00"),
-                new GroupType(LocalTime.of(15,0),"взрослые 15:00"),
-                new GroupType(LocalTime.of(17,0),"взрослые 17:00"));
+        noGroup = new GroupType(LocalTime.of(0,0), WEEKDAY.NO_WEEKDAY, "не выбрано");
     }
 
-    private List<Abonement> initDefaultAbonements() {
+    private List<GroupType> initDefaultGroupTypes() {
         return Arrays.asList(
-                new Abonement("обычный", 1200, 12),
-                new Abonement("половина", 600, 6));
+                new GroupType(LocalTime.of(11,0), WEEKDAY.TUESDAY, "дети 11:00"),
+                new GroupType(LocalTime.of(11,0), WEEKDAY.SATURDAY, "взрослые 11:00"),
+                new GroupType(LocalTime.of(15,0), WEEKDAY.SATURDAY, "дети 15:00"),
+                new GroupType(LocalTime.of(17,0), WEEKDAY.SATURDAY, "взрослые 17:00"),
+                new GroupType(LocalTime.of(17,0), WEEKDAY.SUNDAY, "взрослые 17:00"));
     }
 
     private SparseArray<String> initDefaultBtnIncrements() {
@@ -88,12 +74,6 @@ public class UserSettings {
         return out;
     }
 
-    public List<Abonement> getAllAbonements() {
-        if(allAbonements.size()==0)
-            allAbonements = initDefaultAbonements();
-        return allAbonements;
-    }
-
     public static int getDefaultLessonHours() {
         return 2;
     }
@@ -102,39 +82,14 @@ public class UserSettings {
         return 7;
     }
 
-    public List<String> getWeekdayLabels() {
-        List<String> out = new ArrayList<>();
-        for(WEEKDAY c : WEEKDAY.values()){
-            out.add(c.getName());
-        }
-        return out;
-    }
-
     public int getWeekdayIndex(WEEKDAY toCheck) {
-        for (int pos = 0; pos < WEEKDAY.values().length; pos++) {
+        for (int pos = 0; pos < WEEKDAY.getValues().size(); pos++) {
             if(toCheck==WEEKDAY.get(pos)){
                 // +1 required for LocalDate Weekdays
-                return pos+1;
+                return pos;
             }
         }
         return 0;
-    }
-
-    public List<String> getGroupLabels() {
-        List<String> allGroupsStr = new ArrayList<>();
-        allGroupTypes.forEach((e)-> allGroupsStr.add(e.getName()));
-        return allGroupsStr;
-    }
-
-    public LocalTime getGroupTime(String groupName) {
-        return Objects.requireNonNull(allGroupTypes.stream().filter(groupType -> groupType.getName().equals(groupName))
-                .findFirst().orElse(null)).getTime();
-    }
-
-    public Abonement getAbonement(String name) {
-        return allAbonements.stream()
-                .filter(abonement -> abonement.getName().equals(name))
-                .findFirst().orElse(null);
     }
 
     public List<GroupType> getAllGroupTypes() {
@@ -143,17 +98,18 @@ public class UserSettings {
         return allGroupTypes;
     }
 
+    public List<GroupType> getAllGroupTypesWithDefault(Context context) {
+        List<GroupType> groupTypes = new ArrayList<>(getAllGroupTypes());
+        groupTypes.add(0, GroupType.getNoGroup(context));
+        return groupTypes;
+    }
+
     public SparseArray<String> getBalanceIncrements() {
         return balanceButtonIncrements;
     }
 
-    public GroupType getGroupType(String name) {
-        return allGroupTypes.stream().filter(groupType -> groupType.getName().equals(name))
-                .findFirst().orElse(null);
-    }
-
     public void writeSettingsToRepository(StudentsRepository repository) {
-        repository.insertAbonements(allAbonements);
+        repository.addGroupType(noGroup);
         repository.insertGroupTypes(allGroupTypes);
     }
 
@@ -162,6 +118,20 @@ public class UserSettings {
     }
 
     public String getWeekday(LocalDate date) {
-        return WEEKDAY.get(date.getDayOfWeek().getValue()).getName();
+        return WEEKDAY.get(date.getDayOfWeek().getValue()-1).getName();
+    }
+
+    public GroupType getNoGroup() {
+        return noGroup;
+    }
+
+    public GroupType getNoGroup(Context context) {
+        noGroup.setName(context.getString(R.string.no_group_label));
+        noGroup.setWeekday(WEEKDAY.getNoWeekday(context));
+        return noGroup;
+    }
+
+    public String getHoursTextFormat() {
+        return "%d ч";
     }
 }

@@ -37,10 +37,6 @@ public interface LessonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Lesson lesson);
 
-    @Transaction
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long insert(List<Lesson> lesson);
-
     @Update
     void update(Lesson lesson);
 
@@ -62,12 +58,12 @@ public interface LessonDao {
     void delete(LocalDate date, String groupName);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_id = :studentId")
+    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_studentId = :studentId")
     @TypeConverters({DatabaseConverters.class})
     void delete(LocalDate date, String groupName, long studentId);
 
     @Transaction
-    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_id IN (:studentIds)")
+    @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_studentId IN (:studentIds)")
     @TypeConverters({DatabaseConverters.class})
     void delete( LocalDate date, String groupName, List<Long> studentIds);
 }

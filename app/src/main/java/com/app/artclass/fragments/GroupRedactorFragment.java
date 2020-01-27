@@ -16,13 +16,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.app.artclass.R;
-import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.entity.GroupType;
-import com.app.artclass.database.entity.Lesson;
+import com.app.artclass.database.entity.Student;
 import com.app.artclass.recycler_adapters.GroupRedactorAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -33,14 +31,12 @@ import java.util.List;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class GroupRedactorFragment extends Fragment {
 
-    private LocalDate dateValue;
-    private GroupType groupType;
-    private final List<Lesson> lessonsList;
+    private GroupType mGroupType;
+    private final List<Student> mStudentsList;
 
-    public GroupRedactorFragment(@NonNull LocalDate date, @NonNull GroupType groupType, List<Lesson> lessons) {
-        this.dateValue = date;
-        this.groupType = groupType;
-        lessonsList = lessons;
+    public GroupRedactorFragment(@NonNull GroupType groupType, List<Student> students) {
+        this.mGroupType = groupType;
+        mStudentsList = students;
     }
 
 
@@ -51,23 +47,24 @@ public class GroupRedactorFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_group_redactor, container, false);
 
         // set date and time
-        TextView dateText = view.findViewById(R.id.date_redactor_view);
-        TextView timeText = view.findViewById(R.id.time_redactor_view);
+        TextView groupNameText = view.findViewById(R.id.group_name_view);
         TextView studentsAmountTextView = view.findViewById(R.id.students_count_view);
+        groupNameText.setText(mGroupType.getName());
 
-        dateText.setText(dateValue.format(DatabaseConverters.getDateFormatter()));
-        timeText.setText(groupType.getName());
-
-        GroupRedactorAdapter groupRedactorAdapter = new GroupRedactorAdapter(this, R.layout.item_all_students_list, R.id.name_view, R.id.balance_view, studentsAmountTextView, lessonsList);
+        GroupRedactorAdapter groupRedactorAdapter = new GroupRedactorAdapter(
+                this,
+                R.layout.item_all_students_list,
+                R.id.name_view, R.id.balance_view,
+                studentsAmountTextView,
+                mGroupType,
+                mStudentsList);
         RecyclerView groupLessonsListView = view.findViewById(R.id.group_redactor_list);
         groupLessonsListView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false));
         groupLessonsListView.setAdapter(groupRedactorAdapter);
 
         FloatingActionButton btn_add_dialog = view.findViewById(R.id.fab_add_students);
         btn_add_dialog.setOnClickListener(v ->
-                DialogHandler.getInstance().AddStudentsToGroup(this, groupRedactorAdapter,
-                        dateValue, groupType,
-                        groupRedactorAdapter.getStudents()));
+                DialogHandler.getInstance().AddStudentsToGroup(this, groupRedactorAdapter, mGroupType, groupRedactorAdapter.getStudents()));
 
         FloatingActionButton btn_delete_selected = view.findViewById(R.id.fab_delete_selected);
         btn_delete_selected.setOnClickListener(v -> groupRedactorAdapter.deleteCheckedItems());

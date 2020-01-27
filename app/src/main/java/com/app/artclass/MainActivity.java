@@ -1,11 +1,11 @@
 package com.app.artclass;
 
 import android.app.Application;
+import android.database.MatrixCursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -13,38 +13,53 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
+import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
+import com.app.artclass.database.entity.Student;
 import com.app.artclass.fragments.AllStudentsListFragment;
 import com.app.artclass.fragments.GroupListFragment;
+import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.fragments.StudentsPresentList;
+import com.app.artclass.list_adapters.LocalAdapter;
 import com.google.android.material.navigation.NavigationView;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.CharBuffer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
-    private SearchView.OnQueryTextListener searchQueryListener = new SearchView.OnQueryTextListener() {
-        @Override
-        public boolean onQueryTextSubmit(String query) {
-            Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        @Override
-        public boolean onQueryTextChange(String newText) {
-            return false;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // very important
+        // must be called before using singleton classes
+        initBaseClasses(getApplication());
+
+        // unhandled exceptions logged
+        Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
+            Logger.getInstance().appendLog(paramThrowable.getMessage());
+            System.exit(2);
+        });
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -53,28 +68,16 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        //init search bar
-        SearchView searchView = findViewById(R.id.main_search);
-        searchView.setOnQueryTextListener(searchQueryListener);
-
-        // very important
-        // you must call initialisation
-        // before using singleton classes
-        initBaseClasses(getApplication());
-
         //start page
-//        StudentsPresentList list = new StudentsPresentList(LocalDate.now());
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, list).commit();
-//        GroupListFragment groupListFragment = new GroupListFragment();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, groupListFragment).commit();
-        AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, allStudentsListFragment).commit();
-
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
     }
 
     private void initBaseClasses(Application application) {
         StudentsRepository.getInstance(application);
-        Logger.getInstance(this).appendLog("init complete");
+        Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": init complete");
+//        StudentsRepository.getInstance().resetDatabase(this);
 //        StudentsRepository.getInstance().initDatabaseTest();
     }
 
@@ -91,7 +94,60 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.top_menu, menu);
+
+        //init search bar
+        SearchView searchView = (SearchView) menu.findItem(R.id.search_menu_item).getActionView();
+        if (searchView != null) {
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+                String[] from = new String[] {"_id", "name"};
+                MatrixCursor suggestionsCursor;
+
+                List<Student> students = new ArrayList<>();
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    if(students!=null && students.size()>0){
+                        if(students.size()==1){
+                            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentCard(students.get(0)));
+                        }else{
+                            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment(students));
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    StudentsRepository.getInstance().getStudentsCursorByQuery(newText).observe(MainActivity.this,queryStudents -> {
+                        this.students = queryStudents;
+                        //
+
+                        suggestionsCursor = new MatrixCursor(from);
+
+                        int id = 0;
+                        for (String name : students.stream().map(Student::getName).collect(Collectors.toList())) {
+                            suggestionsCursor.newRow().add(from[0],id).add(from[1], name);
+                            id++;
+                        }
+
+                        searchView.setSuggestionsAdapter(new SimpleCursorAdapter(
+                                MainActivity.this,
+                                R.layout.item_student_suggestion,
+                                suggestionsCursor,
+                                new String[]{from[1]},
+                                new int[]{R.id.student_name_view}));
+                        searchView.getSuggestionsAdapter().notifyDataSetChanged();
+//                        onQueryTextSubmit(newText);
+                    });
+                    return false;
+                }
+            });
+            searchView.setIconifiedByDefault(false);
+        }
+
         return true;
     }
 
@@ -114,21 +170,20 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        if(id == R.id.nav_students_present){
 
-            StudentsPresentList listFragment = new StudentsPresentList();
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, listFragment).commit();
+        Fragment fragmentNew = null;
 
-        }else if (id == R.id.nav_groups) {
-
-            GroupListFragment groupListFragment = new GroupListFragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, groupListFragment).commit();
-
+        if (id == R.id.nav_groups) {
+            fragmentNew = new GroupListFragment();
         }else if (id == R.id.nav_allstudents){
+            fragmentNew = new AllStudentsListFragment();
+        }
 
-            AllStudentsListFragment allStudentsListFragment = new AllStudentsListFragment();
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, allStudentsListFragment).commit();
-
+        if(fragmentNew!=null){
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, fragmentNew).commit();
+        }else{
+            Logger.getInstance().appendLog(this.getClass(),"fragment not found");
+            System.out.println(Logger.getInstance().getLogFileContent());
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

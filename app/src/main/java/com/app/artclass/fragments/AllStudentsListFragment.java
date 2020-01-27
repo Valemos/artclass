@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +20,7 @@ import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -30,12 +30,12 @@ import java.util.ArrayList;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class AllStudentsListFragment extends Fragment {
 
+    private List<Student> startStudentsList = null;
 
-    private FragmentManager fragmentManager;
+    public AllStudentsListFragment() {}
 
-
-    public AllStudentsListFragment() {
-        this.fragmentManager = this.getFragmentManager();
+    public AllStudentsListFragment(List<Student> studentList){
+        this.startStudentsList = studentList;
     }
 
     @Override
@@ -66,10 +66,15 @@ public class AllStudentsListFragment extends Fragment {
             curAdapter.deleteCheckedStudents();
         });
 
-        StudentsRepository.getInstance().getAllStudents().observe(this,studentList -> {
-            adapter.setStudents(studentList);
+        if(startStudentsList != null){
+            adapter.setStudents(startStudentsList);
             adapter.notifyDataSetChanged();
-        });
+        }else {
+            StudentsRepository.getInstance().getAllStudents().observe(this, studentList -> {
+                adapter.setStudents(studentList);
+                adapter.notifyDataSetChanged();
+            });
+        }
         return mainView;
     }
 

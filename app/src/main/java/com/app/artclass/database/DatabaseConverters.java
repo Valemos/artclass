@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 import androidx.room.TypeConverter;
 
+import com.app.artclass.WEEKDAY;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -92,5 +93,13 @@ public class DatabaseConverters {
         return gson.toJson(list);
     }
 
-    // Abonement converter
+    @TypeConverter
+    public String weekdayToString(WEEKDAY weekday){
+        return weekday.toString();
+    }
+
+    @TypeConverter
+    public WEEKDAY stringToWeekday(String weekdayStr){
+        return WEEKDAY.valueOf(weekdayStr);
+    }
 }

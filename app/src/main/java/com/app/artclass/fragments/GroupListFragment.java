@@ -42,25 +42,15 @@ public class GroupListFragment extends Fragment {
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_group_list, container, false);
 
-        //how much days to get
-        //get groups for that days
-        LocalDate currentDate = LocalDate.now();
-        LocalDate endDate = currentDate.plusDays(UserSettings.getGroupDaysInitAmount());
-
-
         //add adapter to update if groups are deleted
         final GroupsListRecyclerAdapter groupsRecyclerAdapter = new GroupsListRecyclerAdapter(this, new ArrayList<>());
-        mainView.setTag(groupsRecyclerAdapter);
 
-        // setup groups recycler view
-        while(currentDate.isBefore(endDate)) {
-            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
-                LocalDate finalCurrentDate = currentDate;
-                StudentsRepository.getInstance().getLessonList(currentDate, groupType).observe(getViewLifecycleOwner(), lessons -> {
-                    groupsRecyclerAdapter.addGroup(new GroupsListRecyclerAdapter.GroupData(finalCurrentDate, groupType), lessons);
-                });
-            }
-            currentDate = currentDate.plusDays(1);
+        for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
+            final GroupType finGroupType = groupType;
+            StudentsRepository.getInstance().getStudentsList(groupType).observe(getViewLifecycleOwner(), groupTypeWithStudents ->{
+                if(groupTypeWithStudents!=null)
+                    groupsRecyclerAdapter.addGroup(finGroupType, groupTypeWithStudents.studentList);
+            });
         }
 
         RecyclerView groupsList = mainView.findViewById(R.id.groups_list);
@@ -71,7 +61,7 @@ public class GroupListFragment extends Fragment {
         FloatingActionButton btn_floating_addnewgroup = mainView.findViewById(R.id.fab_add_new_group);
         btn_floating_addnewgroup.setTag(R.id.adapter,groupsRecyclerAdapter);
         btn_floating_addnewgroup.setOnClickListener(view ->
-                DialogHandler.getInstance().AddStudentsToGroup(this,(LocalAdapter) view.getTag(R.id.adapter), null, null,null));
+                DialogHandler.getInstance().AddStudentsToGroup(this, groupsRecyclerAdapter, null, null));
 
         FloatingActionButton btn_floating_helpbutton = mainView.findViewById(R.id.fab_secondary);
         btn_floating_helpbutton.setOnClickListener(v ->

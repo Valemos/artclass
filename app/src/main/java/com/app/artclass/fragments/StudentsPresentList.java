@@ -83,7 +83,7 @@ public class StudentsPresentList extends Fragment {
         SpinnerAdapter spinnerGroupAdapter = new ArrayAdapter<>(
                 Objects.requireNonNull(getContext()),
                 R.layout.item_spinner,
-                R.id.text_spinner_item,
+                R.id.text_spinner_view,
                 UserSettings.getInstance().getAllGroupTypes());
         spinnerCurGroup.setAdapter(spinnerGroupAdapter);
 

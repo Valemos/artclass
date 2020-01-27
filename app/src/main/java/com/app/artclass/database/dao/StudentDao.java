@@ -1,5 +1,7 @@
 package com.app.artclass.database.dao;
 
+import android.database.Cursor;
+
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -30,6 +32,9 @@ public interface StudentDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Student student);
+
+    @Query("SELECT * FROM student WHERE name LIKE :query")
+    LiveData<List<Student>> getByQuery(String query);
 
     @Update
     void update(Student student);

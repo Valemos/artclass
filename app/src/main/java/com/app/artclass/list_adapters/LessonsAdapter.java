@@ -15,6 +15,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.app.artclass.ApplicationViewModel;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.fragments.DialogHandler;
 import com.app.artclass.R;
@@ -99,8 +100,8 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         TextView hoursLeftText = view.findViewById(R.id.hours_left_view);
         TextView hoursWorkedText = view.findViewById(R.id.hours_worked_view);
 
-        hoursLeftText.setText(String.format(Locale.getDefault(), "%d h", lesson.getStudent().getHoursBalance()));
-        hoursWorkedText.setText(String.format(Locale.getDefault(), "%d h", lesson.getHoursWorked()));
+        hoursLeftText.setText(String.format(Locale.getDefault(), UserSettings.getInstance().getHoursTextFormat(), lesson.getStudent().getHoursBalance()));
+        hoursWorkedText.setText(String.format(Locale.getDefault(), UserSettings.getInstance().getHoursTextFormat(), lesson.getHoursWorked()));
     }
 
     private void incrementHoursWorked(int howMuchWorked, Lesson lesson){
@@ -109,7 +110,7 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         int finHoursWorkedToday = lesson.getHoursWorked() + howMuchWorked;
 
         if(finHoursToWork <= 0){
-            DialogHandler.getInstance().AlertDialog(fragment.getContext(), fragment.getContext().getString(R.string.title_alert_abonement), fragment.getContext().getString(R.string.message_abonement_finished), null);
+            DialogHandler.getInstance().AlertDialog(fragment.getContext(), fragment.getContext().getString(R.string.title_alert_abonement), "", null);
         }
 
         if (finHoursToWork < 0) {

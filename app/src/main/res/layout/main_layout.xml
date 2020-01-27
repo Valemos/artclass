@@ -16,24 +16,16 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
-
-            <LinearLayout
-                android:layout_width="0px"
-                android:layout_height="0px"
-                android:focusable="true"
-                android:focusableInTouchMode="true" />
-
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/main_search"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nextFocusLeft="@id/main_search"
-                android:nextFocusUp="@id/main_search" />
-        </androidx.appcompat.widget.Toolbar>
-
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/main_content" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_content_id"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".MainActivity"
+        tools:showIn="@layout/main_layout">
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

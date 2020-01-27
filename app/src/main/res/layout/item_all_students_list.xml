@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/small_list_item_height"
-    android:background="@color/colorAccent"
+    android:background="@color/colorPrimary"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
@@ -26,6 +26,7 @@
         android:selectAllOnFocus="false"
         android:singleLine="true"
         android:text="@string/student_name"
+        android:textColor="@color/main_text_color"
         android:textIsSelectable="false"
         android:textSize="@dimen/default_text_size" />
 
@@ -42,7 +43,7 @@
         android:selectAllOnFocus="false"
         android:singleLine="true"
         android:text="@string/_balance_sample"
-        android:textColor="@android:color/white"
+        android:textColor="@color/secondary_text_color"
         android:textIsSelectable="false"
         android:textSize="@dimen/default_text_size" />
 

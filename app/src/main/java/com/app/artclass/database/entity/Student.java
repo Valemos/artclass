@@ -2,29 +2,26 @@ package com.app.artclass.database.entity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import org.jetbrains.annotations.NotNull;
+import com.app.artclass.UserSettings;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 @Entity(indices = {@Index(value = {"name"}, unique = true)})
 public class Student implements Comparable{
 
     @PrimaryKey(autoGenerate = true)
-    private long id;
+    private long studentId;
 
     @NonNull
     private final String name;
 
-    private String notes;
-
-    @Embedded(prefix = "abon_")
-    private Abonement abonementType;
+    @NonNull
+    private String notes = "";
 
     private int moneyBalance;
 
@@ -40,21 +37,18 @@ public class Student implements Comparable{
         }
     }
 
-    public Student(@NonNull String name, String notes, Abonement abonementType, int moneyBalance, int hoursBalance) {
+    public Student(@NonNull String name, String notes, int moneyBalance, int hoursBalance) {
         this.name = name;
         this.notes = notes;
-        this.abonementType = abonementType;
         this.moneyBalance = moneyBalance;
         this.hoursBalance = hoursBalance;
     }
 
     @Ignore
-    public Student(@NotNull String name, int moneyBalance, Abonement abonementType) {
+    public Student(@NotNull String name, int moneyBalance) {
         this.name = name;
         this.setMoneyBalance(moneyBalance);
-
-        this.setAbonementType(abonementType);
-        this.hoursBalance = abonementType.getHours();
+        hoursBalance = UserSettings.getInstance().getHoursForMoney(moneyBalance);
     }
 
     public void setHoursBalance(int hoursBalance) {
@@ -72,6 +66,7 @@ public class Student implements Comparable{
 
     public void setMoneyBalance(int moneyBalance) {
         this.moneyBalance = moneyBalance;
+        this.hoursBalance = UserSettings.getInstance().getHoursForMoney(moneyBalance);
     }
 
     public int getMoneyBalance() {
@@ -80,14 +75,24 @@ public class Student implements Comparable{
 
     public void incrementMoneyBalance(int incr){
         moneyBalance += incr;
+        hoursBalance = UserSettings.getInstance().getHoursForMoney(moneyBalance);
     }
 
-    public Abonement getAbonementType() {
-        return abonementType;
+    public long getStudentId() {
+        return studentId;
     }
 
-    public void setAbonementType(Abonement abonementType) {
-        this.abonementType = abonementType;
+    public void setStudentId(long studentId) {
+        this.studentId = studentId;
+    }
+
+    @NotNull
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(@NotNull String notes) {
+        this.notes = notes;
     }
 
     @Override
@@ -97,21 +102,5 @@ public class Student implements Comparable{
         }catch (ClassCastException e){
             return 0;
         }
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
     }
 }
