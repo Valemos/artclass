@@ -25,6 +25,7 @@ import com.app.artclass.fragments.GroupListFragment;
 import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.fragments.StudentsPresentList;
 import com.app.artclass.list_adapters.LocalAdapter;
+import com.app.artclass.list_adapters.SearchAdapter;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.FileNotFoundException;
@@ -39,8 +40,6 @@ import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +69,15 @@ public class MainActivity extends AppCompatActivity
 
         //start page
 //        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
     }
 
     private void initBaseClasses(Application application) {
         StudentsRepository.getInstance(application);
         Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": init complete");
-//        StudentsRepository.getInstance().resetDatabase(this);
-//        StudentsRepository.getInstance().initDatabaseTest();
+        StudentsRepository.getInstance().resetDatabase(this);
+        StudentsRepository.getInstance().initDatabaseTest();
     }
 
     @Override
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            getSupportFragmentManager().popBackStack();
         }
     }
 
@@ -110,9 +109,13 @@ public class MainActivity extends AppCompatActivity
                 public boolean onQueryTextSubmit(String query) {
                     if(students!=null && students.size()>0){
                         if(students.size()==1){
-                            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentCard(students.get(0)));
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_content_id,
+                                            new StudentCard(students.get(0))).addToBackStack(null).commit();
                         }else{
-                            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment(students));
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_content_id,
+                                            new AllStudentsListFragment(students)).addToBackStack(null).commit();
                         }
                         return true;
                     }
@@ -123,8 +126,6 @@ public class MainActivity extends AppCompatActivity
                 public boolean onQueryTextChange(String newText) {
                     StudentsRepository.getInstance().getStudentsCursorByQuery(newText).observe(MainActivity.this,queryStudents -> {
                         this.students = queryStudents;
-                        //
-
                         suggestionsCursor = new MatrixCursor(from);
 
                         int id = 0;
@@ -133,14 +134,17 @@ public class MainActivity extends AppCompatActivity
                             id++;
                         }
 
-                        searchView.setSuggestionsAdapter(new SimpleCursorAdapter(
+                        SearchAdapter searchAdapter = new SearchAdapter(
                                 MainActivity.this,
+                                getSupportFragmentManager(),
+                                searchView,
                                 R.layout.item_student_suggestion,
                                 suggestionsCursor,
-                                new String[]{from[1]},
-                                new int[]{R.id.student_name_view}));
-                        searchView.getSuggestionsAdapter().notifyDataSetChanged();
-//                        onQueryTextSubmit(newText);
+                                from[1],
+                                R.id.student_name_view,
+                                students);
+
+                        searchView.setSuggestionsAdapter(searchAdapter);
                     });
                     return false;
                 }

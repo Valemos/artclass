@@ -14,10 +14,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
-import com.app.artclass.ApplicationViewModel;
 import com.app.artclass.UserSettings;
-import com.app.artclass.database.entity.GroupType;
-import com.app.artclass.fragments.DialogHandler;
+import com.app.artclass.fragments.dialog.AlertDialogFragment;
+import com.app.artclass.fragments.dialog.DialogCreationHandler;
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Lesson;
@@ -38,10 +37,7 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
     public LessonsAdapter(@NonNull Fragment fragment, int resource, @NonNull List<Lesson> lessons) {
         super(Objects.requireNonNull(fragment.getContext()), resource, lessons);
         this.fragment = fragment;
-
         lessonsList = lessons;
-        changeData(lessons, null, null);
-
         mResource = resource;
     }
 
@@ -71,7 +67,7 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         btn_increment.setTag(R.id.lesson,lessonsList.get(position));
         btn_increment.setTag(R.id.student_pos, position);
 
-        refreshField(convertView, lessonsList.get(position));
+        refreshItemView(convertView, lessonsList.get(position));
 
         return convertView;
     }
@@ -83,7 +79,7 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-        refreshField(((View)view.getParent().getParent()), lesson);
+        refreshItemView(((View)view.getParent().getParent()), lesson);
     };
 
     private View.OnClickListener incrementListener = view -> {
@@ -93,10 +89,10 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
 
         //buttons located in additional container and we need to get outside it
         //then we need to find in parent out text views
-        refreshField(((View)view.getParent().getParent()), lesson);
+        refreshItemView(((View)view.getParent().getParent()), lesson);
     };
 
-    private void refreshField(View view, Lesson lesson) {
+    private void refreshItemView(View view, Lesson lesson) {
         TextView hoursLeftText = view.findViewById(R.id.hours_left_view);
         TextView hoursWorkedText = view.findViewById(R.id.hours_worked_view);
 
@@ -110,7 +106,8 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         int finHoursWorkedToday = lesson.getHoursWorked() + howMuchWorked;
 
         if(finHoursToWork <= 0){
-            DialogHandler.getInstance().AlertDialog(fragment.getContext(), fragment.getContext().getString(R.string.title_alert_abonement), "", null);
+            AlertDialogFragment alertDialogFragment = new AlertDialogFragment(fragment.getContext().getString(R.string.title_alert_abonement), "", null);
+            alertDialogFragment.show(fragment.getFragmentManager(), "AlertDialog");
         }
 
         if (finHoursToWork < 0) {
@@ -125,24 +122,22 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
 
         lesson.setHoursWorked(finHoursWorkedToday);
         student.setHoursBalance(finHoursToWork);
+
+
     }
 
-    public void changeData(List<Lesson> updateLessons, ApplicationViewModel mAppViewModel, GroupType spinnerItem) {
+    public void setLessons(List<Lesson> updateLessons) {
         lessonsList.clear();
         lessonsList.addAll(updateLessons);
         notifyDataSetChanged();
-
-        if(mAppViewModel != null && spinnerItem != null) {
-            if (mAppViewModel.getTodayGroupsMap() != null) {
-                mAppViewModel.getTodayGroupsMap().get(spinnerItem).removeObservers(fragment.getViewLifecycleOwner());
-            }
-        }
     }
 
     public void updateRepository(){
-        assert StudentsRepository.getInstance() != null;
-
-        StudentsRepository.getInstance().update(lessonsList);
+        //delete empty lessons
+        lessonsList.forEach(lesson -> {
+            if(lesson.getHoursWorked()!=0)
+                StudentsRepository.getInstance().addLesson(lesson);
+        });
     }
 
     @Override

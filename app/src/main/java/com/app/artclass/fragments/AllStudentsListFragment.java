@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Student;
+import com.app.artclass.fragments.dialog.AddNewStudentDialog;
+import com.app.artclass.fragments.dialog.DialogCreationHandler;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -57,7 +59,10 @@ public class AllStudentsListFragment extends Fragment {
 
         FloatingActionButton btn_floating_addnew = mainView.findViewById(R.id.fab_add_new_group);
         btn_floating_addnew.setTag(adapter);
-        btn_floating_addnew.setOnClickListener(view -> DialogHandler.getInstance().AddNewStudent(this.getContext(),(StudentsRecyclerAdapter)view.getTag()));
+        btn_floating_addnew.setOnClickListener(view -> {
+            AddNewStudentDialog addNewStudentDialog = new AddNewStudentDialog((StudentsRecyclerAdapter)view.getTag());
+            addNewStudentDialog.show(getFragmentManager(), "AddNewStudentDialog");
+        });
 
         FloatingActionButton btn_floating_delete = mainView.findViewById(R.id.fab_secondary);
         btn_floating_delete.setTag(adapter);

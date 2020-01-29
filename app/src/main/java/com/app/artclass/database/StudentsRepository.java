@@ -23,6 +23,7 @@ import com.app.artclass.database.entity.Student;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StudentsRepository {
@@ -76,19 +77,21 @@ public class StudentsRepository {
             Student t8 = new Student("ИменноеИмя8", 800);t8.setStudentId(mStudentDao.insert(t8));
             Student t9 = new Student("ИменноеИмя9", 900);t9.setStudentId(mStudentDao.insert(t9));
 
-
             UserSettings.getInstance().getAllGroupTypes().forEach(groupType -> {
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t0.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t0));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t1.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t1));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t2.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t2));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t3.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t3));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t4.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t4));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t5.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t5));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t6.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t6));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t7.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t7));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t8.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t8));
-                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t9.getStudentId()));mLessonDao.insert(new Lesson(LocalDate.now(), groupType, t9));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t0.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t1.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t2.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t3.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t4.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t5.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t6.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t7.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t8.getStudentId()));
+                mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t9.getStudentId()));
             });
+
+            t0.setMoneyBalance(1000);
+            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(0), t0, 0));
         });
     }
 
@@ -97,7 +100,10 @@ public class StudentsRepository {
     }
 
     public void addLesson(@NonNull Lesson lesson) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> lesson.setLessonId(mLessonDao.insert(lesson)));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            mStudentDao.update(lesson.getStudent());
+            lesson.setLessonId(mLessonDao.insert(lesson));
+        });
     }
 
     public LiveData<Student> getStudent(String studentName) {
@@ -117,7 +123,7 @@ public class StudentsRepository {
     }
 
     public LiveData<List<Lesson>> getLessonList(@NonNull Student student){
-        return mLessonDao.getForStudent(student.getName());
+        return mLessonDao.getForStudent(student.getStudentId());
     }
 
     public LiveData<List<Student>> getAllStudents() {
@@ -146,7 +152,11 @@ public class StudentsRepository {
     }
 
     public void delete(@NonNull Student student) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> mStudentDao.delete(student));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            mStudentDao.delete(student);
+            mGroupStudentRefDao.deleteForStudent(student.getStudentId());
+            mLessonDao.deleteForStudent(student.getStudentId());
+        });
     }
 
     public void deleteLessonsForStudentsList(LocalDate date, GroupType groupType, List<Student> studentList) {
@@ -161,6 +171,11 @@ public class StudentsRepository {
 
     public void resetDatabase(Context context) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> DatabaseStudents.getDatabase(context).clearAllTables());
+        try {
+            DatabaseStudents.databaseWriteExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void insertGroupTypes(List<GroupType> allGroupTypes) {
@@ -186,8 +201,7 @@ public class StudentsRepository {
     public void deleteStudentsFromGroup(GroupType groupType, List<Student> studentList) {
         DatabaseStudents.databaseWriteExecutor.execute(() ->
                 studentList.forEach(student ->
-                        mGroupStudentRefDao.delete(
-                                new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId()))));
+                        mGroupStudentRefDao.delete(new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId()))));
     }
 
     public void addStudentToGroup(GroupType groupType, Student student) {
@@ -203,5 +217,22 @@ public class StudentsRepository {
                 mGroupStudentRefDao.insert(
                         new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId())
                 )));
+    }
+
+    public void delete(GroupType groupType) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            mGroupStudentRefDao.deleteForGroup(groupType.getGroupTypeId());
+            mGroupTypeDao.delete(groupType);
+        });
+    }
+
+    public void addGroupTypeWithStudents(GroupType groupType, List<Student> students) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            groupType.setGroupTypeId(mGroupTypeDao.insert(groupType));
+            students.forEach(student ->
+                    mGroupStudentRefDao.insert(
+                            new GroupTypeStudentsRef(groupType.getGroupTypeId(), student.getStudentId())
+                    ));}
+        );
     }
 }

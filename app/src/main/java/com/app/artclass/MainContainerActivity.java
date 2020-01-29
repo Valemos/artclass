@@ -26,7 +26,6 @@ public class MainContainerActivity extends AppCompatActivity {
 
 //        if(account==null) {
         if(false){
-
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()
                     .build();
@@ -54,11 +53,10 @@ public class MainContainerActivity extends AppCompatActivity {
     private void handleSignInResult(Task<GoogleSignInAccount> task) {
         try {
             GoogleSignInAccount account = task.getResult(ApiException.class);
-
             BackupManager.getInstance().initGoogleAccount(account);
         } catch (ApiException e) {
             Log.println(Log.ERROR, "Sign In problem","signInResult:failed code=" + e.getStatusCode());
-
+            Logger.getInstance().appendLog("Sign In problem: signInResult:failed code=" + e.getStatusCode());
             Intent switchToMainApp = new Intent(this,MainActivity.class);
             startActivity(switchToMainApp);
         }

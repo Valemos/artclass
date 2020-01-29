@@ -33,7 +33,7 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
     private final int elementLayout;
     private final int balanceTextId;
     private final int nameViewId;
-    TextView studentsCountView;
+    private TextView studentsCountView;
 
     private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
     private List<LessonViewHolder> viewHolders = new ArrayList<>();
@@ -89,7 +89,7 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
         mStudentsList.removeAll(toDelete);
         itemCheckedStates = new SparseBooleanArray();
         viewHolders.forEach(lessonViewHolder -> lessonViewHolder.setCheckBox(false));
-        notifyDataSetChanged();
+        update();
     }
 
     public void addStudentToGroup(Student studentNew){
@@ -152,7 +152,7 @@ public class GroupRedactorAdapter extends RecyclerView.Adapter<GroupRedactorAdap
         void bind(int pos) {
             Student student = mStudentsList.get(pos);
             nameView.setText(student.getName());
-            balanceView.setText(String.format(UserSettings.getInstance().getHoursTextFormat()));
+            balanceView.setText(String.format(UserSettings.getInstance().getHoursTextFormat(),student.getHoursBalance()));
         }
     }
 }

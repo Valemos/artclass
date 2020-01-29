@@ -175,7 +175,7 @@
             android:textColor="@android:color/black"
             android:textSize="@dimen/default_text_size" />
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -210,13 +210,13 @@
                 <ListView
                     android:id="@+id/student_lessons_list_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:clickable="false"
                     android:focusable="false"
                     tools:listitem="@layout/item_lessons_history" />
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
     </LinearLayout>
 

@@ -15,20 +15,46 @@
             android:id="@+id/textView13"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:gravity="center"
+            android:padding="5dp"
             android:text="@string/group_type_label"
+            android:textColor="@color/main_text_color"
             android:textSize="@dimen/default_text_size" />
 
         <Spinner
-            android:id="@+id/dialogcreate_spinner_time"
+            android:id="@+id/spinner_weekday"
             android:layout_width="match_parent"
             android:layout_height="@dimen/small_list_item_height"
-            android:layout_gravity="center"
-            android:layout_margin="5dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginHorizontal="@dimen/side_offset"
+            android:background="@color/colorPrimary"
+            tools:listitem="@layout/item_spinner" />
+
+        <TextView
+            android:id="@+id/time_selector"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/small_list_item_height"
+            android:layout_marginHorizontal="@dimen/side_offset"
+            android:layout_marginTop="10dp"
             android:background="@color/colorPrimaryDark"
-            android:gravity="center" />
+            android:gravity="center"
+            android:text="@string/time_sample"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="@dimen/default_text_size" />
+
+        <EditText
+            android:id="@+id/new_group_name_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/small_list_item_height"
+            android:layout_marginHorizontal="@dimen/side_offset"
+            android:layout_marginTop="10dp"
+            android:gravity="start|center_vertical"
+            android:inputType="textPersonName"
+            android:paddingHorizontal="5dp"
+            android:singleLine="true"
+            android:text="@string/group_sample"
+            android:textColor="@color/main_text_color"
+            android:textSize="@dimen/default_text_size" />
+
     </LinearLayout>
 
     <SearchView

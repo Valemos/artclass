@@ -84,7 +84,7 @@ public class GroupType implements Comparable {
     @Override
     public int compareTo(Object o) {
         try{
-            return weekday.compareTo(((GroupType)o).getWeekday());
+            return time.compareTo(((GroupType)o).time) + weekday.compareTo(((GroupType)o).getWeekday())*100;
         }catch (Exception e){
             return 0;
         }

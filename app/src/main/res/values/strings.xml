@@ -61,13 +61,13 @@
     <string name="label_yes">Yes</string>
     <string name="label_no">No</string>
     <string name="message_confirm_delete_placeholder">Подтвердите удаление\n%s</string>
-    <string name="title_confirm_delete_student">Confirm delete</string>
+    <string name="title_confirm_delete_student">Удаление</string>
     <string name="group_name_placeholder">день: %s группа: %s</string>
     <string name="title_help">Помощь</string>
     <string name="message_group_delete_help">Чтобы удалить группу удерживайте ее название до появления сообщения об удалении</string>
     <string name="message_student_not_worked">Не работал</string>
     <string name="title_activity_login">Вход</string>
-    <string name="students_number_sample">99</string>
+    <string name="students_number_sample">00</string>
     <string name="groupredctor_amount_label">Количество: %d</string>
     <string name="weekday_sample">Воскресенье</string>
     <string name="long_text_sample">adsfasdfasdflasjfjsdf oajdofjosadijfosjdfoijasodfj ajdsfl asjdlfkj alsfj lks jasldfjlkasjdfjqowjfiqwejofj qjoefpjqwjkfkoqwfpkewfp qojefjqiwefjpqwefkqewfmkomo irmqpfmqiemf</string>
@@ -79,4 +79,10 @@
     <string name="group_list_label">Все группы</string>
     <string name="attended_lessons_label">Посещенные уроки</string>
     <string name="title_alert_abonement">Абонемент завершен</string>
+    <string name="check_absent">Отметить отсутствующих</string>
+    <string name="time_sample">11:00</string>
+    <string name="no_time_selected">не выбрано</string>
+    <string name="time_picker_dialog_tag">TimePickerDialog</string>
+    <string name="add_new_student_tag">AddNewStudentDialog</string>
+    <string name="add_students_to_group_tag">AddStudentsToGroupDialog</string>
 </resources>

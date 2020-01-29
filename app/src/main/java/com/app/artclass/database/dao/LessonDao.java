@@ -31,8 +31,8 @@ public interface LessonDao {
     LiveData<List<Lesson>> getForGroup(LocalDate date_time, String groupName);
 
     @Transaction
-    @Query("SELECT * FROM lesson WHERE stud_name=:name")
-    LiveData<List<Lesson>> getForStudent(String name);
+    @Query("SELECT * FROM lesson WHERE stud_studentId=:id")
+    LiveData<List<Lesson>> getForStudent(long id);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(Lesson lesson);
@@ -66,4 +66,8 @@ public interface LessonDao {
     @Query("DELETE FROM lesson WHERE date=:date AND group_name=:groupName AND stud_studentId IN (:studentIds)")
     @TypeConverters({DatabaseConverters.class})
     void delete( LocalDate date, String groupName, List<Long> studentIds);
+
+    @Transaction
+    @Query("DELETE FROM lesson WHERE stud_studentId=:studentId")
+    void deleteForStudent(long studentId);
 }

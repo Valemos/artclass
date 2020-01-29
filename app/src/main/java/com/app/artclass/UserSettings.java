@@ -21,9 +21,14 @@ public class UserSettings {
     private List<GroupType> allGroupTypes;
     private static GroupType noGroup;
 
-
     public List<WEEKDAY> getWeekdays() {
         return WEEKDAY.getValues();
+    }
+
+    public List<WEEKDAY> getWeekdaysWithDefault(Context context) {
+        List<WEEKDAY> weekdays = new ArrayList<>(WEEKDAY.getValues());
+        weekdays.add(0, WEEKDAY.getNoWeekday(context));
+        return weekdays;
     }
 
     public int getHoursForMoney(int moneyBalance) {

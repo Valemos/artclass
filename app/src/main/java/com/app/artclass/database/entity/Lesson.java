@@ -25,8 +25,7 @@ import static androidx.room.ForeignKey.CASCADE;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 
-@Entity(foreignKeys = @ForeignKey(entity = Student.class, parentColumns = "studentId", childColumns = "stud_studentId", onDelete = CASCADE),
-        indices = @Index(value = {"date","group_time","stud_studentId"},unique = true))
+@Entity(indices = @Index(value = {"date","group_time","stud_studentId"},unique = true))
 public class Lesson {
 
     @PrimaryKey(autoGenerate = true)
@@ -49,20 +48,26 @@ public class Lesson {
     @Ignore
     private static Comparator<Lesson> dateComparator = (o1, o2) -> o1.getDate().compareTo(o2.getDate());
 
-    public Lesson(@NotNull LocalDate date, @NotNull GroupType groupType, @NotNull Student student) {
+    public Lesson(@NotNull LocalDate date, @NotNull GroupType groupType, @NotNull Student student, int hoursWorked) {
         this.date = date;
         this.student = student;
         this.groupType = groupType;
+        this.hoursWorked = hoursWorked;
     }
 
     @Ignore
     public Lesson(LocalDate date, Student student) {
-        this(date, GroupType.getNoGroup(), student);
+        this(date, GroupType.getNoGroup(), student, 0);
     }
 
     @Ignore
-    public Lesson(LocalDate date, Student student, GroupType groupType) {
-        this(date, groupType, student);
+    public Lesson(GroupType groupType, Student student, int hoursWorked) {
+        this(LocalDate.now(), groupType, student, hoursWorked);
+    }
+
+    @Ignore
+    public Lesson(LocalDate date, GroupType groupType, Student student) {
+        this(date, groupType, student, 0);
     }
 
     public LocalDate getDate() {

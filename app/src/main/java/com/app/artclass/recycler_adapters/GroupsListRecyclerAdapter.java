@@ -13,14 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.artclass.database.entity.Student;
-import com.app.artclass.fragments.DialogHandler;
+import com.app.artclass.fragments.dialog.ConfirmDeleteObjectDialog;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.fragments.GroupRedactorFragment;
 import com.app.artclass.R;
 import com.app.artclass.list_adapters.LocalAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -31,10 +30,10 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
     /**
      * holds lessons for certain GroupData and assures groups has no duplicates
-     * every time map updates it`s keys groupDataKeysArray must be updated to function properly
+     * every time map updates it`s keys groupTypeKeysArray must be updated to function properly
      */
     private TreeMap<GroupType, List<Student>> groupTypeMap;
-    private GroupType[] groupDataKeysArray;
+    private GroupType[] groupTypeKeysArray;
 
     public GroupsListRecyclerAdapter(Fragment fragment, List<GroupType> groups) {
         this.fragment = fragment;
@@ -48,13 +47,13 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
                 });
         }
 
-        groupDataKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
+        groupTypeKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
     }
 
     public void addGroup(GroupType groupType, List<Student> students){
         if(students.size()>0){
             groupTypeMap.put(groupType, students);
-            groupDataKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
+            groupTypeKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
             notifyDataSetChanged();
         }
     }
@@ -88,13 +87,13 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
         LinearLayout dateWrapper;
         TextView weekDayField;
-        TextView timeField;
+        TextView groupTypeField;
         TextView studentsCountField;
         private GroupType curGroupType;
 
         GroupViewHolder(@NonNull View itemView) {
             super(itemView);
-            timeField = itemView.findViewById(R.id.time_view);
+            groupTypeField = itemView.findViewById(R.id.time_view);
             weekDayField = itemView.findViewById(R.id.weekday_view);
             studentsCountField = itemView.findViewById(R.id.students_count_view);
             dateWrapper = itemView.findViewById(R.id.date_wrapper_layout);
@@ -107,19 +106,15 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
         public boolean onLongClick(View v) {
 
             final int deletePos = getAdapterPosition();
-            DialogHandler.getInstance()
-                    .ConfirmDeleteObject(fragment.getContext(),String.format(fragment.getContext().getString(R.string.group_name_placeholder),
-                            groupDataKeysArray[deletePos].getWeekday().getName(),
-                            timeField.getText()),
+            ConfirmDeleteObjectDialog confirmDeleteObjectDialog = new ConfirmDeleteObjectDialog(
+                    String.format(fragment.getContext().getString(R.string.group_name_placeholder), groupTypeKeysArray[deletePos].getWeekday().getName(), groupTypeField.getText()),
                     () -> {
-
-                        // delete group
-
-                        groupTypeMap.remove(groupDataKeysArray[deletePos]);
-                        groupDataKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
-                        notifyDataSetChanged();
+                        StudentsRepository.getInstance().delete(groupTypeKeysArray[deletePos]);
+                        groupTypeMap.remove(groupTypeKeysArray[deletePos]);
+                        groupTypeKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
+                        update();
                     },null);
-
+            confirmDeleteObjectDialog.show(fragment.getFragmentManager(), "ConfirmDeleteObject");
             return true;
         }
 
@@ -133,13 +128,13 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
         }
 
         void bind(int pos){
-            curGroupType = groupDataKeysArray[pos];
+            curGroupType = groupTypeKeysArray[pos];
             // set date view to group by date
             if (pos == 0) {
                 weekDayField.setText(curGroupType.getWeekday().getName());
                 dateWrapper.setVisibility(View.VISIBLE);
             }else{
-                if(groupDataKeysArray[pos-1]!=groupDataKeysArray[pos]){
+                if(groupTypeKeysArray[pos-1].getWeekday()!= groupTypeKeysArray[pos].getWeekday()){
                     weekDayField.setText(curGroupType.getWeekday().getName());
                     dateWrapper.setVisibility(View.VISIBLE);
                 }else {
@@ -147,7 +142,7 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
                 }
             }
 
-            timeField.setText(curGroupType.getName());
+            groupTypeField.setText(curGroupType.getName());
             studentsCountField.setText(String.valueOf(groupTypeMap.get(curGroupType).size()));
         }
     }

@@ -52,6 +52,8 @@ public class Student implements Comparable{
     }
 
     public void setHoursBalance(int hoursBalance) {
+        int diff = hoursBalance - this.hoursBalance;
+        this.moneyBalance += UserSettings.getInstance().getMoneyForHours(diff);
         this.hoursBalance = hoursBalance;
     }
 

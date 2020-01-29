@@ -13,14 +13,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.app.artclass.R;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.entity.Student;
+import com.app.artclass.fragments.dialog.AddToGroupDialog;
+import com.app.artclass.fragments.dialog.DialogCreationHandler;
 import com.app.artclass.recycler_adapters.GroupRedactorAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -48,6 +52,7 @@ public class GroupRedactorFragment extends Fragment {
 
         // set date and time
         TextView groupNameText = view.findViewById(R.id.group_name_view);
+        Button checkAbsentBtn = view.findViewById(R.id.check_absent_btn);
         TextView studentsAmountTextView = view.findViewById(R.id.students_count_view);
         groupNameText.setText(mGroupType.getName());
 
@@ -62,9 +67,14 @@ public class GroupRedactorFragment extends Fragment {
         groupLessonsListView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.VERTICAL, false));
         groupLessonsListView.setAdapter(groupRedactorAdapter);
 
+        checkAbsentBtn.setOnClickListener(v ->
+                getFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now(), mGroupType, mStudentsList)).addToBackStack(null).commit());
+
         FloatingActionButton btn_add_dialog = view.findViewById(R.id.fab_add_students);
-        btn_add_dialog.setOnClickListener(v ->
-                DialogHandler.getInstance().AddStudentsToGroup(this, groupRedactorAdapter, mGroupType, groupRedactorAdapter.getStudents()));
+        btn_add_dialog.setOnClickListener(v ->{
+            AddToGroupDialog addToGroupDialog = new AddToGroupDialog(groupRedactorAdapter, mGroupType, groupRedactorAdapter.getStudents());
+            addToGroupDialog.show(getFragmentManager(), "AddToGroupDialog");
+        });
 
         FloatingActionButton btn_delete_selected = view.findViewById(R.id.fab_delete_selected);
         btn_delete_selected.setOnClickListener(v -> groupRedactorAdapter.deleteCheckedItems());
