@@ -44,11 +44,6 @@ public class StudentsPresentList extends Fragment {
         this.mStudentList = studentList;
     }
 
-    @Override
-    public void onDestroy() {
-        lessonsAdapter.updateRepository();
-        super.onDestroy();
-    }
 
     @Nullable
     @Override

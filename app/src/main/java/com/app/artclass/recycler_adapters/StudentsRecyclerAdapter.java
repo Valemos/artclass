@@ -128,7 +128,6 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
                 selected.add(studentList.get(i));
             }
         }
-
         return selected;
     }
 

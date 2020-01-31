@@ -123,21 +123,13 @@ public class LessonsAdapter extends ArrayAdapter<Lesson> implements LocalAdapter
         lesson.setHoursWorked(finHoursWorkedToday);
         student.setHoursBalance(finHoursToWork);
 
-
+        StudentsRepository.getInstance().addLesson(lesson);
     }
 
     public void setLessons(List<Lesson> updateLessons) {
         lessonsList.clear();
         lessonsList.addAll(updateLessons);
         notifyDataSetChanged();
-    }
-
-    public void updateRepository(){
-        //delete empty lessons
-        lessonsList.forEach(lesson -> {
-            if(lesson.getHoursWorked()!=0)
-                StudentsRepository.getInstance().addLesson(lesson);
-        });
     }
 
     @Override

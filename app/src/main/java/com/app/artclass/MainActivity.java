@@ -69,14 +69,14 @@ public class MainActivity extends AppCompatActivity
 
         //start page
 //        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
     }
 
     private void initBaseClasses(Application application) {
         StudentsRepository.getInstance(application);
         Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": init complete");
-        StudentsRepository.getInstance().resetDatabase(this);
+//        StudentsRepository.getInstance().resetDatabase(this);
         StudentsRepository.getInstance().initDatabaseTest();
     }
 

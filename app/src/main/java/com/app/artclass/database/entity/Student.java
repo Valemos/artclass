@@ -6,16 +6,23 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import com.app.artclass.UserSettings;
+import com.app.artclass.database.DatabaseConverters;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.time.LocalDate;
 
 @Entity(indices = {@Index(value = {"name"}, unique = true)})
 public class Student implements Comparable{
 
     @PrimaryKey(autoGenerate = true)
     private long studentId;
+
+    @TypeConverters({DatabaseConverters.class})
+    private LocalDate dateCreated;
 
     @NonNull
     private final String name;
@@ -27,28 +34,27 @@ public class Student implements Comparable{
 
     private int hoursBalance;
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        try{
-            assert obj != null;
-            return name.equals(((Student)obj).name);
-        }catch (ClassCastException e){
-            return false;
-        }
-    }
-
-    public Student(@NonNull String name, String notes, int moneyBalance, int hoursBalance) {
+    public Student(@NonNull String name, String notes, int moneyBalance, int hoursBalance, LocalDate dateCreated) {
         this.name = name;
         this.notes = notes;
         this.moneyBalance = moneyBalance;
         this.hoursBalance = hoursBalance;
+        this.dateCreated = dateCreated;
     }
 
     @Ignore
     public Student(@NotNull String name, int moneyBalance) {
         this.name = name;
         this.setMoneyBalance(moneyBalance);
-        hoursBalance = UserSettings.getInstance().getHoursForMoney(moneyBalance);
+        dateCreated = LocalDate.now();
+    }
+
+    @Ignore
+    public Student(@NotNull String name, String notes, int moneyBalance) {
+        this.name = name;
+        this.notes = notes;
+        this.setMoneyBalance(moneyBalance);
+        dateCreated = LocalDate.now();
     }
 
     public void setHoursBalance(int hoursBalance) {
@@ -97,12 +103,30 @@ public class Student implements Comparable{
         this.notes = notes;
     }
 
+    public LocalDate getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(LocalDate dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
     @Override
     public int compareTo(Object o) {
         try {
             return name.compareTo(((Student) o).name);
         }catch (ClassCastException e){
             return 0;
+        }
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        try{
+            assert obj != null;
+            return name.equals(((Student)obj).name);
+        }catch (ClassCastException e){
+            return false;
         }
     }
 }

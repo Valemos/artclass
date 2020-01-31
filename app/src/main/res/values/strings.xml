@@ -85,4 +85,6 @@
     <string name="time_picker_dialog_tag">TimePickerDialog</string>
     <string name="add_new_student_tag">AddNewStudentDialog</string>
     <string name="add_students_to_group_tag">AddStudentsToGroupDialog</string>
+    <string name="fill_all_fields_message">Заполните все поля!</string>
+    <string name="fill_name_message">Заполните имя!</string>
 </resources>

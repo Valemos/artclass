@@ -21,6 +21,17 @@
             android:textColor="@color/main_text_color"
             android:textSize="@dimen/default_text_size" />
 
+        <TextView
+            android:id="@+id/dialog_not_correct_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/side_offset"
+            android:paddingVertical="5dp"
+            android:text="@string/fill_all_fields_message"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="@dimen/default_text_size"
+            android:visibility="gone" />
+
         <Spinner
             android:id="@+id/spinner_weekday"
             android:layout_width="match_parent"
@@ -51,7 +62,6 @@
             android:inputType="textPersonName"
             android:paddingHorizontal="5dp"
             android:singleLine="true"
-            android:text="@string/group_sample"
             android:textColor="@color/main_text_color"
             android:textSize="@dimen/default_text_size" />
 

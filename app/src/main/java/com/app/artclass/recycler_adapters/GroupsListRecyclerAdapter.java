@@ -80,6 +80,18 @@ public class GroupsListRecyclerAdapter extends RecyclerView.Adapter<GroupsListRe
 
     @Override
     public void update() {
+        StudentsRepository.getInstance().getAllGroupTypes().observe(fragment,groupTypes -> {
+            for (GroupType groupType : groupTypes) {
+                final GroupType finGroupType = groupType;
+                StudentsRepository.getInstance().getStudentsList(groupType).observe(fragment.getViewLifecycleOwner(), groupTypeWithStudents ->{
+                    if(groupTypeWithStudents!=null)
+                        groupTypeMap.put(finGroupType, groupTypeWithStudents.studentList);
+                });
+            }
+            groupTypeKeysArray = groupTypeMap.keySet().toArray(new GroupType[0]);
+
+            StudentsRepository.getInstance().getAllGroupTypes().removeObservers(fragment);
+        });
         notifyDataSetChanged();
     }
 

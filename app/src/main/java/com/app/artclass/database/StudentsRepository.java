@@ -37,6 +37,7 @@ public class StudentsRepository {
     private GroupTypeDao mGroupTypeDao;
     private GroupStudentRefDao mGroupStudentRefDao;
     private LiveData<List<Student>> allStudentsData;
+    private LiveData<List<GroupType>> allGroupTypes;
 
     public static StudentsRepository getInstance(Application application){
         if (instance == null){
@@ -54,6 +55,7 @@ public class StudentsRepository {
         this.mGroupStudentRefDao = db.groupStudentRefDao();
 
         this.allStudentsData =  mStudentDao.getAll();
+        this.allGroupTypes = mGroupTypeDao.getAll();
     }
 
     @NonNull
@@ -90,13 +92,17 @@ public class StudentsRepository {
                 mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t9.getStudentId()));
             });
 
-            t0.setMoneyBalance(1000);
             mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(0), t0, 0));
+            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(1), t0, 0));
+            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(2), t0, 0));
+            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(3), t0, 0));
         });
     }
 
     public void addStudent(@NonNull Student student) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> student.setStudentId(mStudentDao.insert(student)));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            student.setStudentId(mStudentDao.insert(student));
+        });
     }
 
     public void addLesson(@NonNull Lesson lesson) {
@@ -234,5 +240,9 @@ public class StudentsRepository {
                             new GroupTypeStudentsRef(groupType.getGroupTypeId(), student.getStudentId())
                     ));}
         );
+    }
+
+    public LiveData<List<GroupType>> getAllGroupTypes() {
+        return allGroupTypes;
     }
 }
