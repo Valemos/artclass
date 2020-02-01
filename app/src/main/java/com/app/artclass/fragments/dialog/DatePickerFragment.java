@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.app.artclass.Logger;
+
 import java.time.LocalDate;
 
 public class DatePickerFragment extends DialogFragment {
@@ -17,6 +19,8 @@ public class DatePickerFragment extends DialogFragment {
     public DatePickerFragment(LocalDate startDate, TextView outputTextView) {
         this.startDate = startDate;
         this.outputTextView = outputTextView;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
+
     }
 
     @NonNull

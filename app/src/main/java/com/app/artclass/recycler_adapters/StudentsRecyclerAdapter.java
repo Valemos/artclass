@@ -26,7 +26,10 @@ import com.app.artclass.list_adapters.LocalAdapter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // code for opening student card
 //
@@ -38,16 +41,18 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     private Integer parameterTextId;
     private Integer elementLayout;
     private Fragment mFragment;
-    private SparseBooleanArray itemCheckedStates = new SparseBooleanArray();
+    private Map<Student,Boolean> studentCheckedStates = new HashMap<>();
     private final boolean isStudentSelectionAdapter;
-    private List<Student> studentList;
+    private List<Student> mStudentFilteredList;
+    private List<Student> studentListInitial;
     private Filter studentQueryFilter;
 
 
     public StudentsRecyclerAdapter(Fragment fragment, Integer elementLayout, Integer nameViewId, Integer parameterTextId, boolean isStudentSelectionAdapter, List<Student> data) {
         this.isStudentSelectionAdapter = isStudentSelectionAdapter;
-        studentList = data;
-        studentList.sort(null);
+        studentListInitial = data;
+        mStudentFilteredList = new ArrayList<>(data);
+        mStudentFilteredList.sort(null);
         this.elementLayout = elementLayout;
         this.nameViewId = nameViewId;
         this.parameterTextId = parameterTextId;
@@ -69,63 +74,64 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
 
     @Override
     public int getItemCount() {
-        if (studentList == null) {
+        if (mStudentFilteredList == null) {
             return 0;
         }
-        return studentList.size();
+        return mStudentFilteredList.size();
     }
 
     public List<Student> getItems() {
-        return studentList;
+        return mStudentFilteredList;
     }
 
     public void addStudent(Student student) {
-        studentList.add(student);
-        studentList.sort(null);
+        mStudentFilteredList.add(student);
+        mStudentFilteredList.sort(null);
         notifyDataSetChanged();
     }
 
     public void setStudents(List<Student> students) {
-        studentList = students;
-        studentList.sort(null);
+        studentListInitial = students;
+        mStudentFilteredList = new ArrayList<>(studentListInitial);
+        mStudentFilteredList.sort(null);
         notifyDataSetChanged();
     }
 
     public void deleteCheckedFromLesson(LocalDate date, GroupType groupType){
         List<Student> toDelete = new ArrayList<>();
-        for (int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                toDelete.add(studentList.get(i));
+        for (int i = 0; i < mStudentFilteredList.size(); i++){
+            if(studentCheckedStates.getOrDefault(i,false)){
+                toDelete.add(mStudentFilteredList.get(i));
             }
         }
 
         StudentsRepository.getInstance().deleteLessonsForStudentsList(date, groupType, toDelete);
-        studentList.removeAll(toDelete);
+        mStudentFilteredList.removeAll(toDelete);
 
-        itemCheckedStates = new SparseBooleanArray();
+        studentCheckedStates = new HashMap<>();
         notifyDataSetChanged();
     }
 
     public void deleteCheckedStudents(){
         List<Student> toDelete = new ArrayList<>();
-        for (int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                toDelete.add(studentList.get(i));
+        for (int i = 0; i < mStudentFilteredList.size(); i++){
+            if(studentCheckedStates.getOrDefault(i,false)){
+                toDelete.add(mStudentFilteredList.get(i));
             }
         }
 
         StudentsRepository.getInstance().deleteStudents(toDelete);
-        studentList.remove(toDelete);
+        mStudentFilteredList.remove(toDelete);
 
-        itemCheckedStates = new SparseBooleanArray();
+        studentCheckedStates = new HashMap<>();
         notifyDataSetChanged();
     }
 
     public List<Student> getSelectedStudents(){
         List<Student> selected = new ArrayList<>();
-        for(int i = 0; i < studentList.size(); i++){
-            if(itemCheckedStates.get(i,false)){
-                selected.add(studentList.get(i));
+        for(int i = 0; i < mStudentFilteredList.size(); i++){
+            if(studentCheckedStates.getOrDefault(mStudentFilteredList.get(i),false)){
+                selected.add(mStudentFilteredList.get(i));
             }
         }
         return selected;
@@ -145,15 +151,37 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     }
 
     private class StudentQueryFilter extends Filter{
-
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            return null;
+            String filterString = constraint.toString().toLowerCase();
+
+            FilterResults results = new FilterResults();
+
+            final List<Student> notFilteredList = studentListInitial;
+
+            int count = notFilteredList.size();
+            final List<Student> filteredValues = new ArrayList<>(count);
+
+            String filterableString;
+
+            for (int i = 0; i < count; i++) {
+                filterableString = notFilteredList.get(i).getName();
+                if (filterableString.toLowerCase().contains(filterString)) {
+                    filteredValues.add(notFilteredList.get(i));
+                }
+            }
+
+            results.values = filteredValues;
+            results.count = filteredValues.size();
+
+            return results;
         }
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-
+            mStudentFilteredList.clear();
+            mStudentFilteredList.addAll((Collection<? extends Student>) results.values);
+            notifyDataSetChanged();
         }
     }
 
@@ -187,12 +215,12 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
             @Override
             public void onClick(View v) {
                 int adapterPosition = getAdapterPosition();
-                if (!itemCheckedStates.get(adapterPosition, false)) {
+                if (!studentCheckedStates.getOrDefault(mStudentFilteredList.get(adapterPosition), false)) {
                     checkBox.setChecked(true);
-                    itemCheckedStates.put(adapterPosition, true);
+                    studentCheckedStates.put(mStudentFilteredList.get(adapterPosition), true);
                 }else{
                     checkBox.setChecked(false);
-                    itemCheckedStates.put(adapterPosition, false);
+                    studentCheckedStates.put(mStudentFilteredList.get(adapterPosition), false);
                 }
             }
         };
@@ -200,7 +228,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         @Override
         public void onClick(View v) {
             if(getAdapterPosition()!=RecyclerView.NO_POSITION) {
-                StudentCard studentCard = new StudentCard(studentList.get(getAdapterPosition()));
+                StudentCard studentCard = new StudentCard(mStudentFilteredList.get(getAdapterPosition()));
                 mFragment.getFragmentManager().beginTransaction().replace(R.id.main_content_id, studentCard).addToBackStack(null).commit();
             }
         }
@@ -208,23 +236,21 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         @SuppressLint("DefaultLocale")
         void bind(int position) {
             // use the sparse boolean array to check
-            if (!itemCheckedStates.get(position, false)) {
+            if (!studentCheckedStates.getOrDefault(mStudentFilteredList.get(position), false)) {
                 checkBox.setChecked(false);}
             else {
                 checkBox.setChecked(true);
             }
-            nameView.setText(studentList.get(position).getName());
+            nameView.setText(mStudentFilteredList.get(position).getName());
 
             if(parameterView == null){
                 return;
             }
             if(parameterTextId == R.id.hours_left_view){
-                parameterView.setText(String.format("%d h", studentList.get(position).getHoursBalance()));
+                parameterView.setText(String.format("%d h", mStudentFilteredList.get(position).getHoursBalance()));
             }else if(parameterTextId == R.id.balance_view){
-                parameterView.setText(DatabaseConverters.getMoneyFormat().format(studentList.get(position).getMoneyBalance()));
+                parameterView.setText(DatabaseConverters.getMoneyFormat().format(mStudentFilteredList.get(position).getMoneyBalance()));
             }
         }
     }
-
-
 }

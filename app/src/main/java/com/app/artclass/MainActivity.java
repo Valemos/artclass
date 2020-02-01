@@ -13,26 +13,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
-import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
-import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Student;
 import com.app.artclass.fragments.AllStudentsListFragment;
 import com.app.artclass.fragments.GroupListFragment;
+import com.app.artclass.fragments.HelpFragment;
+import com.app.artclass.fragments.MainPageFragment;
+import com.app.artclass.fragments.SettingsFragment;
 import com.app.artclass.fragments.StudentCard;
-import com.app.artclass.fragments.StudentsPresentList;
-import com.app.artclass.list_adapters.LocalAdapter;
 import com.app.artclass.list_adapters.SearchAdapter;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.CharBuffer;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,18 +35,17 @@ import java.util.stream.Collectors;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private MenuItem searchMenuItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // very important
-        // must be called before using singleton classes
-        initBaseClasses(getApplication());
 
         // unhandled exceptions logged
         Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
-            Logger.getInstance().appendLog(paramThrowable.getMessage());
+            Logger.getInstance().appendLog(paramThread.getName() + " : " + paramThrowable.getMessage());
             System.exit(2);
         });
 
@@ -69,24 +62,23 @@ public class MainActivity extends AppCompatActivity
 
         //start page
 //        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
-    }
-
-    private void initBaseClasses(Application application) {
-        StudentsRepository.getInstance(application);
-        Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": init complete");
-//        StudentsRepository.getInstance().resetDatabase(this);
-        StudentsRepository.getInstance().initDatabaseTest();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
     }
 
     @Override
     public void onBackPressed() {
+        if(searchMenuItem!=null){
+            searchMenuItem.collapseActionView();
+        }
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            getSupportFragmentManager().popBackStack();
+            if(!getSupportFragmentManager().popBackStackImmediate()){
+                this.moveTaskToBack(true);
+            }
         }
     }
 
@@ -96,12 +88,14 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.top_menu, menu);
 
         //init search bar
-        SearchView searchView = (SearchView) menu.findItem(R.id.search_menu_item).getActionView();
+        searchMenuItem = menu.findItem(R.id.search_menu_item);
+        SearchView searchView = (SearchView) searchMenuItem.getActionView();
         if (searchView != null) {
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
                 String[] from = new String[] {"_id", "name"};
                 MatrixCursor suggestionsCursor;
+                SearchAdapter searchAdapter;
 
                 List<Student> students = new ArrayList<>();
 
@@ -109,22 +103,29 @@ public class MainActivity extends AppCompatActivity
                 public boolean onQueryTextSubmit(String query) {
                     if(students!=null && students.size()>0){
                         if(students.size()==1){
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.main_content_id,
-                                            new StudentCard(students.get(0))).addToBackStack(null).commit();
-                        }else{
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.main_content_id,
-                                            new AllStudentsListFragment(students)).addToBackStack(null).commit();
+                            if(getSupportFragmentManager().findFragmentByTag("StudentCardSearch")==null){
+                                getSupportFragmentManager().beginTransaction()
+                                        .replace(R.id.main_content_id,
+                                                new StudentCard(students.get(0)), "StudentCardSearch").addToBackStack(null).commit();
+                            }
                         }
-                        return true;
+                        else{
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.main_content_id,
+                                            new AllStudentsListFragment(students), "StudentCardSearch").addToBackStack(null).commit();
+                        }
+                        searchView.post(() -> {
+                            searchView.setQuery("", false);
+                            searchMenuItem.collapseActionView();
+                            getSupportFragmentManager().findFragmentByTag("StudentCardSearch").getView().requestFocus();
+                        });
                     }
                     return false;
                 }
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    StudentsRepository.getInstance().getStudentsCursorByQuery(newText).observe(MainActivity.this,queryStudents -> {
+                    StudentsRepository.getInstance().getStudentsListByQuery(newText).observe(MainActivity.this, queryStudents -> {
                         this.students = queryStudents;
                         suggestionsCursor = new MatrixCursor(from);
 
@@ -134,10 +135,10 @@ public class MainActivity extends AppCompatActivity
                             id++;
                         }
 
-                        SearchAdapter searchAdapter = new SearchAdapter(
+                        searchAdapter = new SearchAdapter(
                                 MainActivity.this,
                                 getSupportFragmentManager(),
-                                searchView,
+                                searchMenuItem,
                                 R.layout.item_student_suggestion,
                                 suggestionsCursor,
                                 from[1],
@@ -149,7 +150,8 @@ public class MainActivity extends AppCompatActivity
                     return false;
                 }
             });
-            searchView.setIconifiedByDefault(false);
+            searchView.setIconifiedByDefault(true);
+            searchView.setSubmitButtonEnabled(true);
         }
 
         return true;
@@ -162,9 +164,10 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-
         if (id == R.id.action_settings) {
-            return true;
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new SettingsFragment(), "Settings").addToBackStack(null).commit();
+        }else if(id == R.id.action_help){
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new HelpFragment(), "Help").addToBackStack(null).commit();
         }
 
         return super.onOptionsItemSelected(item);
@@ -177,7 +180,9 @@ public class MainActivity extends AppCompatActivity
 
         Fragment fragmentNew = null;
 
-        if (id == R.id.nav_groups) {
+        if(id == R.id.nav_main_page){
+            fragmentNew = new MainPageFragment();
+        }else if (id == R.id.nav_groups) {
             fragmentNew = new GroupListFragment();
         }else if (id == R.id.nav_allstudents){
             fragmentNew = new AllStudentsListFragment();

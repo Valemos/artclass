@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.app.artclass.Logger;
+
 import java.time.LocalTime;
 
 public class TimePickerFragment extends DialogFragment {
@@ -20,6 +22,7 @@ public class TimePickerFragment extends DialogFragment {
         this.timeSetListener = timeSetListener;
         this.timeOutputView = timeOutputView;
         this.startTime = startTime;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
     }
 
     @NonNull

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.app.artclass.Logger;
 import com.app.artclass.database.DatabaseConverters;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.entity.Lesson;
@@ -42,6 +43,7 @@ public class StudentsPresentList extends Fragment {
         this.mDate = date;
         mGroupType = groupType;
         this.mStudentList = studentList;
+        Logger.getInstance().appendLog(getClass(),"init fragment");
     }
 
 

@@ -3,11 +3,13 @@ package com.app.artclass;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.app.artclass.database.BackupManager;
+import com.app.artclass.database.StudentsRepository;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -22,8 +24,12 @@ public class MainContainerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        // very important
+        // must be called before using singleton classes
+        initBaseClasses(getApplication());
 
+        // start working with application
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 //        if(account==null) {
         if(false){
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -32,7 +38,8 @@ public class MainContainerActivity extends AppCompatActivity {
 
             Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
             startActivityForResult(signInIntent, signInRequestCode);
-        }else{
+        }
+        else{
             BackupManager.getInstance().initGoogleAccount(account);
 
             Intent switchToMainApp = new Intent(this,MainActivity.class);
@@ -60,5 +67,13 @@ public class MainContainerActivity extends AppCompatActivity {
             Intent switchToMainApp = new Intent(this,MainActivity.class);
             startActivity(switchToMainApp);
         }
+    }
+
+    private void initBaseClasses(Application application) {
+        StudentsRepository.getInstance(application);
+        Logger.getInstance(this);
+//        Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": init complete");
+        StudentsRepository.getInstance().resetDatabase(this);
+        StudentsRepository.getInstance().initDatabaseTest();
     }
 }

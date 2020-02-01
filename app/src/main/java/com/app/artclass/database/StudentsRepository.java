@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.LiveData;
 
+import com.app.artclass.Logger;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.dao.GroupStudentRefDao;
 import com.app.artclass.database.dao.GroupTypeDao;
@@ -19,6 +20,7 @@ import com.app.artclass.database.entity.GroupTypeStudentsRef;
 import com.app.artclass.database.entity.GroupTypeWithStudents;
 import com.app.artclass.database.entity.Lesson;
 import com.app.artclass.database.entity.Student;
+import com.app.artclass.recycler_adapters.GroupsListRecyclerAdapter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -68,16 +70,16 @@ public class StudentsRepository {
     public void initDatabaseTest() {
         DatabaseStudents.databaseWriteExecutor.execute(() -> {
 
-            Student t0 = new Student("ИменноеИмя0", 0);t0.setStudentId(mStudentDao.insert(t0));
-            Student t1 = new Student("ИменноеИмя1", 100);t1.setStudentId(mStudentDao.insert(t1));
-            Student t2 = new Student("ИменноеИмя2", 200);t2.setStudentId(mStudentDao.insert(t2));
-            Student t3 = new Student("ИменноеИмя3", 300);t3.setStudentId(mStudentDao.insert(t3));
-            Student t4 = new Student("ИменноеИмя4", 400);t4.setStudentId(mStudentDao.insert(t4));
-            Student t5 = new Student("ИменноеИмя5", 500);t5.setStudentId(mStudentDao.insert(t5));
-            Student t6 = new Student("ИменноеИмя6", 600);t6.setStudentId(mStudentDao.insert(t6));
-            Student t7 = new Student("ИменноеИмя7", 700);t7.setStudentId(mStudentDao.insert(t7));
-            Student t8 = new Student("ИменноеИмя8", 800);t8.setStudentId(mStudentDao.insert(t8));
-            Student t9 = new Student("ИменноеИмя9", 900);t9.setStudentId(mStudentDao.insert(t9));
+            Student t0 = new Student("Августин", 0);t0.setStudentId(mStudentDao.insert(t0));
+            Student t1 = new Student("Беатрис", 100);t1.setStudentId(mStudentDao.insert(t1));
+            Student t2 = new Student("Валентин", 200);t2.setStudentId(mStudentDao.insert(t2));
+            Student t3 = new Student("Габриэлла", 300);t3.setStudentId(mStudentDao.insert(t3));
+            Student t4 = new Student("Давид", 400);t4.setStudentId(mStudentDao.insert(t4));
+            Student t5 = new Student("Ева", 500);t5.setStudentId(mStudentDao.insert(t5));
+            Student t6 = new Student("Жаклин", 600);t6.setStudentId(mStudentDao.insert(t6));
+            Student t7 = new Student("Зинаида", 700);t7.setStudentId(mStudentDao.insert(t7));
+            Student t8 = new Student("Иветта", 800);t8.setStudentId(mStudentDao.insert(t8));
+            Student t9 = new Student("Магдалина", 900);t9.setStudentId(mStudentDao.insert(t9));
 
             UserSettings.getInstance().getAllGroupTypes().forEach(groupType -> {
                 mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t0.getStudentId()));
@@ -96,6 +98,8 @@ public class StudentsRepository {
             mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(1), t0, 0));
             mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(2), t0, 0));
             mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(3), t0, 0));
+
+            Logger.getInstance().appendLog(getClass(),"database test init");
         });
     }
 
@@ -172,13 +176,17 @@ public class StudentsRepository {
     }
 
     public void deleteStudents(List<Student> studentList) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> studentList.forEach(student -> mStudentDao.delete(student)));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            studentList.forEach(student -> mStudentDao.delete(student));
+            Logger.getInstance().appendLog(getClass(),"deleted list of students");
+        });
     }
 
     public void resetDatabase(Context context) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> DatabaseStudents.getDatabase(context).clearAllTables());
         try {
             DatabaseStudents.databaseWriteExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+            Logger.getInstance().appendLog(getClass(),"database reset complete");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -192,7 +200,8 @@ public class StudentsRepository {
         DatabaseStudents.databaseWriteExecutor.execute(() -> lessonsNew.forEach(lesson -> mLessonDao.insert(lesson)));
     }
 
-    public LiveData<List<Student>> getStudentsCursorByQuery(String query) {
+    public LiveData<List<Student>> getStudentsListByQuery(String query) {
+        Logger.getInstance().appendLog(getClass(),"student search query");
         return mStudentDao.getByQuery("%"+query+"%");
     }
 
@@ -201,34 +210,44 @@ public class StudentsRepository {
     }
 
     public void addGroupType(GroupType groupType) {
+        Logger.getInstance().appendLog(getClass(),"group type add");
         DatabaseStudents.databaseWriteExecutor.execute(() -> groupType.setGroupTypeId(mGroupTypeDao.insert(groupType)));
     }
 
     public void deleteStudentsFromGroup(GroupType groupType, List<Student> studentList) {
+        Logger.getInstance().appendLog(getClass(),"students deleted from group");
         DatabaseStudents.databaseWriteExecutor.execute(() ->
                 studentList.forEach(student ->
                         mGroupStudentRefDao.delete(new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId()))));
     }
 
     public void addStudentToGroup(GroupType groupType, Student student) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId())));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId()));
+            Logger.getInstance().appendLog(getClass(),"one student added to group");
+        });
     }
 
     public LiveData<GroupTypeWithStudents> getStudentsForGroup(GroupType groupType) {
+        Logger.getInstance().appendLog(getClass(),"requested group with students");
         return mGroupTypeDao.getGroupTypeWithStudents(groupType.getGroupTypeId());
     }
 
     public void addStudentsToGroup(GroupType groupType, List<Student> students) {
-        DatabaseStudents.databaseWriteExecutor.execute(() -> students.forEach(student ->
-                mGroupStudentRefDao.insert(
-                        new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId())
-                )));
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            students.forEach(student ->
+                    mGroupStudentRefDao.insert(
+                            new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId())
+                    ));
+            Logger.getInstance().appendLog(getClass(),"added list of students to group");
+        });
     }
 
     public void delete(GroupType groupType) {
         DatabaseStudents.databaseWriteExecutor.execute(() -> {
             mGroupStudentRefDao.deleteForGroup(groupType.getGroupTypeId());
             mGroupTypeDao.delete(groupType);
+            Logger.getInstance().appendLog(getClass(),"groupType deleted with references");
         });
     }
 
@@ -238,11 +257,21 @@ public class StudentsRepository {
             students.forEach(student ->
                     mGroupStudentRefDao.insert(
                             new GroupTypeStudentsRef(groupType.getGroupTypeId(), student.getStudentId())
-                    ));}
-        );
+                    ));
+            Logger.getInstance().appendLog(getClass(),"added new group type with students references");
+        });
     }
 
     public LiveData<List<GroupType>> getAllGroupTypes() {
+        Logger.getInstance().appendLog(getClass(),"requested all group types");
         return allGroupTypes;
+    }
+
+    public void addNewStudentToGroup(GroupType groupType, Student student) {
+        DatabaseStudents.databaseWriteExecutor.execute(() -> {
+            student.setStudentId(mStudentDao.insert(student));
+            mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(),student.getStudentId()));
+            Logger.getInstance().appendLog(getClass(),"added new student to group");
+        });
     }
 }

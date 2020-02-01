@@ -5,6 +5,7 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.os.ParcelFileDescriptor;
 
+import com.app.artclass.Logger;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class BackupManager extends BackupAgent {
     }
 
     public BackupManager() {
+        Logger.getInstance().appendLog(getClass(),"backup manager init");
     }
 
     @Override

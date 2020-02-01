@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -29,12 +31,14 @@ public class SearchAdapter extends CursorAdapter implements View.OnClickListener
     private final MatrixCursor suggestionsCursor;
     private final String nameField;
     private final int name_field_id;
+    private final MenuItem parentSearchMenuItem;
     private Map<String, Student> mStudentMap;
 
-    public SearchAdapter(Context context, FragmentManager fragmentManager, SearchView parentSearchView, int itemResource, MatrixCursor suggestionsCursor, String nameField, int name_field_id, List<Student> studentList) {
+    public SearchAdapter(Context context, FragmentManager fragmentManager, MenuItem parentSearchMenuItem, int itemResource, MatrixCursor suggestionsCursor, String nameField, int name_field_id, List<Student> studentList) {
         super(context, suggestionsCursor, false);
         this.fragmentManager = fragmentManager;
-        this.parentSearchView = parentSearchView;
+        this.parentSearchView = (SearchView) parentSearchMenuItem.getActionView();
+        this.parentSearchMenuItem = parentSearchMenuItem;
         this.itemResource = itemResource;
         this.suggestionsCursor = suggestionsCursor;
         this.nameField = nameField;
@@ -66,12 +70,17 @@ public class SearchAdapter extends CursorAdapter implements View.OnClickListener
         TextView nameView = v.findViewById(name_field_id);
         Student student = mStudentMap.get(nameView.getText().toString());
         if(student!=null){
-            parentSearchView.setQuery("", false);
-            parentSearchView.clearFocus();
-
-            fragmentManager.beginTransaction()
-                    .replace(R.id.main_content_id,
-                            new StudentCard(student)).addToBackStack(null).commit();
+            if(fragmentManager.findFragmentByTag("StudentCardSearch")==null){
+                fragmentManager.beginTransaction()
+                        .replace(R.id.main_content_id,
+                                new StudentCard(student),"StudentCardSearch").addToBackStack(null).commit();
+                parentSearchView.post(() -> {
+                    parentSearchView.setQuery("", false);
+                    parentSearchView.clearFocus();
+                    parentSearchMenuItem.collapseActionView();
+                    fragmentManager.findFragmentByTag("StudentCardSearch").getView().requestFocus();
+                });
+            }
         }
     }
 }

@@ -5,12 +5,15 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.app.artclass.fragments.dialog.ConfirmDeleteObjectDialog;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,9 +32,9 @@ public class Logger {
     static final ExecutorService logWriteExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-    public static Logger getInstance(MainActivity mainActivity) {
+    public static Logger getInstance(Context context) {
         if(instance == null){
-            instance = new Logger(mainActivity);
+            instance = new Logger(context);
         }
         return instance;
     }
@@ -86,18 +89,36 @@ public class Logger {
 
     public String getLogFileContent() {
         try {
-            Scanner sc = new Scanner(new FileReader(logFile));
+            logFile = new File(logFileDir, "logs.txt");
+            if (!logFile.exists())
+                logFile.createNewFile();
 
+            Scanner sc = new Scanner(new FileReader(logFile));
             StringBuilder outStr = new StringBuilder();
             while (sc.hasNextLine()) {
                 outStr.append(sc.nextLine());
                 outStr.append('\n');
             }
-
+            sc.close();
             return outStr.toString();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public void clearLogFile() {
+        try {
+            logFile = new File(logFileDir, "logs.txt");
+            if (!logFile.exists()) {
+                logFile.createNewFile();
+            }else {
+                PrintWriter writer = new PrintWriter(logFile);
+                writer.print("");
+                writer.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -10,4 +10,5 @@
     <item name="lesson" type="id" />
     <item name="student_pos" type="id" />
     <item name="date" type="id" />
+    <item name="nav_main_page" type="id" />
 </resources>

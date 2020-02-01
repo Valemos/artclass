@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.StudentsRepository;
@@ -31,12 +32,7 @@ import java.util.ArrayList;
 public class GroupListFragment extends Fragment {
 
     public GroupListFragment() {
-        // Required empty public constructor
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        Logger.getInstance().appendLog(getClass(),"init fragment");
     }
 
     @Override

@@ -2,13 +2,10 @@ package com.app.artclass.fragments.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.Spinner;
@@ -17,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,30 +39,35 @@ public class AddToGroupDialog extends DialogFragment {
     private LocalAdapter outerAdapter;
     private GroupType mGroupType;
     private List<Student> excludedStudents;
+
     private StudentsRecyclerAdapter dialogStudentsAdapter;
     private Spinner spinnerWeekday;
+    private List<String> weekdayNames;
     private TextView timeSelector;
     private EditText groupTypeNameField;
-    private List<String> weekdayNames;
+    private SearchView studentFilterView;
+
 
 
     public AddToGroupDialog(LocalAdapter outerAdapter, GroupType mGroupType, List<Student> excludedStudents) {
         this.outerAdapter = outerAdapter;
         this.mGroupType = mGroupType;
         this.excludedStudents = excludedStudents;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
+
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_create_group, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_to_group, null);
 
         spinnerWeekday = dialogView.findViewById(R.id.spinner_weekday);
         timeSelector = dialogView.findViewById(R.id.time_selector);
         groupTypeNameField = dialogView.findViewById(R.id.new_group_name_view);
 
-        SearchView searchView = dialogView.findViewById(R.id.dialog_search_view);
+        studentFilterView = dialogView.findViewById(R.id.dialog_search_view);
         RecyclerView listSelectStudents = dialogView.findViewById(R.id.dialogcreate_select_students_list);
 
         // if group needs to be created
@@ -131,7 +132,7 @@ public class AddToGroupDialog extends DialogFragment {
 
         // filter students by query in adapter
         FilterInteractionListener filterInteractionListener = new FilterInteractionListener(dialogStudentsAdapter);
-        searchView.setOnQueryTextListener(filterInteractionListener);
+        studentFilterView.setOnQueryTextListener(filterInteractionListener);
 
         // get all required students
         StudentsRepository.getInstance().getAllStudents().observe(this, studentList -> {
@@ -166,10 +167,11 @@ public class AddToGroupDialog extends DialogFragment {
                     else {
                         mGroupType = new GroupType(
                                 (LocalTime) timeSelector.getTag(R.id.time),
-                                WEEKDAY.get(weekdayNames.indexOf(spinnerWeekday.getSelectedItem())),
+                                WEEKDAY.get(weekdayNames.indexOf(spinnerWeekday.getSelectedItem())-1),
                                 groupTypeNameField.getText().toString());
                         List<Student> studentsSelected = dialogStudentsAdapter.getSelectedStudents();
                         StudentsRepository.getInstance().addGroupTypeWithStudents(mGroupType, studentsSelected);
+                        UserSettings.getInstance().addGroupType(mGroupType);
 
                         try{
                             GroupsListRecyclerAdapter groupsAdapter = (GroupsListRecyclerAdapter) outerAdapter;
@@ -201,13 +203,14 @@ public class AddToGroupDialog extends DialogFragment {
         @Override
         public boolean onQueryTextSubmit(String query) {
             studentsAdapter.getFilter().filter(query);
+            studentFilterView.clearFocus();
             return true;
         }
 
         @Override
         public boolean onQueryTextChange(String newText) {
             studentsAdapter.getFilter().filter(newText);
-            return false;
+            return true;
         }
     }
 }

@@ -87,4 +87,11 @@
     <string name="add_students_to_group_tag">AddStudentsToGroupDialog</string>
     <string name="fill_all_fields_message">Заполните все поля!</string>
     <string name="fill_name_message">Заполните имя!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hint_new_group_name">Имя новой группы</string>
+    <string name="hint_student_filter">Поиск студентов</string>
+    <string name="label_show_log_file">Show log file</string>
+    <string name="label_clear_log_file">Clear log file</string>
 </resources>

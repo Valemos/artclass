@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.app.artclass.Logger;
+
 public class ConfirmDeleteObjectDialog extends DialogFragment {
     private String objectName;
     private Runnable positiveAction;
@@ -16,6 +18,8 @@ public class ConfirmDeleteObjectDialog extends DialogFragment {
         this.objectName = objectName;
         this.positiveAction = positiveAction;
         this.negativeAction = negativeAction;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
+
     }
 
     @NonNull

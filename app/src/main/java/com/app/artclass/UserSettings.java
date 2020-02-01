@@ -61,12 +61,12 @@ public class UserSettings {
     }
 
     private List<GroupType> initDefaultGroupTypes() {
-        return Arrays.asList(
+        return new ArrayList<>(Arrays.asList(
                 new GroupType(LocalTime.of(11,0), WEEKDAY.TUESDAY, "дети 11:00"),
                 new GroupType(LocalTime.of(11,0), WEEKDAY.SATURDAY, "взрослые 11:00"),
                 new GroupType(LocalTime.of(15,0), WEEKDAY.SATURDAY, "дети 15:00"),
                 new GroupType(LocalTime.of(17,0), WEEKDAY.SATURDAY, "взрослые 17:00"),
-                new GroupType(LocalTime.of(17,0), WEEKDAY.SUNDAY, "взрослые 17:00"));
+                new GroupType(LocalTime.of(17,0), WEEKDAY.SUNDAY, "взрослые 17:00")));
     }
 
     private SparseArray<String> initDefaultBtnIncrements() {
@@ -116,6 +116,14 @@ public class UserSettings {
     public void writeSettingsToRepository(StudentsRepository repository) {
         repository.addGroupType(noGroup);
         repository.insertGroupTypes(allGroupTypes);
+    }
+
+    public void addGroupType(GroupType groupType) {
+        allGroupTypes.add(groupType);
+    }
+
+    public void removeGroupType(GroupType groupType){
+        allGroupTypes.remove(groupType);
     }
 
     public void getSettingsFromRepository(StudentsRepository repository, MainActivity mainActivity) {

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Student;
@@ -34,7 +35,9 @@ public class AllStudentsListFragment extends Fragment {
 
     private List<Student> startStudentsList = null;
 
-    public AllStudentsListFragment() {}
+    public AllStudentsListFragment() {
+        Logger.getInstance().appendLog(getClass(),"init fragment");
+    }
 
     public AllStudentsListFragment(List<Student> studentList){
         this.startStudentsList = studentList;

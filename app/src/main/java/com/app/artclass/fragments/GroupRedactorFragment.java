@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.entity.Student;
@@ -41,6 +42,7 @@ public class GroupRedactorFragment extends Fragment {
     public GroupRedactorFragment(@NonNull GroupType groupType, List<Student> students) {
         this.mGroupType = groupType;
         mStudentsList = students;
+        Logger.getInstance().appendLog(getClass(),"init fragment");
     }
 
 

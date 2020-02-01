@@ -54,6 +54,7 @@ public class StudentCard extends Fragment {
 
     public StudentCard(Student student) {
         this.student = student;
+        Logger.getInstance().appendLog(getClass(),"init fragment");
     }
 
     @Override

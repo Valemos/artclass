@@ -13,9 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.app.artclass.Logger;
 import com.app.artclass.R;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.StudentsRepository;
+import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.entity.Student;
 import com.app.artclass.list_adapters.GroupTypeSpinnerAdapter;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
@@ -30,6 +32,7 @@ public class AddNewStudentDialog extends androidx.fragment.app.DialogFragment {
 
     public AddNewStudentDialog(StudentsRecyclerAdapter outerAdapter) {
         this.outerAdapter = outerAdapter;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
     }
 
     @NonNull
@@ -47,7 +50,7 @@ public class AddNewStudentDialog extends androidx.fragment.app.DialogFragment {
          */
 
         // group type spinner
-        SpinnerAdapter groupTypeAdapter = new GroupTypeSpinnerAdapter(getContext(),R.layout.item_spinner_group_type,
+        SpinnerAdapter groupTypeAdapter = new GroupTypeSpinnerAdapter(getContext(), R.layout.item_spinner_group_type,
                 UserSettings.getInstance().getAllGroupTypesWithDefault(getContext()));
 
         spinnerGroupType.setAdapter(groupTypeAdapter);
@@ -73,8 +76,10 @@ public class AddNewStudentDialog extends androidx.fragment.app.DialogFragment {
                     TextView alertMessage = dialog.findViewById(R.id.fill_name_message);
                     alertMessage.setVisibility(View.VISIBLE);
                 }else{
-                    StudentsRepository.getInstance().addStudent(
+                    StudentsRepository.getInstance().addNewStudentToGroup(
+                            (GroupType) spinnerGroupType.getSelectedItem(),
                             new Student(studentNameField.getText().toString(), notesField.getText().toString(), 0));
+                    outerAdapter.update();
                     dialog.dismiss();
                 }
             });

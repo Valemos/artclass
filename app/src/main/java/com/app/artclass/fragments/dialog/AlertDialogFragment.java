@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.app.artclass.Logger;
+
 public class AlertDialogFragment extends DialogFragment {
     private String title;
     private String message;
@@ -16,6 +18,8 @@ public class AlertDialogFragment extends DialogFragment {
         this.title = title;
         this.message = message;
         this.positive_action = positive_action;
+        Logger.getInstance().appendLog(getClass(),"init dialog");
+
     }
 
     @NonNull
