@@ -25,20 +25,29 @@ public class BackupManager extends BackupAgent {
     }
 
     public BackupManager() {
-        Logger.getInstance().appendLog(getClass(),"backup manager init");
+        Logger.getInstance().appendLog(getClass(),"init");
     }
 
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) throws IOException {
+        Logger.getInstance().appendLog(getClass(),"backup");
+
 
     }
 
     @Override
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState) throws IOException {
+        Logger.getInstance().appendLog(getClass(),"restore");
+
 
     }
 
-    public void initGoogleAccount(GoogleSignInAccount account){
-        userGoogleAccount = account;
-    }
+//    public void initGoogleAccount(GoogleSignInAccount account){
+//        if(account!=null) {
+//            userGoogleAccount = account;
+//            Logger.getInstance().appendLog(getClass(),"account updated");
+//        }else{
+//            Logger.getInstance().appendLog(getClass(),"account not found");
+//        }
+//    }
 }

@@ -94,4 +94,6 @@
     <string name="hint_student_filter">Поиск студентов</string>
     <string name="label_show_log_file">Show log file</string>
     <string name="label_clear_log_file">Clear log file</string>
+    <string name="label_database_test">Database test</string>
+    <string name="nickname_sample">Common Nickname</string>
 </resources>

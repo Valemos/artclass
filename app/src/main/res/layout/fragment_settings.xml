@@ -15,6 +15,13 @@
             android:orientation="vertical">
 
             <Button
+                android:id="@+id/database_test_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_database_test"
+                android:textSize="@dimen/default_text_size" />
+
+            <Button
                 android:id="@+id/show_log_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

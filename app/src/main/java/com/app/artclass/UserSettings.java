@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi;
 
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -20,6 +21,7 @@ public class UserSettings {
 
     private List<GroupType> allGroupTypes;
     private static GroupType noGroup;
+    private GoogleSignInAccount main_account;
 
     public List<WEEKDAY> getWeekdays() {
         return WEEKDAY.getValues();
@@ -146,5 +148,13 @@ public class UserSettings {
 
     public String getHoursTextFormat() {
         return "%d ч";
+    }
+
+    public void initGoogleAccount(GoogleSignInAccount account) {
+        main_account = account;
+    }
+
+    public GoogleSignInAccount getUserAccount() {
+        return main_account;
     }
 }

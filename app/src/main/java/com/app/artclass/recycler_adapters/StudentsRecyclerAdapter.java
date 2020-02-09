@@ -115,7 +115,7 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
     public void deleteCheckedStudents(){
         List<Student> toDelete = new ArrayList<>();
         for (int i = 0; i < mStudentFilteredList.size(); i++){
-            if(studentCheckedStates.getOrDefault(i,false)){
+            if(studentCheckedStates.getOrDefault(mStudentFilteredList.get(i),false)){
                 toDelete.add(mStudentFilteredList.get(i));
             }
         }

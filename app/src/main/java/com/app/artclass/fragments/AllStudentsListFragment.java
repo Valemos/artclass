@@ -41,6 +41,7 @@ public class AllStudentsListFragment extends Fragment {
 
     public AllStudentsListFragment(List<Student> studentList){
         this.startStudentsList = studentList;
+        Logger.getInstance().appendLog(getClass(),"init with list");
     }
 
     @Override
@@ -68,10 +69,8 @@ public class AllStudentsListFragment extends Fragment {
         });
 
         FloatingActionButton btn_floating_delete = mainView.findViewById(R.id.fab_secondary);
-        btn_floating_delete.setTag(adapter);
         btn_floating_delete.setOnClickListener(view -> {
-            StudentsRecyclerAdapter curAdapter = (StudentsRecyclerAdapter)view.getTag();
-            curAdapter.deleteCheckedStudents();
+            adapter.deleteCheckedStudents();
         });
 
         if(startStudentsList != null){

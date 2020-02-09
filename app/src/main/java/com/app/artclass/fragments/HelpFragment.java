@@ -19,7 +19,7 @@ public class HelpFragment extends Fragment {
 
 
     public HelpFragment() {
-        Logger.getInstance().appendLog(getClass(),"init fragment");
+        Logger.getInstance().appendLog(getClass(),"init");
     }
 
 

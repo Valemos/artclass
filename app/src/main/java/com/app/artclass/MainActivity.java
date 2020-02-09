@@ -6,6 +6,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -25,6 +28,8 @@ import com.app.artclass.fragments.MainPageFragment;
 import com.app.artclass.fragments.SettingsFragment;
 import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.list_adapters.SearchAdapter;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -37,11 +42,14 @@ public class MainActivity extends AppCompatActivity
 
     private MenuItem searchMenuItem;
 
+    public static String signInSuccessfullTag = "SInSuccess";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Logger.getInstance().appendLog(getClass(),"main activity init");
 
         // unhandled exceptions logged
         Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
@@ -60,10 +68,42 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
+        // setup sign in button if account not found
+        boolean signInSuccessful = getIntent().getExtras().getBoolean(signInSuccessfullTag);
+        if(signInSuccessful){
+            GoogleSignInAccount account = UserSettings.getInstance().getUserAccount();
+
+            if(account!=null){
+                SignInButton signInButton = findViewById(R.id.nav_sign_in_btn);
+                signInButton.setVisibility(View.VISIBLE);
+
+                ImageView accountImageView = findViewById(R.id.nav_header_image);
+                accountImageView.get;
+
+                TextView nicknameView = findViewById(R.id.nav_header_nickname);
+                nicknameView.setVisibility(View.VISIBLE);
+                nicknameView.setText(account.getDisplayName()!=null?account.getDisplayName():account.getEmail());
+            }else{
+                Logger.getInstance().appendLog(getClass(),"account not found while got sign in success");
+            }
+
+        }else{
+            SignInButton signInButton = findViewById(R.id.nav_sign_in_btn);
+            signInButton.setVisibility(View.VISIBLE);
+
+            ImageView accountImageView = findViewById(R.id.nav_header_image);
+            accountImageView.setImageDrawable(getDrawable(R.mipmap.ic_launcher_round));
+
+            TextView nicknameView = findViewById(R.id.nav_header_nickname);
+            nicknameView.setVisibility(View.GONE);
+
+            UserSettings.getInstance().initGoogleAccount(null);
+        }
+
         //start page
 //        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
     }
 
     @Override
@@ -164,12 +204,16 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        Fragment fragmentNew;
         if (id == R.id.action_settings) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new SettingsFragment(), "Settings").addToBackStack(null).commit();
+            fragmentNew = new SettingsFragment();
         }else if(id == R.id.action_help){
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new HelpFragment(), "Help").addToBackStack(null).commit();
+            fragmentNew = new HelpFragment();
+        }else{
+            Logger.getInstance().appendLog(getClass(),"menu item have no fragment");
+            return super.onOptionsItemSelected(item);
         }
-
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, fragmentNew, fragmentNew.getTag()).addToBackStack(null).commit();
         return super.onOptionsItemSelected(item);
     }
 
