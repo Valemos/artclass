@@ -9,6 +9,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.app.artclass.Logger;
 import com.app.artclass.UserSettings;
 import com.app.artclass.database.dao.GroupStudentRefDao;
 import com.app.artclass.database.dao.GroupTypeDao;
@@ -22,7 +23,7 @@ import com.app.artclass.database.entity.Student;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Student.class, Lesson.class, GroupType.class, GroupTypeStudentsRef.class}, version = 18, exportSchema = false)
+@Database(entities = {Student.class, Lesson.class, GroupType.class, GroupTypeStudentsRef.class}, version = 1, exportSchema = false)
 public abstract class DatabaseStudents extends RoomDatabase {
 
     private static final String DATABASE_NAME = "students_database.db";
@@ -58,6 +59,12 @@ public abstract class DatabaseStudents extends RoomDatabase {
             super.onOpen(db);
 
             UserSettings.getInstance().writeSettingsToRepository(StudentsRepository.getInstance());
+        }
+
+        @Override
+        public void onDestructiveMigration(@NonNull SupportSQLiteDatabase db) {
+            super.onDestructiveMigration(db);
+            Logger.getInstance().appendLog(getClass(), "destructive migration complete");
         }
     };
 }

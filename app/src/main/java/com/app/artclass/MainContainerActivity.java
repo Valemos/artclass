@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 
 public class MainContainerActivity extends AppCompatActivity {
 
-    private int signInRequestCode = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +35,11 @@ public class MainContainerActivity extends AppCompatActivity {
         if(account==null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()
+                    .requestIdToken(UserSettings.getGoogleAppToken())
                     .build();
 
             Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
-            startActivityForResult(signInIntent, signInRequestCode);
+            startActivityForResult(signInIntent, UserSettings.signInRequestCode);
         }
         else{
             UserSettings.getInstance().initGoogleAccount(account);
@@ -60,7 +60,7 @@ public class MainContainerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == signInRequestCode) {
+        if (requestCode == UserSettings.signInRequestCode) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
@@ -85,7 +85,6 @@ public class MainContainerActivity extends AppCompatActivity {
 
     private void initBaseClasses(Application application) {
         StudentsRepository.getInstance(application);
-        Logger.getInstance(this);
         Logger.getInstance(this).appendLog(LocalDateTime.now().format(DatabaseConverters.getDateTimeFormatter())+": start complete");
     }
 }

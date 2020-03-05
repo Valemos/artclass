@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.app.artclass.Logger;
 import com.app.artclass.R;
+import com.app.artclass.UserSettings;
 import com.app.artclass.database.StudentsRepository;
 
 /**
@@ -43,6 +44,7 @@ public class SettingsFragment extends Fragment {
         });
         databaseTestBtn.setOnClickListener(v -> {
             StudentsRepository.getInstance().resetDatabase(getContext());
+            UserSettings.getInstance().initDefaultGroupTypes();
             StudentsRepository.getInstance().initDatabaseTest();
         });
 

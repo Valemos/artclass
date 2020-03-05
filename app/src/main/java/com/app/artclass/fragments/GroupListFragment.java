@@ -42,13 +42,18 @@ public class GroupListFragment extends Fragment {
         //add adapter to update if groups are deleted
         final GroupsListRecyclerAdapter groupsRecyclerAdapter = new GroupsListRecyclerAdapter(this, new ArrayList<>());
 
-        for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
-            final GroupType finGroupType = groupType;
-            StudentsRepository.getInstance().getStudentsList(groupType).observe(getViewLifecycleOwner(), groupTypeWithStudents ->{
-                if(groupTypeWithStudents!=null)
-                    groupsRecyclerAdapter.addGroup(finGroupType, groupTypeWithStudents.studentList);
-            });
-        }
+        StudentsRepository.getInstance().getAllGroupTypes().observe(getViewLifecycleOwner(),groupTypeList -> {
+
+            UserSettings.getInstance().setAllGroupTypes(groupTypeList);
+
+            for (GroupType groupType : UserSettings.getInstance().getAllGroupTypes()) {
+                final GroupType finGroupType = groupType;
+                StudentsRepository.getInstance().getStudentsList(groupType).observe(getViewLifecycleOwner(), groupTypeWithStudents ->{
+                    if(groupTypeWithStudents!=null)
+                        groupsRecyclerAdapter.addGroup(finGroupType, groupTypeWithStudents.studentList);
+                });
+            }
+        });
 
         RecyclerView groupsList = mainView.findViewById(R.id.groups_list);
         groupsList.setLayoutManager(new LinearLayoutManager(getContext()));

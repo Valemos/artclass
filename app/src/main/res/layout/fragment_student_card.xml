@@ -190,10 +190,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
+                    android:hint="@string/student_additional_info_hint"
                     android:minLines="1"
                     android:padding="10dp"
                     android:singleLine="false"
-                    android:text="@string/long_text_sample"
                     android:textSize="@dimen/default_text_size"
                     android:textStyle="normal" />
 
@@ -211,6 +211,7 @@
                     android:id="@+id/student_lessons_list_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:choiceMode="none"
                     android:clickable="true"
                     android:focusable="false"
                     tools:listitem="@layout/item_lessons_history" />

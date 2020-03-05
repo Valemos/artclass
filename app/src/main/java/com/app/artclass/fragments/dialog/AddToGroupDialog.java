@@ -169,7 +169,7 @@ public class AddToGroupDialog extends DialogFragment {
                                 (LocalTime) timeSelector.getTag(R.id.time),
                                 WEEKDAY.get(weekdayNames.indexOf(spinnerWeekday.getSelectedItem())-1),
                                 groupTypeNameField.getText().toString());
-                        List<Student> studentsSelected = dialogStudentsAdapter.getSelectedStudents();
+                        List<Student> studentsSelected = dialogStudentsAdapter.getCheckedStudents();
                         StudentsRepository.getInstance().addGroupTypeWithStudents(mGroupType, studentsSelected);
                         UserSettings.getInstance().addGroupType(mGroupType);
 
@@ -184,7 +184,7 @@ public class AddToGroupDialog extends DialogFragment {
                     }
                 }
                 else {
-                    StudentsRepository.getInstance().addStudentsToGroup(mGroupType, dialogStudentsAdapter.getSelectedStudents());
+                    StudentsRepository.getInstance().addStudentsToGroup(mGroupType, dialogStudentsAdapter.getCheckedStudents());
                     outerAdapter.update();
                     dialog.dismiss();
                 }

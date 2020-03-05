@@ -1,15 +1,19 @@
 package com.app.artclass;
 
 import android.app.Application;
+import android.content.Intent;
 import android.database.MatrixCursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,9 +32,15 @@ import com.app.artclass.fragments.MainPageFragment;
 import com.app.artclass.fragments.SettingsFragment;
 import com.app.artclass.fragments.StudentCard;
 import com.app.artclass.list_adapters.SearchAdapter;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +72,7 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -74,36 +85,87 @@ public class MainActivity extends AppCompatActivity
             GoogleSignInAccount account = UserSettings.getInstance().getUserAccount();
 
             if(account!=null){
-                SignInButton signInButton = findViewById(R.id.nav_sign_in_btn);
-                signInButton.setVisibility(View.VISIBLE);
+                SignInButton signInButton = headerView.findViewById(R.id.nav_sign_in_btn);
+                signInButton.setVisibility(View.GONE);
 
-                ImageView accountImageView = findViewById(R.id.nav_header_image);
-                accountImageView.get;
+                ImageView accountImageView = headerView.findViewById(R.id.nav_header_image);
+                Uri personPhotoUrl = account.getPhotoUrl();
+                Picasso.get().load(personPhotoUrl)
+                        .error(R.mipmap.ic_launcher_round)
+                        .into(accountImageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                            }
 
-                TextView nicknameView = findViewById(R.id.nav_header_nickname);
+                            @Override
+                            public void onError(Exception e) {
+                                Logger.getInstance().appendLog(this.getClass(), e.getMessage());
+                            }
+                        });
+
+
+                TextView nicknameView = headerView.findViewById(R.id.nav_header_nickname);
                 nicknameView.setVisibility(View.VISIBLE);
                 nicknameView.setText(account.getDisplayName()!=null?account.getDisplayName():account.getEmail());
             }else{
                 Logger.getInstance().appendLog(getClass(),"account not found while got sign in success");
             }
 
-        }else{
+        }
+        else{
             SignInButton signInButton = findViewById(R.id.nav_sign_in_btn);
+            signInButton.setSize(SignInButton.SIZE_STANDARD);
             signInButton.setVisibility(View.VISIBLE);
 
-            ImageView accountImageView = findViewById(R.id.nav_header_image);
-            accountImageView.setImageDrawable(getDrawable(R.mipmap.ic_launcher_round));
+            signInButton.setOnClickListener(v -> {
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .requestIdToken(UserSettings.getGoogleAppToken())
+                        .build();
 
-            TextView nicknameView = findViewById(R.id.nav_header_nickname);
-            nicknameView.setVisibility(View.GONE);
+                Intent signInIntent = GoogleSignIn.getClient(this, gso).getSignInIntent();
+                startActivityForResult(signInIntent, UserSettings.signInRequestCode);
+            });
+
+            View userInfoView = headerView.findViewById(R.id.user_info_layout);
+            userInfoView.setVisibility(View.GONE);
 
             UserSettings.getInstance().initGoogleAccount(null);
         }
 
-        //start page
+
+        //test start page
 //        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new StudentsPresentList(LocalDate.now())).commit();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new GroupListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new AllStudentsListFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.main_content_id, new HelpFragment()).commit();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == UserSettings.signInRequestCode) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> task) {
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            UserSettings.getInstance().initGoogleAccount(account);
+
+            Intent switchToMainApp = new Intent(this,MainActivity.class);
+            switchToMainApp.putExtra(MainActivity.signInSuccessfullTag, true);
+            startActivity(switchToMainApp);
+        } catch (ApiException e) {
+            Log.println(Log.ERROR, "Sign In problem","signInResult:failed code=" + e.getStatusCode());
+            Logger.getInstance().appendLog("Sign In problem: signInResult:failed code=" + e.getStatusCode());
+            Intent switchToMainApp = new Intent(this,MainActivity.class);
+            switchToMainApp.putExtra(MainActivity.signInSuccessfullTag, false);
+            startActivity(switchToMainApp);
+        }
     }
 
     @Override
@@ -171,8 +233,10 @@ public class MainActivity extends AppCompatActivity
 
                         int id = 0;
                         for (String name : students.stream().map(Student::getName).collect(Collectors.toList())) {
-                            suggestionsCursor.newRow().add(from[0],id).add(from[1], name);
-                            id++;
+                            if(!name.equals("")) {
+                                suggestionsCursor.newRow().add(from[0], id).add(from[1], name);
+                                id++;
+                            }
                         }
 
                         searchAdapter = new SearchAdapter(

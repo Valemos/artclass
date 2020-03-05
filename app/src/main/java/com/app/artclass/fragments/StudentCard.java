@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 /**
@@ -136,14 +137,16 @@ public class StudentCard extends Fragment {
         ((TextView)view.findViewById(R.id.student_name_view)).setText(curStudent.getName());
         ((TextView)view.findViewById(R.id.balance_view)).setText(DatabaseConverters.getMoneyFormat().format(curStudent.getMoneyBalance()));
         ((TextView)view.findViewById(R.id.hours_studcard_view)).setText(String.format(UserSettings.getInstance().getHoursTextFormat(), curStudent.getHoursBalance()));
-        ((TextView)view.findViewById(R.id.notes_view)).setText(curStudent.getNotes());
+        TextView notesView = view.findViewById(R.id.notes_view);
+        notesView.setText(curStudent.getNotes());
 
         LessonsHistoryAdapter lessonsHistoryAdapter = new LessonsHistoryAdapter(this.getContext(), R.layout.item_lessons_history, new ArrayList<>());
-        ((ListView)view.findViewById(R.id.student_lessons_list_view)).setAdapter(lessonsHistoryAdapter);
+        ListView lessonsHistoryView = view.findViewById(R.id.student_lessons_list_view);
+        lessonsHistoryView.setAdapter(lessonsHistoryAdapter);
 
         StudentsRepository.getInstance().getLessonList(student).observe(getViewLifecycleOwner(),lessons -> {
             lessonsHistoryAdapter.clear();
-            lessonsHistoryAdapter.addAll(lessons);
+            lessonsHistoryAdapter.addAll(lessons.stream().filter(lesson -> lesson.getHoursWorked()>0).collect(Collectors.toList()));
             lessonsHistoryAdapter.update();
         });
     }

@@ -48,7 +48,7 @@
             android:layout_marginTop="10dp"
             android:background="@color/colorPrimaryDark"
             android:gravity="center"
-            android:text="@string/time_sample"
+            android:text="@string/no_time_selected"
             android:textColor="@color/secondary_text_color"
             android:textSize="@dimen/default_text_size" />
 
@@ -74,6 +74,7 @@
         android:layout_height="@dimen/small_list_item_height"
         android:layout_margin="5dp"
         android:iconifiedByDefault="false"
+        android:inputType="textFilter"
         android:queryHint="@string/hint_student_filter" />
 
     <androidx.recyclerview.widget.RecyclerView

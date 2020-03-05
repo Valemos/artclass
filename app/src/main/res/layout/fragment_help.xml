@@ -8,6 +8,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="10dp"
+        android:text="@string/help_page_text"
+        android:textSize="20sp" />
 
 </FrameLayout>

@@ -68,6 +68,12 @@ public class StudentsRepository {
     }
 
     public void initDatabaseTest() {
+        try {
+            DatabaseStudents.databaseWriteExecutor.awaitTermination(1000,TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Logger.getInstance().appendLog(DatabaseStudents.databaseWriteExecutor.getClass(),"thread interrupted");
+            e.printStackTrace();
+        }
         DatabaseStudents.databaseWriteExecutor.execute(() -> {
 
             Student t0 = new Student("Августин", 0);t0.setStudentId(mStudentDao.insert(t0));
@@ -92,12 +98,9 @@ public class StudentsRepository {
                 mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t7.getStudentId()));
                 mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t8.getStudentId()));
                 mGroupStudentRefDao.insert(new GroupTypeStudentsRef(groupType.getGroupTypeId(), t9.getStudentId()));
-            });
 
-            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(0), t0, 0));
-            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(1), t0, 0));
-            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(2), t0, 0));
-            mLessonDao.insert(new Lesson(UserSettings.getInstance().getAllGroupTypes().get(3), t0, 0));
+                mLessonDao.insert(new Lesson(groupType, t0, 0));
+            });
 
             Logger.getInstance().appendLog(getClass(),"database test init");
         });

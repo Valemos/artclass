@@ -18,6 +18,7 @@ import com.app.artclass.R;
 import com.app.artclass.database.StudentsRepository;
 import com.app.artclass.database.entity.Student;
 import com.app.artclass.fragments.dialog.AddNewStudentDialog;
+import com.app.artclass.fragments.dialog.ConfirmDeleteObjectDialog;
 import com.app.artclass.fragments.dialog.DialogCreationHandler;
 import com.app.artclass.recycler_adapters.StudentsRecyclerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -70,7 +71,8 @@ public class AllStudentsListFragment extends Fragment {
 
         FloatingActionButton btn_floating_delete = mainView.findViewById(R.id.fab_secondary);
         btn_floating_delete.setOnClickListener(view -> {
-            adapter.deleteCheckedStudents();
+            ConfirmDeleteObjectDialog deleteObjectDialog = new ConfirmDeleteObjectDialog("", () -> adapter.deleteCheckedStudents(), () -> adapter.clearChecked());
+            deleteObjectDialog.show(getFragmentManager(), "ConfirmDeleteObjectDialog");
         });
 
         if(startStudentsList != null){

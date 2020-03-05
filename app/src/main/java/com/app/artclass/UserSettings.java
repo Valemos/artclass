@@ -5,6 +5,7 @@ import android.os.Build;
 import android.util.SparseArray;
 
 import androidx.annotation.RequiresApi;
+import androidx.lifecycle.LiveData;
 
 import com.app.artclass.database.entity.GroupType;
 import com.app.artclass.database.StudentsRepository;
@@ -19,7 +20,10 @@ import java.util.List;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class UserSettings {
 
-    private List<GroupType> allGroupTypes;
+    public static int signInRequestCode = 0;
+    private static String googleAppToken = "113249870759-4cq8cpt5mt209tb0v5n7pbetbh2lgntq.apps.googleusercontent.com";
+
+    private List<GroupType> allGroupTypes = new ArrayList<>();
     private static GroupType noGroup;
     private GoogleSignInAccount main_account;
 
@@ -57,18 +61,25 @@ public class UserSettings {
     }
 
     private UserSettings() {
-        allGroupTypes = initDefaultGroupTypes();
         balanceButtonIncrements = initDefaultBtnIncrements();
         noGroup = new GroupType(LocalTime.of(0,0), WEEKDAY.NO_WEEKDAY, "не выбрано");
     }
 
-    private List<GroupType> initDefaultGroupTypes() {
-        return new ArrayList<>(Arrays.asList(
-                new GroupType(LocalTime.of(11,0), WEEKDAY.TUESDAY, "дети 11:00"),
-                new GroupType(LocalTime.of(11,0), WEEKDAY.SATURDAY, "взрослые 11:00"),
-                new GroupType(LocalTime.of(15,0), WEEKDAY.SATURDAY, "дети 15:00"),
-                new GroupType(LocalTime.of(17,0), WEEKDAY.SATURDAY, "взрослые 17:00"),
-                new GroupType(LocalTime.of(17,0), WEEKDAY.SUNDAY, "взрослые 17:00")));
+    public void initDefaultGroupTypes() {
+        GroupType g0 = new GroupType(LocalTime.of(11,0), WEEKDAY.TUESDAY, "дети 11:00");
+        GroupType g1 = new GroupType(LocalTime.of(11,0), WEEKDAY.SATURDAY, "взрослые 11:00");
+        GroupType g2 = new GroupType(LocalTime.of(15,0), WEEKDAY.SATURDAY, "дети 15:00");
+        GroupType g3 = new GroupType(LocalTime.of(17,0), WEEKDAY.SATURDAY, "взрослые 17:00");
+        GroupType g4 = new GroupType(LocalTime.of(17,0), WEEKDAY.SUNDAY, "взрослые 17:00");
+
+
+        StudentsRepository.getInstance().addGroupType(g0);
+        StudentsRepository.getInstance().addGroupType(g1);
+        StudentsRepository.getInstance().addGroupType(g2);
+        StudentsRepository.getInstance().addGroupType(g3);
+        StudentsRepository.getInstance().addGroupType(g4);
+
+        allGroupTypes = new ArrayList<>(Arrays.asList(g0, g1, g2, g3, g4));
     }
 
     private SparseArray<String> initDefaultBtnIncrements() {
@@ -100,8 +111,6 @@ public class UserSettings {
     }
 
     public List<GroupType> getAllGroupTypes() {
-        if(allGroupTypes.size()==0)
-            allGroupTypes=initDefaultGroupTypes();
         return allGroupTypes;
     }
 
@@ -156,5 +165,14 @@ public class UserSettings {
 
     public GoogleSignInAccount getUserAccount() {
         return main_account;
+    }
+
+    public static String getGoogleAppToken() {
+        return googleAppToken;
+    }
+
+    public void setAllGroupTypes(List<GroupType> groupTypes) {
+        allGroupTypes.clear();
+        allGroupTypes.addAll(groupTypes);
     }
 }

@@ -127,14 +127,22 @@ public class StudentsRecyclerAdapter extends RecyclerView.Adapter<StudentsRecycl
         notifyDataSetChanged();
     }
 
-    public List<Student> getSelectedStudents(){
+    public List<Student> getCheckedStudents(){
         List<Student> selected = new ArrayList<>();
-        for(int i = 0; i < mStudentFilteredList.size(); i++){
-            if(studentCheckedStates.getOrDefault(mStudentFilteredList.get(i),false)){
-                selected.add(mStudentFilteredList.get(i));
-            }
+        for(Map.Entry<Student, Boolean> entry : studentCheckedStates.entrySet()){
+            if(entry.getValue())
+                selected.add(entry.getKey());
         }
         return selected;
+    }
+
+    public void clearChecked() {
+        for(Map.Entry<Student, Boolean> entry : studentCheckedStates.entrySet()){
+            if(entry.getValue()){
+                studentCheckedStates.put(entry.getKey(), false);
+            }
+        }
+        notifyDataSetChanged();
     }
 
     @Override
